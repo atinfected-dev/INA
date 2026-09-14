@@ -93,10 +93,11 @@ export default async function LeaderboardsPage({
 }) {
   const search = await searchParams;
 
-  const metricKey = one(search, 'metric') ?? 'average';
+  // Default to the figure raiders recognise from their Warcraft Logs profile.
+  const metricKey = one(search, 'metric') ?? 'bestPerBoss';
   const metric = PARSE_METRICS.some((m) => m.key === metricKey)
     ? parseMetric(metricKey)
-    : parseMetric('average');
+    : parseMetric('bestPerBoss');
 
   const expansionId = intOrUndefined(one(search, 'expansion'));
   const difficultyId = intOrUndefined(one(search, 'difficulty'));

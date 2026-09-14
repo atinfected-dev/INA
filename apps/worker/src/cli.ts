@@ -15,9 +15,18 @@ import { importReport } from './import/report';
 import { discoverReports } from './import/discover';
 import { runSync } from './import/sync';
 import { importRankings } from './import/rankings';
+import { importDeaths } from './import/deaths';
 import { GuildByNameDocument, GuildReportsDocument } from '@ina/wcl';
 
-const COMMANDS = ['reference', 'report', 'discover', 'sync', 'guild', 'analyze'] as const;
+const COMMANDS = [
+  'reference',
+  'report',
+  'discover',
+  'sync',
+  'guild',
+  'analyze',
+  'deaths',
+] as const;
 type Command = (typeof COMMANDS)[number];
 
 function isCommand(value: string | undefined): value is Command {
@@ -395,6 +404,65 @@ async function runAnalyze(limit: number | undefined, force: boolean): Promise<vo
   console.log(`  Dauer             ${((Date.now() - started) / 60_000).toFixed(1)} min`);
 }
 
+/**
+ * Third import pass: individual death events.
+ *
+ * About 4 points per report, so the whole history costs roughly 3.000 points.
+ * Re-runs replace a report's deaths rather than appending them.
+ */
+async function runDeaths(limit: number | undefined): Promise<void> {
+  const guild = await requireGuild(guildArg());
+  const client = new WclClient({
+    onRateLimit: (snapshot) => {
+      const until = new Date(Date.now() + snapshot.pointsResetIn * 1000);
+      console.log(`  ⏸  Punktebudget erschöpft — warte bis ${until.toLocaleTimeString('de-DE')}`);
+    },
+  });
+  const started = Date.now();
+
+  const reports = await prisma.report.findMany({
+    where: { guildId: guild.id, fights: { some: {} } },
+    orderBy: { startTime: 'asc' },
+    select: { code: true },
+    ...(limit === undefined ? {} : { take: limit }),
+  });
+
+  console.log(`Todesdaten für ${guild.name}: ${reports.length} Reports
+`);
+
+  let deaths = 0;
+  let withoutCause = 0;
+  let skipped = 0;
+  let archived = 0;
+  let failed = 0;
+
+  for (const [index, report] of reports.entries()) {
+    try {
+      const r = await importDeaths(report.code, client);
+      if (r.archived) archived += 1;
+      else if (r.skipped) skipped += 1;
+      else {
+        deaths += r.deaths;
+        withoutCause += r.withoutCause;
+      }
+      if ((index + 1) % 25 === 0 || index + 1 === reports.length) {
+        console.log(`  [${String(index + 1).padStart(3)}/${reports.length}] ${deaths} Tode bisher`);
+      }
+    } catch (error) {
+      failed += 1;
+      console.log(`  [${String(index + 1).padStart(3)}/${reports.length}] ${report.code}  FEHLER: ${describeError(error)}`);
+    }
+  }
+
+  console.log(`
+  Tode              ${deaths}`);
+  console.log(`  ohne Ursache      ${withoutCause}`);
+  console.log(`  Archiviert        ${archived}`);
+  console.log(`  Übersprungen      ${skipped}`);
+  console.log(`  Fehlgeschlagen    ${failed}`);
+  console.log(`  Dauer             ${((Date.now() - started) / 60_000).toFixed(1)} min`);
+}
+
 async function main(): Promise<void> {
   loadEnv();
 
@@ -420,6 +488,11 @@ async function main(): Promise<void> {
         process.argv.includes('--add'),
       );
       break;
+    case 'deaths': {
+      const limitArg = process.argv.find((a) => a.startsWith('--limit='));
+      await runDeaths(limitArg ? Number(limitArg.split('=')[1]) : undefined);
+      break;
+    }
     case 'analyze': {
       const limitArg = process.argv.find((a) => a.startsWith('--limit='));
       await runAnalyze(

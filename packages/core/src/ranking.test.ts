@@ -9,6 +9,8 @@ import {
 function aggregate(partial: Partial<ParseAggregate>): ParseAggregate {
   return {
     sampleSize: 1,
+    bossCount: 1,
+    bestPerBossMean: 0,
     best: 0,
     mean: 0,
     median: 0,
@@ -82,6 +84,29 @@ describe('rankByParseMetric', () => {
   });
 });
 
+describe('bestPerBoss', () => {
+  // The metric raiders recognise: Warcraft Logs averages the best parse per
+  // boss, not every kill. Mixing the two up made the leaderboard look wrong.
+  it('ranks by the best-per-boss average, not the all-kills average', () => {
+    const rows = [
+      {
+        subject: 'Farmt viel',
+        aggregate: aggregate({ sampleSize: 300, mean: 55, bestPerBossMean: 95 }),
+      },
+      {
+        subject: 'Spielt selten, aber sauber',
+        aggregate: aggregate({ sampleSize: 120, mean: 78, bestPerBossMean: 84 }),
+      },
+    ];
+
+    expect(rankByParseMetric(rows, parseMetric('bestPerBoss'), 100)[0]?.subject).toBe('Farmt viel');
+    // The harsher metric orders them the other way round — both are shown.
+    expect(rankByParseMetric(rows, parseMetric('average'), 100)[0]?.subject).toBe(
+      'Spielt selten, aber sauber',
+    );
+  });
+});
+
 describe('consistencyRating', () => {
   it('is the mean when performance never varies', () => {
     expect(consistencyRating(94.8, 0)).toBe(94.8);
@@ -98,7 +123,14 @@ describe('parseMetric', () => {
   });
 
   it('documents a formula for every metric', () => {
-    for (const key of ['average', 'averageRaw', 'consistency', 'median', 'best'] as const) {
+    for (const key of [
+      'bestPerBoss',
+      'average',
+      'averageRaw',
+      'consistency',
+      'median',
+      'best',
+    ] as const) {
       expect(parseMetric(key).formula.length).toBeGreaterThan(20);
     }
   });

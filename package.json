@@ -23,7 +23,8 @@
     "import:report": "pnpm --filter @ina/worker run cli report",
     "discover": "pnpm --filter @ina/worker run cli discover",
     "sync": "pnpm --filter @ina/worker run cli sync",
-    "analyze": "pnpm --filter @ina/worker run cli analyze"
+    "analyze": "pnpm --filter @ina/worker run cli analyze",
+    "deaths": "pnpm --filter @ina/worker run cli deaths"
   },
   "devDependencies": {
     "@types/node": "^26.5.1",

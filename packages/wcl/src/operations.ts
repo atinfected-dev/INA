@@ -271,3 +271,30 @@ query ReportsByZone($zoneID: Int!, $limit: Int, $page: Int) {
   }
 }
 `);
+
+/**
+ * Deaths for a whole report, with the actor table needed to resolve them.
+ *
+ * Each entry carries the fight it belongs to, so one call per report yields
+ * per-fight deaths without any time matching. `killingBlow` names the ability
+ * explicitly — the cause never has to be inferred from the damage breakdown.
+ */
+export const ReportDeathsDocument = graphql(`
+query ReportDeaths($code: String!, $fightIDs: [Int]) {
+  reportData {
+    report(code: $code) {
+      code
+      startTime
+      region { slug }
+      masterData {
+        actors(type: "Player") {
+          id
+          name
+          server
+        }
+      }
+      table(dataType: Deaths, fightIDs: $fightIDs, killType: All)
+    }
+  }
+}
+`);

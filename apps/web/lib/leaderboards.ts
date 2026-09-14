@@ -46,6 +46,8 @@ interface RawRow {
   personId: string | null;
   personName: string | null;
   sample_size: bigint;
+  boss_count: bigint;
+  best_per_boss_mean: number;
   best: number;
   mean: number;
   median: number;
@@ -64,36 +66,65 @@ export async function loadParseLeaderboard(
 
   // Prisma's tagged template parameterises every interpolation, so these
   // values cannot be injected even though the query is raw SQL.
+  // Two levels of aggregation on purpose:
+  //
+  //  `kills`     one row per ranked kill, after filtering
+  //  `per_boss`  the best parse per boss and difficulty
+  //
+  // The second level is what makes "Ø bester Parse je Boss" possible — the
+  // figure Warcraft Logs shows on a character page. Averaging over every kill
+  // instead answers a different question and lands far lower, so both are
+  // computed here and labelled apart in the UI.
   const rows = await prisma.$queryRaw<RawRow[]>`
-    SELECT c.id                AS "characterId",
-           c.name              AS "name",
-           c."className"       AS "className",
-           c."realmName"       AS "realmName",
-           p.id                AS "personId",
-           p."displayName"     AS "personName",
-           COUNT(*)                                                      AS sample_size,
-           MAX(pr."rankPercent")                                         AS best,
-           AVG(pr."rankPercent")                                         AS mean,
-           PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY pr."rankPercent")  AS median,
-           STDDEV_POP(pr."rankPercent")                                  AS std_dev,
-           COUNT(*) FILTER (WHERE pr."rankPercent" >= 100) AS c100,
-           COUNT(*) FILTER (WHERE pr."rankPercent" >= 99)  AS c99,
-           COUNT(*) FILTER (WHERE pr."rankPercent" >= 95)  AS c95,
-           COUNT(*) FILTER (WHERE pr."rankPercent" >= 90)  AS c90,
-           COUNT(*) FILTER (WHERE pr."rankPercent" >= 80)  AS c80
-    FROM "ParseRanking" pr
-    JOIN "Character" c      ON c.id = pr."characterId"
-    LEFT JOIN "Person" p    ON p.id = c."personId"
-    JOIN "Fight" f          ON f.id = pr."fightId"
-    LEFT JOIN "Encounter" e ON e.id = f."encounterId"
-    LEFT JOIN "Zone" z      ON z.id = e."zoneId"
-    LEFT JOIN "Expansion" x ON x.id = z."expansionId"
-    LEFT JOIN "Difficulty" d ON d.id = f."difficultyId"
-    WHERE (${expansionId ?? null}::int IS NULL OR x."wclExpansionId" = ${expansionId ?? null}::int)
-      AND (${difficultyId ?? null}::int IS NULL OR d."wclDifficultyId" = ${difficultyId ?? null}::int)
-      AND (${metric ?? null}::text IS NULL OR pr.metric::text = ${metric ?? null}::text)
-      AND (${className ?? null}::text IS NULL OR c."className" = ${className ?? null}::text)
-    GROUP BY c.id, c.name, c."className", c."realmName", p.id, p."displayName"
+    WITH kills AS (
+      SELECT c.id            AS character_id,
+             c.name          AS character_name,
+             c."className"   AS class_name,
+             c."realmName"   AS realm_name,
+             p.id            AS person_id,
+             p."displayName" AS person_name,
+             e.id            AS encounter_id,
+             f."difficultyId" AS difficulty_id,
+             pr."rankPercent" AS rank_percent
+      FROM "ParseRanking" pr
+      JOIN "Character" c       ON c.id = pr."characterId"
+      LEFT JOIN "Person" p     ON p.id = c."personId"
+      JOIN "Fight" f           ON f.id = pr."fightId"
+      LEFT JOIN "Encounter" e  ON e.id = f."encounterId"
+      LEFT JOIN "Zone" z       ON z.id = e."zoneId"
+      LEFT JOIN "Expansion" x  ON x.id = z."expansionId"
+      LEFT JOIN "Difficulty" d ON d.id = f."difficultyId"
+      WHERE (${expansionId ?? null}::int IS NULL OR x."wclExpansionId" = ${expansionId ?? null}::int)
+        AND (${difficultyId ?? null}::int IS NULL OR d."wclDifficultyId" = ${difficultyId ?? null}::int)
+        AND (${metric ?? null}::text IS NULL OR pr.metric::text = ${metric ?? null}::text)
+        AND (${className ?? null}::text IS NULL OR c."className" = ${className ?? null}::text)
+    ),
+    per_boss AS (
+      SELECT character_id, encounter_id, difficulty_id, MAX(rank_percent) AS best_parse
+      FROM kills
+      GROUP BY character_id, encounter_id, difficulty_id
+    )
+    SELECT k.character_id   AS "characterId",
+           k.character_name AS "name",
+           k.class_name     AS "className",
+           k.realm_name     AS "realmName",
+           k.person_id      AS "personId",
+           k.person_name    AS "personName",
+           COUNT(*)                                                     AS sample_size,
+           (SELECT COUNT(*) FROM per_boss b WHERE b.character_id = k.character_id)     AS boss_count,
+           (SELECT AVG(b.best_parse) FROM per_boss b WHERE b.character_id = k.character_id) AS best_per_boss_mean,
+           MAX(k.rank_percent)                                          AS best,
+           AVG(k.rank_percent)                                          AS mean,
+           PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY k.rank_percent)  AS median,
+           STDDEV_POP(k.rank_percent)                                   AS std_dev,
+           COUNT(*) FILTER (WHERE k.rank_percent >= 100) AS c100,
+           COUNT(*) FILTER (WHERE k.rank_percent >= 99)  AS c99,
+           COUNT(*) FILTER (WHERE k.rank_percent >= 95)  AS c95,
+           COUNT(*) FILTER (WHERE k.rank_percent >= 90)  AS c90,
+           COUNT(*) FILTER (WHERE k.rank_percent >= 80)  AS c80
+    FROM kills k
+    GROUP BY k.character_id, k.character_name, k.class_name, k.realm_name,
+             k.person_id, k.person_name
   `;
 
   return rows.map((row) => ({
@@ -107,6 +138,8 @@ export async function loadParseLeaderboard(
     },
     aggregate: {
       sampleSize: Number(row.sample_size),
+      bossCount: Number(row.boss_count),
+      bestPerBossMean: Number(row.best_per_boss_mean),
       best: Number(row.best),
       mean: Number(row.mean),
       median: Number(row.median),

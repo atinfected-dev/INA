@@ -11,7 +11,15 @@
 export interface ParseAggregate {
   /** Number of ranked kills behind these figures. */
   sampleSize: number;
+  /** Distinct boss/difficulty combinations the player has a ranked kill on. */
+  bossCount: number;
   best: number;
+  /**
+   * Average of the player's BEST parse per boss — the figure Warcraft Logs
+   * shows as "Best Performance Average" on a character page.
+   */
+  bestPerBossMean: number;
+  /** Average over every single ranked kill, farm runs included. */
   mean: number;
   median: number;
   /** Population standard deviation of the percentiles. */
@@ -35,6 +43,7 @@ export function consistencyRating(mean: number, stdDev: number): number {
 }
 
 export type ParseMetricKey =
+  | 'bestPerBoss'
   | 'best'
   | 'averageRaw'
   | 'average'
@@ -60,19 +69,28 @@ export interface ParseMetricDefinition {
 
 export const PARSE_METRICS: readonly ParseMetricDefinition[] = [
   {
-    key: 'average',
-    label: 'Ø Parse (gewertet)',
+    key: 'bestPerBoss',
+    label: 'Ø bester Parse je Boss',
     formula:
-      'Durchschnitt aller Parse-Perzentile, gewertet ab der konfigurierten Mindestanzahl gewerteter Kills.',
+      'Für jeden Boss (je Schwierigkeit) wird der beste erreichte Parse genommen, daraus der Durchschnitt gebildet. Das ist die Zahl, die Warcraft Logs auf der Charakterseite als "Best Performance Average" ausweist.',
+    usesMinimumSample: true,
+    value: (a) => a.bestPerBossMean,
+    decimals: 1,
+  },
+  {
+    key: 'average',
+    label: 'Ø aller Kills',
+    formula:
+      'Durchschnitt über jeden einzelnen gewerteten Kill, Farmruns und Progressversuche eingeschlossen. Deutlich strenger als der "Ø bester Parse je Boss" und nicht mit der Zahl auf der Warcraft-Logs-Charakterseite vergleichbar.',
     usesMinimumSample: true,
     value: (a) => a.mean,
     decimals: 1,
   },
   {
     key: 'averageRaw',
-    label: 'Ø Parse (roh)',
+    label: 'Ø aller Kills (roh)',
     formula:
-      'Durchschnitt aller Parse-Perzentile, ohne Mindestanzahl. Ein einziger Glückstreffer kann diese Liste anführen — genau deshalb steht sie neben der gewerteten.',
+      'Durchschnitt über jeden gewerteten Kill, ohne Mindestanzahl. Ein einziger Glückstreffer kann diese Liste anführen — genau deshalb steht sie neben der gewerteten.',
     usesMinimumSample: false,
     value: (a) => a.mean,
     decimals: 1,
