@@ -31,19 +31,38 @@ export const metadata: Metadata = {
     'Gilden-Statistiken und Ranglisten über alle Classic-Erweiterungen, auf Basis der Warcraft-Logs-API.',
 };
 
+/**
+ * Navigation.
+ *
+ * The leaderboards are grouped: parses, attendance, deaths, damage taken,
+ * interrupts and dispels are six answers to the same kind of question, and six
+ * top-level entries buried the rest of the site.
+ *
+ * Raid nights have no entry of their own — a list of logs is a working tool,
+ * not something a member comes here to read. The pages still exist and stay
+ * reachable from everything that links into them.
+ */
 const NAV = [
   { href: '/', label: 'Übersicht' },
-  { href: '/leaderboards', label: 'Ranglisten' },
-  { href: '/attendance', label: 'Attendance' },
-  { href: '/deaths', label: 'Tode' },
-  { href: '/erlittener-schaden', label: 'Schaden erlitten' },
+  {
+    label: 'Ranglisten',
+    items: [
+      { href: '/leaderboards', label: 'Parses' },
+      { href: '/attendance', label: 'Attendance' },
+      { href: '/deaths', label: 'Tode' },
+      { href: '/erlittener-schaden', label: 'Schaden erlitten' },
+      { href: '/unterbrechungen', label: 'Unterbrechungen' },
+      { href: '/dispels', label: 'Dispels' },
+    ],
+  },
   { href: '/records', label: 'Rekorde' },
   { href: '/hall-of-fame', label: 'Hall of Fame' },
-  { href: '/erfolge', label: 'Erfolge' },
   { href: '/mitglieder', label: 'Mitglieder' },
   { href: '/players', label: 'Spieler' },
-  { href: '/raids', label: 'Raids' },
 ] as const;
+
+/** Only officers see the achievement catalogue; members see their own on their profile. */
+const ADMIN_NAV = [{ href: '/erfolge', label: 'Erfolge' }] as const;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // Read here rather than per page: the masthead needs to know, and every page
@@ -63,11 +82,30 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               </span>
             </a>
             <nav className={styles.nav} aria-label="Hauptnavigation">
-              {NAV.map((item) => (
-                <a key={item.href} href={item.href} className={styles.navLink}>
-                  {item.label}
-                </a>
-              ))}
+              {NAV.map((item) =>
+                'items' in item ? (
+                  <details key={item.label} className={styles.navGroup}>
+                    <summary>{item.label}</summary>
+                    <div className={styles.navMenu}>
+                      {item.items.map((entry) => (
+                        <a key={entry.href} href={entry.href}>
+                          {entry.label}
+                        </a>
+                      ))}
+                    </div>
+                  </details>
+                ) : (
+                  <a key={item.href} href={item.href} className={styles.navLink}>
+                    {item.label}
+                  </a>
+                ),
+              )}
+              {viewer?.isAdmin &&
+                ADMIN_NAV.map((item) => (
+                  <a key={item.href} href={item.href} className={styles.navLink}>
+                    {item.label}
+                  </a>
+                ))}
               <a href={viewer ? '/konto' : '/anmelden'} className={styles.navAccount}>
                 {viewer ? viewer.displayName : 'Anmelden'}
               </a>

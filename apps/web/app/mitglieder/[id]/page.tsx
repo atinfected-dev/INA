@@ -239,20 +239,42 @@ export default async function MemberPage({ params }: { params: Params }) {
               achievements.earned.length + achievements.open.length,
             )} · seltenste zuerst`}
           >
-            <div className={achievementStyles.grid}>
-              {split.rest.map((entry) => (
-                <AchievementCard
-                  key={entry.definition.id}
-                  definition={entry.definition}
-                  byTier={entry.byTier}
-                  eligible={achievements.eligible}
-                  tier={entry.tier}
-                  value={entry.value}
-                  nextThreshold={entry.nextThreshold}
-                />
-              ))}
-            </div>
+            {achievements.earned.length === 0 ? (
+              <p style={{ margin: 0, color: 'var(--text-muted)' }}>Noch nichts errungen.</p>
+            ) : (
+              <div className={achievementStyles.grid}>
+                {split.rest.map((entry) => (
+                  <AchievementCard
+                    key={entry.definition.id}
+                    definition={entry.definition}
+                    byTier={entry.byTier}
+                    eligible={achievements.eligible}
+                    tier={entry.tier}
+                    value={entry.value}
+                    nextThreshold={entry.nextThreshold}
+                  />
+                ))}
+              </div>
+            )}
           </Panel>
+
+          {achievements.open.length > 0 && (
+            <Panel title="Kurz davor" subtitle="Am dichtesten an der nächsten Stufe">
+              <div className={achievementStyles.grid}>
+                {achievements.open.slice(0, 6).map((entry) => (
+                  <AchievementCard
+                    key={entry.definition.id}
+                    definition={entry.definition}
+                    byTier={entry.byTier}
+                    eligible={achievements.eligible}
+                    tier={null}
+                    value={entry.value}
+                    nextThreshold={entry.nextThreshold}
+                  />
+                ))}
+              </div>
+            </Panel>
+          )}
         </>
       )}
     </>

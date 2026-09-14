@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import {
   ACHIEVEMENT_CATEGORIES,
   UNAWARDED_ACHIEVEMENTS,
@@ -9,6 +10,7 @@ import { Divider } from '../../components/ui/bits';
 import { AchievementCard } from '../../components/achievements/card';
 import { RARITY_MIN_NIGHTS, loadAchievementOverview } from '../../lib/achievements';
 import { formatNumber } from '../../lib/wow';
+import { getViewer } from '../../lib/auth';
 import styles from './achievements.module.css';
 import leaderboard from '../leaderboards/leaderboards.module.css';
 
@@ -24,6 +26,12 @@ const ORDER: AchievementCategory[] = [
 ];
 
 export default async function AchievementsPage() {
+  // Officers only. Hiding the link would not be access control — anyone can
+  // type a URL — so the page checks for itself. Members see the achievements
+  // that concern them on their own profile.
+  const viewer = await getViewer();
+  if (!viewer?.isAdmin) notFound();
+
   const overview = await loadAchievementOverview();
 
   return (

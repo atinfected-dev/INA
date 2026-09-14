@@ -147,7 +147,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
           </p>
         ) : pinOptions.length === 0 ? (
           <p style={{ margin: 0, color: 'var(--text-muted)' }}>
-            Noch keine Erfolge errungen. Die Schwellen stehen unter <a href="/erfolge">Erfolge</a>.
+            Noch keine Erfolge errungen. Sie erscheinen hier, sobald die erste Stufe erreicht ist.
           </p>
         ) : (
           <PinForm

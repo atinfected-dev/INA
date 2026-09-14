@@ -289,7 +289,7 @@ export default async function PlayerProfilePage({
           >
             {achievements.earned.length === 0 ? (
               <p style={{ margin: 0, color: 'var(--text-muted)' }}>
-                Noch nichts errungen. Die Schwellen stehen unter <a href="/erfolge">Erfolge</a>.
+                Noch nichts errungen. Unter „Als Nächstes“ steht, was am dichtesten dran ist.
               </p>
             ) : (
               <div className={achievementStyles.grid}>

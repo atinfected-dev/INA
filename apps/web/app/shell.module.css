@@ -138,3 +138,76 @@
   color: var(--gold-100);
   text-decoration: none;
 }
+
+/* Grouped navigation.
+ *
+ * A <details> element rather than a scripted menu: it opens on click and on
+ * keyboard alike, works before any JavaScript has run, and needs no state.
+ * It takes a click rather than a hover, which also means it never opens by
+ * accident while the pointer crosses the masthead. */
+.navGroup {
+  position: relative;
+}
+
+.navGroup > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+}
+
+.navGroup > summary::-webkit-details-marker {
+  display: none;
+}
+
+.navGroup > summary::after {
+  content: ' ▾';
+  color: var(--gold-500);
+}
+
+.navGroup > summary:hover,
+.navGroup[open] > summary {
+  color: var(--gold-100);
+  border-color: var(--gold-600);
+  background: rgb(200 170 110 / 8%);
+}
+
+.navMenu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.3rem);
+  left: 0;
+  min-width: 13rem;
+  display: flex;
+  flex-direction: column;
+  padding: 0.3rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--gold-600);
+  box-shadow: var(--shadow-panel);
+}
+
+.navMenu a {
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.navMenu a:hover {
+  color: var(--gold-100);
+  background: rgb(200 170 110 / 10%);
+  text-decoration: none;
+}
+
+/* On a narrow screen the menu would hang off the edge; let it push the page
+   instead of floating over it. */
+@media (max-width: 640px) {
+  .navMenu {
+    position: static;
+    box-shadow: none;
+  }
+}
