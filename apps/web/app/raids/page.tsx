@@ -77,9 +77,8 @@ export default async function RaidsPage() {
       </p>
       </OrnateFrame>
       <p style={{ color: 'var(--text-muted)', maxWidth: '68ch', fontSize: '0.88rem' }}>
-        Manche Raids tauchen doppelt auf. Das ist kein Fehler: Warcraft Logs legt für jede
-        Neuauflage eine eigene Zone an — Ulduar 1017 kennt nur Normal, Ulduar 1026 zusätzlich
-        Heroic. Deshalb steht die Zone-ID mit in der Tabelle.
+        Manche Raids stehen doppelt. Das ist kein Fehler: Warcraft Logs führt jede Neuauflage als
+        eigene Instanz — das erste Ulduar kannte nur Normal, das spätere zusätzlich Heroic.
       </p>
 
       {expansions.map((expansion) => {
