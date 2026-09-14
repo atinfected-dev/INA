@@ -122,20 +122,23 @@
 }
 
 /* Account entry sits apart from the content navigation. */
+/* Jade, like the "Registrieren" button in the hero: the two invitations to
+   join wear the same colour, and it is the one accent that is not gold. */
 .navAccount {
   padding: 0.35rem 0.8rem;
   margin-left: 0.4rem;
   font-size: 0.85rem;
   letter-spacing: 0.04em;
-  color: var(--gold-200);
-  border: 1px solid var(--gold-600);
+  color: var(--jade-100);
+  border: 1px solid var(--jade-400);
   border-radius: var(--radius);
-  background: rgb(200 170 110 / 8%);
+  background: linear-gradient(180deg, rgb(58 168 130 / 24%), rgb(58 168 130 / 8%));
 }
 
 .navAccount:hover {
-  border-color: var(--gold-300);
-  color: var(--gold-100);
+  border-color: var(--jade-200);
+  color: #fff;
+  background: linear-gradient(180deg, rgb(58 168 130 / 34%), rgb(58 168 130 / 12%));
   text-decoration: none;
 }
 
