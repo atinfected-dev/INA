@@ -14,8 +14,9 @@ import { importReferenceData } from './import/reference.js';
 import { importReport } from './import/report.js';
 import { discoverReports } from './import/discover.js';
 import { runSync } from './import/sync.js';
+import { GuildByNameDocument, GuildReportsDocument } from '@ina/wcl';
 
-const COMMANDS = ['reference', 'report', 'discover', 'sync'] as const;
+const COMMANDS = ['reference', 'report', 'discover', 'sync', 'guild'] as const;
 type Command = (typeof COMMANDS)[number];
 
 function isCommand(value: string | undefined): value is Command {
@@ -93,8 +94,27 @@ async function runReport(code: string | undefined, force: boolean): Promise<void
   );
 }
 
-/** Resolves the guild the CLI operates on: the default one, else the only one. */
-async function requireGuild() {
+/**
+ * Resolves the guild a command operates on.
+ *
+ * Without --guild= this is the default guild. A guild that renamed keeps its
+ * old logs under the old name, so both are separate Guild rows and each needs
+ * its own sync; --guild= picks one by name (case-insensitive).
+ */
+async function requireGuild(nameFilter?: string) {
+  if (nameFilter) {
+    const match = await prisma.guild.findFirst({
+      where: { name: { equals: nameFilter, mode: 'insensitive' } },
+    });
+    if (!match) {
+      const known = await prisma.guild.findMany({ select: { name: true } });
+      throw new Error(
+        `No guild named "${nameFilter}". Known: ${known.map((g) => g.name).join(', ') || '(none)'}.`,
+      );
+    }
+    return match;
+  }
+
   const guild =
     (await prisma.guild.findFirst({ where: { isDefault: true } })) ??
     (await prisma.guild.findFirst());
@@ -108,8 +128,14 @@ async function requireGuild() {
   return guild;
 }
 
+/** Reads --guild=<name> from argv. */
+function guildArg(): string | undefined {
+  const arg = process.argv.find((a) => a.startsWith('--guild='));
+  return arg ? arg.slice('--guild='.length) : undefined;
+}
+
 async function runDiscover(full: boolean, maxPages: number | undefined): Promise<void> {
-  const guild = await requireGuild();
+  const guild = await requireGuild(guildArg());
   const client = new WclClient();
   const before = await client.getRateLimit();
 
@@ -149,7 +175,7 @@ async function runSyncCommand(
   importOnly: boolean,
   limit: number | undefined,
 ): Promise<void> {
-  const guild = await requireGuild();
+  const guild = await requireGuild(guildArg());
   const client = new WclClient();
   const started = Date.now();
 
@@ -182,6 +208,87 @@ async function runSyncCommand(
   console.log(`  Dauer           ${minutes} min`);
 }
 
+/**
+ * Looks up a guild on Warcraft Logs and reports how much history it has.
+ *
+ * Used to check a guild's earlier name or realm before deciding to add it: a
+ * guild that renamed keeps its old logs under the old name, and those reports
+ * are only reachable through that name.
+ */
+async function runGuildLookup(
+  name: string | undefined,
+  serverSlug: string | undefined,
+  serverRegion: string | undefined,
+  add: boolean,
+): Promise<void> {
+  if (!name || !serverSlug || !serverRegion) {
+    console.error('Usage: cli guild <name> <serverSlug> <region> [--add]');
+    process.exitCode = 1;
+    return;
+  }
+
+  const client = new WclClient();
+  const found = await client.query(GuildByNameDocument, { name, serverSlug, serverRegion });
+  const guild = found.guildData?.guild;
+
+  if (!guild) {
+    console.log(`
+Nicht gefunden: "${name}" auf ${serverSlug} (${serverRegion}).`);
+    process.exitCode = 1;
+    return;
+  }
+
+  console.log(`
+  id        ${guild.id}`);
+  console.log(`  name      ${guild.name}`);
+  console.log(`  faction   ${guild.faction.name}`);
+  console.log(`  server    ${guild.server.name} (${guild.server.slug})`);
+  console.log(`  region    ${guild.server.region.slug}`);
+
+  // One page is enough to tell whether there is history worth importing.
+  const reports = await client.query(GuildReportsDocument, {
+    guildName: guild.name,
+    guildServerSlug: guild.server.slug,
+    guildServerRegion: guild.server.region.slug,
+    startTime: 0,
+    limit: 100,
+    page: 1,
+  });
+
+  const page = reports.reportData?.reports;
+  const rows = (page?.data ?? []).filter((r) => r !== null);
+  const oldest = rows.at(-1);
+  const newest = rows.at(0);
+
+  console.log(`
+  Reports (Seite 1)  ${rows.length}${page?.has_more_pages ? ' (mehr vorhanden)' : ''}`);
+  if (newest && oldest) {
+    console.log(`  neuester           ${new Date(newest.startTime).toISOString().slice(0, 10)}`);
+    console.log(`  ältester (S.1)     ${new Date(oldest.startTime).toISOString().slice(0, 10)}`);
+  }
+
+  if (add) {
+    const row = await prisma.guild.upsert({
+      where: { wclGuildId: guild.id },
+      update: {
+        name: guild.name,
+        serverSlug: guild.server.slug,
+        serverRegion: guild.server.region.slug,
+        faction: guild.faction.name,
+      },
+      create: {
+        wclGuildId: guild.id,
+        name: guild.name,
+        serverSlug: guild.server.slug,
+        serverRegion: guild.server.region.slug,
+        faction: guild.faction.name,
+      },
+    });
+    console.log(`
+  In die Datenbank aufgenommen (${row.id}).`);
+  }
+}
+
 async function main(): Promise<void> {
   loadEnv();
 
@@ -198,6 +305,14 @@ async function main(): Promise<void> {
       break;
     case 'report':
       await runReport(process.argv[3], process.argv.includes('--force'));
+      break;
+    case 'guild':
+      await runGuildLookup(
+        process.argv[3],
+        process.argv[4],
+        process.argv[5],
+        process.argv.includes('--add'),
+      );
       break;
     case 'sync': {
       const limitArg = process.argv.find((a) => a.startsWith('--limit='));
