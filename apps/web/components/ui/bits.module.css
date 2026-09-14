@@ -107,8 +107,13 @@
   justify-content: center;
   font-size: 0.7rem;
   font-variant-numeric: tabular-nums;
-  color: var(--text-primary);
-  text-shadow: 0 1px 2px #000;
+  color: #fff;
+  /* A dark halo, not just a drop shadow: the label sits half on the lit fill
+     and half on the dark track, so it needs contrast in both directions. */
+  text-shadow:
+    0 0 3px #000,
+    0 0 6px #000,
+    0 1px 2px #000;
 }
 
 /* --- Parse pill ----------------------------------------------------------- */
