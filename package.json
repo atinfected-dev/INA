@@ -24,7 +24,8 @@
     "discover": "pnpm --filter @ina/worker run cli discover",
     "sync": "pnpm --filter @ina/worker run cli sync",
     "analyze": "pnpm --filter @ina/worker run cli analyze",
-    "deaths": "pnpm --filter @ina/worker run cli deaths"
+    "deaths": "pnpm --filter @ina/worker run cli deaths",
+    "sessions": "pnpm --filter @ina/worker run cli sessions"
   },
   "devDependencies": {
     "@types/node": "^26.5.1",

@@ -31,8 +31,13 @@ export interface AppSettings {
   attendanceMinParticipation: number;
 
   /**
-   * Reports of the same guild closer together than this belong to one raid
-   * night. Raid leaders routinely split a night into several logs.
+   * Gap after which a new raid night begins.
+   *
+   * Applied to the stream of fights, not to report boundaries: a night is often
+   * split across several logs, and a log is sometimes left running for days.
+   * Six hours is taken from the data rather than chosen — 13.573 gaps between
+   * consecutive pulls are under 30 minutes and 576 exceed 12 hours, with almost
+   * nothing in between.
    */
   sessionGapHours: number;
 
@@ -61,7 +66,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   minKillsForAverage: 100,
   attendanceMinMinutes: 30,
   attendanceMinParticipation: 0.25,
-  sessionGapHours: 8,
+  sessionGapHours: 6,
   syncOverlapHours: 72,
   hallOfFameTitles: [
     {
@@ -99,6 +104,13 @@ export const DEFAULT_SETTINGS: AppSettings = {
       title: 'Dauerbrenner',
       subtitle: 'Die meisten Raidabende',
       metric: 'attendance.nights',
+      direction: 'highest',
+    },
+    {
+      id: 'never-misses-raid',
+      title: 'Never Misses Raid',
+      subtitle: 'Höchste Attendance über die eigene Zugehörigkeit',
+      metric: 'attendance.percent',
       direction: 'highest',
     },
     {

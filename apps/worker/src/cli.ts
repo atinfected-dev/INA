@@ -16,6 +16,7 @@ import { discoverReports } from './import/discover';
 import { runSync } from './import/sync';
 import { importRankings } from './import/rankings';
 import { importDeaths } from './import/deaths';
+import { rebuildSessions } from './import/sessions';
 import { GuildByNameDocument, GuildReportsDocument } from '@ina/wcl';
 
 const COMMANDS = [
@@ -26,6 +27,7 @@ const COMMANDS = [
   'guild',
   'analyze',
   'deaths',
+  'sessions',
 ] as const;
 type Command = (typeof COMMANDS)[number];
 
@@ -473,6 +475,31 @@ async function runDeaths(limit: number | undefined): Promise<void> {
   console.log(`  Dauer             ${((Date.now() - started) / 60_000).toFixed(1)} min`);
 }
 
+/**
+ * Builds raid nights and attendance from the imported fights.
+ *
+ * Purely local — no API calls — so it is cheap to re-run whenever the
+ * attendance thresholds change.
+ */
+async function runSessions(): Promise<void> {
+  const guilds = guildArg()
+    ? [await requireGuild(guildArg())]
+    : await prisma.guild.findMany({ orderBy: { name: 'asc' } });
+
+  for (const guild of guilds) {
+    const started = Date.now();
+    const result = await rebuildSessions(guild);
+    console.log(`
+${guild.name}`);
+    console.log(`  Raidabende        ${result.sessions}`);
+    console.log(`  davon aus mehreren Reports  ${result.multiReportSessions}`);
+    console.log(`  Reports über mehrere Abende ${result.splitReports}`);
+    console.log(`  Anwesenheits-Zeilen ${result.attendanceRows}`);
+    console.log(`  davon anwesend      ${result.presentRows}`);
+    console.log(`  Dauer               ${((Date.now() - started) / 1000).toFixed(1)}s`);
+  }
+}
+
 async function main(): Promise<void> {
   loadEnv();
 
@@ -497,6 +524,9 @@ async function main(): Promise<void> {
         process.argv[5],
         process.argv.includes('--add'),
       );
+      break;
+    case 'sessions':
+      await runSessions();
       break;
     case 'deaths': {
       const limitArg = process.argv.find((a) => a.startsWith('--limit='));

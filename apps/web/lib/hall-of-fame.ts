@@ -26,10 +26,17 @@ export interface HallOfFameHolder {
    */
   tiedWith: { name: string; className: string | null }[];
   /** How the number is formatted for display. */
-  unit: 'count' | 'amount' | 'percentile';
+  unit: 'count' | 'amount' | 'percentile' | 'percent';
   /** Set when the metric cannot be answered from imported data. */
   unavailable?: string;
 }
+
+/**
+ * Shared with the attendance page. Both numbers answer the same question, so
+ * they must use the same thresholds.
+ */
+export const MAIN_RAID_SIZE = 20;
+export const MIN_NIGHTS_FOR_TITLE = 20;
 
 interface HolderRow {
   name: string;
@@ -104,6 +111,52 @@ const LOADERS: Record<string, Loader> = {
       JOIN "Character" c ON c.id = p."characterId"
       JOIN "Fight" f     ON f.id = p."fightId"
       GROUP BY c.id, c.name, c."className" ORDER BY value DESC LIMIT 12
+    `,
+  },
+  'attendance.percent': {
+    unit: 'percent',
+    /*
+     * Must match the attendance page exactly, including the main-raid filter.
+     *
+     * Without it the title went to a different raider than the one topping the
+     * table: alt and twink nights are counted as missed, which costs everyone
+     * roughly fifteen points and reorders the ranking. A Hall of Fame that
+     * contradicts its own leaderboard is worse than no Hall of Fame.
+     */
+    run: () => prisma.$queryRaw<HolderRow[]>`
+      WITH sized AS (
+        SELECT s.id, s."startTime",
+               COUNT(*) FILTER (WHERE sa."isPresent") AS raid_size
+        FROM "RaidSession" s
+        LEFT JOIN "SessionAttendance" sa ON sa."sessionId" = s.id
+        GROUP BY s.id, s."startTime"
+      ),
+      nights AS (
+        SELECT id, "startTime" FROM sized WHERE raid_size >= ${MAIN_RAID_SIZE}
+      ),
+      attended AS (
+        SELECT sa."characterId", n."startTime"
+        FROM "SessionAttendance" sa
+        JOIN nights n ON n.id = sa."sessionId"
+        WHERE sa."isPresent" = true
+      ),
+      tenure AS (
+        SELECT "characterId", COUNT(*) AS attended,
+               MIN("startTime") AS first_seen, MAX("startTime") AS last_seen
+        FROM attended GROUP BY "characterId"
+      ),
+      scored AS (
+        SELECT t."characterId", t.attended,
+               (SELECT COUNT(*) FROM nights n
+                WHERE n."startTime" >= t.first_seen AND n."startTime" <= t.last_seen) AS available
+        FROM tenure t
+      )
+      SELECT c.name, c."className",
+             (s.attended::float / NULLIF(s.available, 0)) * 100 AS value
+      FROM scored s
+      JOIN "Character" c ON c.id = s."characterId"
+      WHERE s.available >= ${MIN_NIGHTS_FOR_TITLE}
+      ORDER BY value DESC LIMIT 12
     `,
   },
   'damage.total': {

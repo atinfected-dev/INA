@@ -13,6 +13,7 @@ function formatValue(holder: HallOfFameHolder): string {
   if (holder.value === null) return '—';
   if (holder.unit === 'amount') return formatAmount(holder.value);
   if (holder.unit === 'percentile') return formatNumber(holder.value, 1);
+  if (holder.unit === 'percent') return `${formatNumber(holder.value, 1)} %`;
   return formatNumber(holder.value);
 }
 
