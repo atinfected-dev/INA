@@ -1,0 +1,93 @@
+.grid {
+  display: grid;
+  gap: 1.1rem;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+}
+
+/*
+ * A plaque, not a table row. This is one of the two pages where the Classic
+ * treatment is allowed to go all the way — there are eight of these, not five
+ * hundred, so the ornament costs nothing in readability.
+ */
+.plaque {
+  position: relative;
+  padding: 1.15rem 1.1rem 1.2rem;
+  text-align: center;
+  border: 1px solid var(--gold-500);
+  border-radius: var(--radius);
+  background:
+    radial-gradient(ellipse 120% 90% at 50% 0%, rgb(200 170 110 / 12%), transparent 70%),
+    linear-gradient(180deg, var(--bg-panel-raised), var(--bg-sunken));
+  box-shadow:
+    inset 0 0 26px rgb(0 0 0 / 70%),
+    0 2px 14px rgb(0 0 0 / 60%);
+}
+
+.cornerTL,
+.cornerTR,
+.cornerBL,
+.cornerBR {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  background: linear-gradient(135deg, var(--gold-100), var(--gold-400));
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 11'><path d='M0 0h11v2H2v9H0z' fill='black'/></svg>");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+}
+
+.cornerTL { top: 3px; left: 3px; }
+.cornerTR { top: 3px; right: 3px; transform: scaleX(-1); }
+.cornerBL { bottom: 3px; left: 3px; transform: scaleY(-1); }
+.cornerBR { bottom: 3px; right: 3px; transform: scale(-1); }
+
+.title {
+  margin: 0;
+  font-size: 1.15rem;
+  letter-spacing: 0.06em;
+  color: var(--gold-200);
+}
+
+.subtitle {
+  margin: 0.15rem 0 0.9rem;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+/* The holder is the whole point, so it gets the size and the class colour. */
+.holder {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  text-shadow: 0 1px 3px #000;
+  word-break: break-word;
+}
+
+.value {
+  margin-top: 0.3rem;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
+.pending {
+  padding: 0.9rem 1rem;
+  border: 1px dashed var(--gold-700);
+  border-radius: var(--radius);
+  background: rgb(0 0 0 / 25%);
+  text-align: center;
+}
+
+.pendingTitle {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+}
+
+.pendingText {
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
