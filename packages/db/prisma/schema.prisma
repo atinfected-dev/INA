@@ -243,6 +243,11 @@ model Report {
   ownerName   String?
   zoneId      String?
   importState ImportState @default(DISCOVERED)
+  /// Warcraft Logs archives report CONTENTS after roughly two years. Rankings
+  /// survive, so parses stay complete, but table() no longer answers and the
+  /// data would need the user-authenticated endpoint. Recorded so archived
+  /// reports are not queried again on every run.
+  contentsArchived Boolean @default(false)
   importError String?
   importedAt  DateTime?
   createdAt   DateTime    @default(now())

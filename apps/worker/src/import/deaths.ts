@@ -123,6 +123,11 @@ export async function importDeaths(
     });
   } catch (error) {
     if (error instanceof WclGraphQLError && /archived/i.test(error.message)) {
+      // Recorded so later runs skip it without spending a request.
+      await prisma.report.update({
+        where: { id: report.id },
+        data: { contentsArchived: true },
+      });
       result.skipped = true;
       result.archived = true;
       result.skippedReason = 'Report archiviert — Inhalte nur über den User-Endpunkt erreichbar.';

@@ -421,14 +421,24 @@ async function runDeaths(limit: number | undefined): Promise<void> {
   const started = Date.now();
 
   const reports = await prisma.report.findMany({
-    where: { guildId: guild.id, fights: { some: {} } },
-    orderBy: { startTime: 'asc' },
+    // Archived reports cannot answer, so they are not asked again.
+    where: { guildId: guild.id, fights: { some: {} }, contentsArchived: false },
+    // Newest first: recent raids are what anyone looks at, and the oldest are
+    // the ones most likely to be archived anyway.
+    orderBy: { startTime: 'desc' },
     select: { code: true },
     ...(limit === undefined ? {} : { take: limit }),
   });
 
-  console.log(`Todesdaten für ${guild.name}: ${reports.length} Reports
-`);
+  const archivedAlready = await prisma.report.count({
+    where: { guildId: guild.id, contentsArchived: true },
+  });
+
+  console.log(
+    `Todesdaten für ${guild.name}: ${reports.length} Reports` +
+      (archivedAlready > 0 ? ` (${archivedAlready} archiviert, übersprungen)` : '') +
+      '\n',
+  );
 
   let deaths = 0;
   let withoutCause = 0;
