@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { TIER_ORDER, type AchievementTier } from '@ina/core';
 import { requireAdmin } from '../../../lib/auth';
 import { loadSettings, saveSettings } from '../../../lib/settings';
+import { invalidateAll } from '../../../lib/cache';
 import { HALL_OF_FAME_METRICS } from '../../../lib/hall-of-fame';
 import {
   ContentError,
@@ -40,6 +41,7 @@ function text(formData: FormData, name: string): string {
 
 /** Everything that shows content officers can change. */
 function revalidateContent(): void {
+  invalidateAll();
   revalidatePath(PAGE);
   revalidatePath('/hall-of-fame');
   revalidatePath('/records');

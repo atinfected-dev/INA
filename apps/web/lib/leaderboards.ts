@@ -1,5 +1,6 @@
 import { prisma } from '@ina/db';
 import type { ParseAggregate } from '@ina/core';
+import { keyOf, memo } from './cache';
 
 /**
  * Parse aggregation.
@@ -59,7 +60,7 @@ interface RawRow {
   c80: bigint;
 }
 
-export async function loadParseLeaderboard(
+async function computeParseLeaderboard(
   filters: LeaderboardFilters = {},
 ): Promise<LeaderboardEntry[]> {
   const { expansionId, difficultyId, metric, className } = filters;
@@ -198,4 +199,10 @@ export async function loadFilterOptions(): Promise<FilterOptions> {
       .map((c) => c.className)
       .filter((c): c is string => c !== null && c !== 'Unknown'),
   };
+}
+
+export function loadParseLeaderboard(
+  filters: LeaderboardFilters = {},
+): Promise<LeaderboardEntry[]> {
+  return memo(keyOf('parse-leaderboard', filters), () => computeParseLeaderboard(filters));
 }

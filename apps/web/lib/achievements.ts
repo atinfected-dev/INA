@@ -8,6 +8,7 @@ import {
 } from '@ina/core';
 import { loadSubjectMetrics, type SubjectRow } from './achievement-metrics';
 import { loadCustomAchievements } from './custom-content';
+import { memo } from './cache';
 import { MIN_NIGHTS_FOR_TITLE } from './hall-of-fame';
 
 /**
@@ -61,7 +62,7 @@ interface Evaluated {
   earned: EarnedAchievement[];
 }
 
-async function evaluateEveryone(): Promise<{
+async function computeEveryone(): Promise<{
   rows: Evaluated[];
   holders: Map<string, TierHolders>;
   eligible: number;
@@ -98,6 +99,10 @@ async function evaluateEveryone(): Promise<{
   }
 
   return { rows, holders, eligible, definitions };
+}
+
+function evaluateEveryone(): ReturnType<typeof computeEveryone> {
+  return memo('achievements-everyone', computeEveryone);
 }
 
 export async function loadAchievementOverview(): Promise<AchievementOverview> {

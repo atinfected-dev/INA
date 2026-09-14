@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { prisma } from '@ina/db';
 import { ACHIEVEMENTS } from '@ina/core';
 import { MAX_PINNED } from '../../lib/achievements';
+import { invalidateAll } from '../../lib/cache';
 import { revalidatePath } from 'next/cache';
 import { AuthError, createSession, destroySession, getViewer, login, register, requireAdmin } from '../../lib/auth';
 import { ClaimError, approveClaim, rejectClaim, requestClaim, revokeClaim } from '../../lib/claims';
@@ -98,6 +99,9 @@ export async function decideClaimAction(_prev: FormState, formData: FormData): P
     return { error: message(error, 'Entscheidung fehlgeschlagen.') };
   }
 
+  // A claim moves a character into or out of a person; every per-person
+  // aggregate changes with it.
+  invalidateAll();
   revalidatePath('/admin/claims');
   revalidatePath('/konto');
   return { notice: 'Gespeichert.' };

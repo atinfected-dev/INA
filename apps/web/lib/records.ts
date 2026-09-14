@@ -3,6 +3,7 @@ import { SCRIPTED_DAMAGE_THRESHOLD } from '@ina/core';
 import { loadAttendance } from './attendance';
 import { MAIN_RAID_SIZE, MIN_NIGHTS_FOR_TITLE } from './hall-of-fame';
 import { loadCustomRecords } from './custom-content';
+import { keyOf, memo } from './cache';
 
 /**
  * Guild records and Hall of Fame holders.
@@ -59,7 +60,7 @@ interface HolderRow {
   value: number;
 }
 
-export async function loadRecords(): Promise<RecordEntry[]> {
+async function computeRecords(): Promise<RecordEntry[]> {
   const [
     bestParse,
     most100,
@@ -302,4 +303,8 @@ export async function loadRecords(): Promise<RecordEntry[]> {
 
   // Officer-added records come last, computed where they can be.
   return [...entries, ...(await loadCustomRecords())];
+}
+
+export function loadRecords(): Promise<RecordEntry[]> {
+  return memo('records', computeRecords);
 }

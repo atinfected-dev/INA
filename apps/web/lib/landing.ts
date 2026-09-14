@@ -2,6 +2,7 @@ import { prisma } from '@ina/db';
 import { loadHallOfFame, topHolders, type HallOfFameHolder } from './hall-of-fame';
 import { loadRecords, type RecordEntry } from './records';
 import { loadSettings } from './settings';
+import { keyOf, memo } from './cache';
 
 /**
  * Everything the landing page shows.
@@ -67,7 +68,7 @@ export interface Landing {
 
 const FEATURED_RECORDS = ['bestParse', 'highestDps', 'mostWipes', 'fastestKill'] as const;
 
-export async function loadLanding(): Promise<Landing> {
+async function computeLanding(): Promise<Landing> {
   const [
     guilds,
     sessionAgg,
@@ -245,3 +246,7 @@ export async function loadLanding(): Promise<Landing> {
 }
 
 export { topHolders };
+
+export function loadLanding(): Promise<Landing> {
+  return memo('landing', computeLanding);
+}

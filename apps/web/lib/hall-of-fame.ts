@@ -1,5 +1,6 @@
 import { prisma } from '@ina/db';
 import { METRICS, type HallOfFameTitle } from '@ina/core';
+import { keyOf, memo } from './cache';
 
 /**
  * Hall of Fame holders.
@@ -202,7 +203,7 @@ export const HALL_OF_FAME_METRICS: { key: string; label: string; unit: HallOfFam
     unit: loader.unit,
   }));
 
-export async function loadHallOfFame(titles: HallOfFameTitle[]): Promise<HallOfFameHolder[]> {
+async function computeHallOfFame(titles: HallOfFameTitle[]): Promise<HallOfFameHolder[]> {
   return Promise.all(
     titles.map(async (title): Promise<HallOfFameHolder> => {
       const loader = LOADERS[title.metric];
@@ -232,5 +233,11 @@ export async function loadHallOfFame(titles: HallOfFameTitle[]): Promise<HallOfF
         unit: loader.unit,
       };
     }),
+  );
+}
+
+export function loadHallOfFame(titles: HallOfFameTitle[]): Promise<HallOfFameHolder[]> {
+  return memo(keyOf('hall-of-fame', { titles: titles.map((t) => `${t.id}:${t.metric}:${t.direction}`) }), () =>
+    computeHallOfFame(titles),
   );
 }

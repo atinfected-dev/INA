@@ -1,5 +1,6 @@
 import { prisma } from '@ina/db';
 import { SCRIPTED_DAMAGE_THRESHOLD, type SubjectMetrics } from '@ina/core';
+import { memo } from './cache';
 
 /**
  * Every number an achievement can be measured against, per SUBJECT.
@@ -96,12 +97,24 @@ function emptyMetrics(): SubjectMetrics {
   };
 }
 
+
+/** Per-query timing, printed only when INA_PROFILE is set — for finding the slow one. */
+async function timed<T>(label: string, work: Promise<T>): Promise<T> {
+  if (!process.env.INA_PROFILE) return work;
+  const started = performance.now();
+  try {
+    return await work;
+  } finally {
+    console.log(`[metrics] ${label.padEnd(14)} ${(performance.now() - started).toFixed(0)} ms`);
+  }
+}
+
 const n = (value: unknown): number => (value === null || value === undefined ? 0 : Number(value));
 
-export async function loadSubjectMetrics(): Promise<SubjectRow[]> {
+async function computeSubjectMetrics(): Promise<SubjectRow[]> {
   const [identities, participation, classes, nights, parses, performance, deaths, utility] =
     await Promise.all([
-      prisma.$queryRawUnsafe<
+      timed('identities', prisma.$queryRawUnsafe<
         {
           subject_id: string;
           is_person: boolean;
@@ -122,10 +135,10 @@ export async function loadSubjectMetrics(): Promise<SubjectRow[]> {
                COUNT(*)                                    AS merged
         FROM subjects s
         GROUP BY s.subject_id
-      `),
+      `)),
 
       // Pulls, kills, wipes and everything derived from taking part in a fight.
-      prisma.$queryRawUnsafe<
+      timed('participation', prisma.$queryRawUnsafe<
         {
           subject_id: string;
           combat_ms: bigint;
@@ -175,11 +188,12 @@ export async function loadSubjectMetrics(): Promise<SubjectRow[]> {
                  AS characters_with_kills
         FROM pulls
         GROUP BY subject_id
-      `),
+      `)),
 
-      // Per class, so "most kills on one class" and "hours on one class" do
-      // not need a second pass over the same rows.
-      prisma.$queryRawUnsafe<
+      // Per class and per boss, each rolled up to one row per subject BEFORE
+      // the final join. A correlated subquery per subject here rescanned the
+      // per-boss table two thousand times and cost four seconds.
+      timed('classes', prisma.$queryRawUnsafe<
         {
           subject_id: string;
           classes: bigint;
@@ -199,6 +213,14 @@ export async function loadSubjectMetrics(): Promise<SubjectRow[]> {
           WHERE s.class_name IS NOT NULL AND s.class_name <> 'Unknown'
           GROUP BY s.subject_id, s.class_name
         ),
+        class_agg AS (
+          SELECT subject_id,
+                 COUNT(*)   AS classes,
+                 MAX(kills) AS max_kills_one_class,
+                 MAX(ms)    AS max_ms_one_class
+          FROM per_class
+          GROUP BY subject_id
+        ),
         per_boss AS (
           SELECT s.subject_id, f."encounterId", f."difficultyId", COUNT(*) AS pulls
           FROM "FightParticipant" fp
@@ -206,20 +228,27 @@ export async function loadSubjectMetrics(): Promise<SubjectRow[]> {
           JOIN "Fight" f  ON f.id = fp."fightId"
           WHERE f."encounterId" IS NOT NULL
           GROUP BY s.subject_id, f."encounterId", f."difficultyId"
+        ),
+        boss_agg AS (
+          SELECT subject_id, MAX(pulls) AS max_pulls_one_boss FROM per_boss GROUP BY subject_id
         )
         SELECT c.subject_id,
-               COUNT(*)           AS classes,
-               MAX(c.kills)       AS max_kills_one_class,
-               MAX(c.ms)          AS max_ms_one_class,
-               COALESCE((SELECT MAX(b.pulls) FROM per_boss b WHERE b.subject_id = c.subject_id), 0)
-                 AS max_pulls_one_boss
-        FROM per_class c
-        GROUP BY c.subject_id
-      `),
+               c.classes,
+               c.max_kills_one_class,
+               c.max_ms_one_class,
+               COALESCE(b.max_pulls_one_boss, 0) AS max_pulls_one_boss
+        FROM class_agg c
+        LEFT JOIN boss_agg b ON b.subject_id = c.subject_id
+      `)),
 
       // Raid nights: attendance, streaks, the longest night, and the one night
       // metric that reads backwards — how early the subject first appeared.
-      prisma.$queryRawUnsafe<
+      //
+      // Everything is aggregated to one row per subject and joined once. The
+      // first version answered three of these with a correlated subquery per
+      // subject, each rescanning an unindexed intermediate table — twelve
+      // seconds for two thousand subjects.
+      timed('nights', prisma.$queryRawUnsafe<
         {
           subject_id: string;
           nights: bigint;
@@ -241,7 +270,6 @@ export async function loadSubjectMetrics(): Promise<SubjectRow[]> {
           SELECT s.subject_id,
                  sa."sessionId",
                  o.night_index,
-                 SUM(sa."activeMs")::bigint AS active_ms,
                  -- The night's own length, first pull to last. Counted once
                  -- per night even when several of a person's characters were
                  -- present, which is why it is a MAX and not a SUM here.
@@ -260,16 +288,22 @@ export async function loadSubjectMetrics(): Promise<SubjectRow[]> {
           JOIN "Fight" f ON f."startTime" >= rs."startTime" AND f."startTime" <= rs."endTime"
         ),
         pulls_per_night AS (
-          SELECT a.subject_id, a."sessionId", COUNT(*) AS pulls
+          SELECT s.subject_id, sf.session_id, COUNT(*) AS pulls
+          FROM session_fights sf
+          JOIN "FightParticipant" fp ON fp."fightId" = sf.fight_id
+          JOIN subjects s            ON s.character_id = fp."characterId"
+          GROUP BY s.subject_id, sf.session_id
+        ),
+        -- Only nights the subject counted as present on; a cameo does not
+        -- get to hold the pull record for that evening.
+        max_pulls AS (
+          SELECT a.subject_id, MAX(pp.pulls) AS max_pulls_one_night
           FROM attended a
-          JOIN session_fights sf   ON sf.session_id = a."sessionId"
-          JOIN "FightParticipant" fp2 ON fp2."fightId" = sf.fight_id
-          JOIN subjects s3         ON s3.character_id = fp2."characterId"
-          WHERE s3.subject_id = a.subject_id
-          GROUP BY a.subject_id, a."sessionId"
+          JOIN pulls_per_night pp ON pp.subject_id = a.subject_id AND pp.session_id = a."sessionId"
+          GROUP BY a.subject_id
         ),
         -- Consecutive nights: the classic gaps-and-islands trick. Subtracting
-        -- a dense rank from the night index makes every unbroken run share one
+        -- a row number from the night index makes every unbroken run share one
         -- constant, so the longest run is the largest group.
         runs AS (
           SELECT subject_id,
@@ -278,44 +312,56 @@ export async function loadSubjectMetrics(): Promise<SubjectRow[]> {
           FROM attended
         ),
         streaks AS (
-          SELECT subject_id, COUNT(*) AS streak
-          FROM runs GROUP BY subject_id, run_key
+          SELECT subject_id, MAX(run_length) AS streak
+          FROM (SELECT subject_id, run_key, COUNT(*) AS run_length FROM runs GROUP BY subject_id, run_key) r
+          GROUP BY subject_id
         ),
         -- Only nights whose logs are all still served can be called
         -- death-free; an archived night simply has no death data.
+        archived_sessions AS (
+          SELECT DISTINCT sr."sessionId" AS session_id
+          FROM "SessionReport" sr
+          JOIN "Report" r ON r.id = sr."reportId"
+          WHERE r."contentsArchived"
+        ),
+        death_sessions AS (
+          SELECT DISTINCT s.subject_id, sf.session_id
+          FROM "DeathEvent" de
+          JOIN subjects s        ON s.character_id = de."characterId"
+          JOIN session_fights sf ON sf.fight_id = de."fightId"
+        ),
         clean_nights AS (
           SELECT a.subject_id, COUNT(*) AS nights_without_death
           FROM attended a
-          WHERE NOT EXISTS (
-                  SELECT 1 FROM "SessionReport" sr
-                  JOIN "Report" r ON r.id = sr."reportId"
-                  WHERE sr."sessionId" = a."sessionId" AND r."contentsArchived"
-                )
-            AND NOT EXISTS (
-                  SELECT 1
-                  FROM "DeathEvent" de
-                  JOIN subjects s2 ON s2.character_id = de."characterId"
-                  JOIN session_fights sf2 ON sf2.fight_id = de."fightId"
-                  WHERE s2.subject_id = a.subject_id AND sf2.session_id = a."sessionId"
-                )
+          LEFT JOIN archived_sessions ar ON ar.session_id = a."sessionId"
+          LEFT JOIN death_sessions ds    ON ds.subject_id = a.subject_id AND ds.session_id = a."sessionId"
+          WHERE ar.session_id IS NULL AND ds.session_id IS NULL
           GROUP BY a.subject_id
+        ),
+        per_subject AS (
+          SELECT subject_id,
+                 COUNT(*)              AS nights,
+                 SUM(span_ms)::bigint  AS raid_time_ms,
+                 MAX(span_ms)          AS longest_night_ms,
+                 MIN(night_index)      AS first_night_index
+          FROM attended
+          GROUP BY subject_id
         )
-        SELECT a.subject_id,
-               COUNT(*)                AS nights,
-               SUM(a.span_ms)::bigint  AS raid_time_ms,
-               MAX(a.span_ms)          AS longest_night_ms,
-               COALESCE((SELECT MAX(p.pulls) FROM pulls_per_night p WHERE p.subject_id = a.subject_id), 0)
-                 AS max_pulls_one_night,
-               COALESCE((SELECT c.nights_without_death FROM clean_nights c WHERE c.subject_id = a.subject_id), 0)
-                 AS nights_without_death,
-               COALESCE((SELECT MAX(st.streak) FROM streaks st WHERE st.subject_id = a.subject_id), 0)
-                 AS streak,
-               MIN(a.night_index)      AS first_night_index
-        FROM attended a
-        GROUP BY a.subject_id
-      `),
+        SELECT p.subject_id,
+               p.nights,
+               p.raid_time_ms,
+               p.longest_night_ms,
+               COALESCE(mp.max_pulls_one_night, 0)  AS max_pulls_one_night,
+               COALESCE(cn.nights_without_death, 0) AS nights_without_death,
+               COALESCE(st.streak, 0)               AS streak,
+               p.first_night_index
+        FROM per_subject p
+        LEFT JOIN max_pulls    mp ON mp.subject_id = p.subject_id
+        LEFT JOIN clean_nights cn ON cn.subject_id = p.subject_id
+        LEFT JOIN streaks      st ON st.subject_id = p.subject_id
+      `)),
 
-      prisma.$queryRawUnsafe<
+      timed('parses', prisma.$queryRawUnsafe<
         {
           subject_id: string;
           p75: bigint;
@@ -338,9 +384,9 @@ export async function loadSubjectMetrics(): Promise<SubjectRow[]> {
         JOIN subjects s ON s.character_id = pr."characterId"
         JOIN "Fight" f  ON f.id = pr."fightId"
         GROUP BY s.subject_id
-      `),
+      `)),
 
-      prisma.$queryRawUnsafe<
+      timed('performance', prisma.$queryRawUnsafe<
         {
           subject_id: string;
           damage_done: bigint;
@@ -368,9 +414,9 @@ export async function loadSubjectMetrics(): Promise<SubjectRow[]> {
         JOIN "Fight" f   ON f.id = fp."fightId"
         JOIN "Report" r  ON r.id = f."reportId"
         GROUP BY s.subject_id
-      `),
+      `)),
 
-      prisma.$queryRawUnsafe<
+      timed('deaths', prisma.$queryRawUnsafe<
         { subject_id: string; deaths: bigint; fights_died: bigint; first_deaths: bigint }[]
       >(`
         WITH ${SUBJECTS_CTE},
@@ -393,9 +439,9 @@ export async function loadSubjectMetrics(): Promise<SubjectRow[]> {
         FROM "DeathEvent" de
         JOIN subjects s ON s.character_id = de."characterId"
         GROUP BY s.subject_id
-      `),
+      `)),
 
-      prisma.$queryRawUnsafe<{ subject_id: string; interrupts: bigint; dispels: bigint }[]>(`
+      timed('utility', prisma.$queryRawUnsafe<{ subject_id: string; interrupts: bigint; dispels: bigint }[]>(`
         WITH ${SUBJECTS_CTE}
         SELECT s.subject_id,
                COALESCE(SUM(ru.interrupts), 0)::bigint AS interrupts,
@@ -403,7 +449,7 @@ export async function loadSubjectMetrics(): Promise<SubjectRow[]> {
         FROM "ReportUtility" ru
         JOIN subjects s ON s.character_id = ru."characterId"
         GROUP BY s.subject_id
-      `),
+      `)),
     ]);
 
   const rows = new Map<string, SubjectRow>();
@@ -511,7 +557,7 @@ export async function loadSubjectMetrics(): Promise<SubjectRow[]> {
  * Difficulty counts separately: the first Heroic kill is its own occasion.
  */
 async function addProgressMetrics(rows: Map<string, SubjectRow>): Promise<void> {
-  const progress = await prisma.$queryRawUnsafe<
+  const progress = await timed('progress', prisma.$queryRawUnsafe<
     { subject_id: string; progress_pulls: bigint; first_kills: bigint }[]
   >(`
     WITH ${SUBJECTS_CTE},
@@ -530,7 +576,7 @@ async function addProgressMetrics(rows: Map<string, SubjectRow>): Promise<void> 
     JOIN first_kill k ON k."encounterId" = f."encounterId"
                      AND k."difficultyId" IS NOT DISTINCT FROM f."difficultyId"
     GROUP BY s.subject_id
-  `);
+  `));
 
   for (const row of progress) {
     const metrics = rows.get(row.subject_id)?.metrics;
@@ -538,4 +584,14 @@ async function addProgressMetrics(rows: Map<string, SubjectRow>): Promise<void> 
     metrics.progressPulls = Number(row.progress_pulls);
     metrics.firstKills = Number(row.first_kills);
   }
+}
+
+/**
+ * The metrics of every subject, computed at most once per cache window.
+ *
+ * Several pages ask for this per request, and a profile page asked three
+ * times. The answer only changes when the pipeline has run.
+ */
+export function loadSubjectMetrics(): Promise<SubjectRow[]> {
+  return memo('subject-metrics', computeSubjectMetrics);
 }

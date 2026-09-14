@@ -1,4 +1,5 @@
 import { prisma } from '@ina/db';
+import { keyOf, memo } from './cache';
 
 /**
  * Interrupt and dispel leaderboards.
@@ -72,7 +73,7 @@ export interface UtilityFilters {
 
 export const DEFAULT_MIN_REPORTS = 20;
 
-export async function loadUtility(filters: UtilityFilters = {}): Promise<UtilityRow[]> {
+async function computeUtility(filters: UtilityFilters = {}): Promise<UtilityRow[]> {
   const { expansionId, role, minReports = DEFAULT_MIN_REPORTS } = filters;
 
   const rows = await prisma.$queryRaw<
@@ -180,4 +181,8 @@ export async function loadUtilityTotals(): Promise<UtilityTotals> {
     dispels: Number(rows[0]?.dispels ?? 0),
     reports: Number(rows[0]?.reports ?? 0),
   };
+}
+
+export function loadUtility(filters: UtilityFilters = {}): Promise<UtilityRow[]> {
+  return memo(keyOf('utility', filters), () => computeUtility(filters));
 }

@@ -1,5 +1,6 @@
 import { prisma } from '@ina/db';
 import { SCRIPTED_DAMAGE_THRESHOLD } from '@ina/core';
+import { keyOf, memo } from './cache';
 
 /**
  * Damage taken.
@@ -55,7 +56,7 @@ interface RawRow {
   worst: bigint;
 }
 
-export async function loadDamageTaken(
+async function computeDamageTaken(
   filters: DamageTakenFilters = {},
 ): Promise<DamageTakenRow[]> {
   const { expansionId, difficultyId, role, minPulls = DEFAULT_MIN_PULLS } = filters;
@@ -158,4 +159,10 @@ export async function loadDamageTakenCoverage(): Promise<DamageTakenCoverage> {
     excludedCharacters: Number(excluded[0]?.chars ?? 0),
     worstRealPull: Number(worst[0]?.worst ?? 0),
   };
+}
+
+export function loadDamageTaken(
+  filters: DamageTakenFilters = {},
+): Promise<DamageTakenRow[]> {
+  return memo(keyOf('damage-taken', filters), () => computeDamageTaken(filters));
 }
