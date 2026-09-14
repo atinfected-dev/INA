@@ -118,24 +118,15 @@ export interface SubjectAchievements {
 }
 
 /**
- * One subject's standing, found by any of its character names.
+ * One subject's standing.
  *
- * Looking up by name rather than by id is deliberate: the profile page is
- * reached as /players/<name>, and a person is reachable through every
- * character they have merged in.
+ * Addressed by id, never by name. Character names are only unique per realm —
+ * this guild has two Dibbelabbess, one of them a stranger — so a name lookup
+ * silently answers for the wrong raider, which is exactly what it did before.
  */
-export async function loadAchievementsForCharacter(
-  characterName: string,
+export async function loadAchievementsForSubject(
+  subjectId: string,
 ): Promise<SubjectAchievements | null> {
-  const character = await prisma.character.findFirst({
-    where: { name: characterName },
-    select: { id: true, personId: true },
-  });
-  if (!character) return null;
-
-  // The subject key, formed exactly as the metrics query forms it.
-  const subjectId = character.personId ?? character.id;
-
   const { rows, holders, eligible } = await evaluateEveryone();
   const found = rows.find((row) => row.subject.subjectId === subjectId);
   if (!found) return null;
@@ -166,6 +157,25 @@ export async function loadAchievementsForCharacter(
   });
 
   return { subject: found.subject, earned, open, eligible };
+}
+
+/**
+ * The same, starting from one character.
+ *
+ * Resolves through the person where the character has been merged into one,
+ * so every character of a raider answers with the raider's whole history.
+ */
+export async function loadAchievementsForCharacterId(
+  characterId: string,
+): Promise<SubjectAchievements | null> {
+  const character = await prisma.character.findUnique({
+    where: { id: characterId },
+    select: { id: true, personId: true },
+  });
+  if (!character) return null;
+
+  // The subject key, formed exactly as the metrics query forms it.
+  return loadAchievementsForSubject(character.personId ?? character.id);
 }
 
 export const MAX_PINNED = 6;

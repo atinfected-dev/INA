@@ -15,7 +15,7 @@ import { AchievementCard } from '../../../components/achievements/card';
 import {
   applyPins,
   findAccountForSubject,
-  loadAchievementsForCharacter,
+  loadAchievementsForCharacterId,
 } from '../../../lib/achievements';
 import achievementStyles from '../../erfolge/achievements.module.css';
 import styles from '../../leaderboards/leaderboards.module.css';
@@ -149,7 +149,7 @@ export default async function PlayerProfilePage({
 
   // Achievements are person-wide, so they are looked up through the subject
   // rather than through this one character.
-  const achievements = await loadAchievementsForCharacter(chosen.name);
+  const achievements = await loadAchievementsForCharacterId(chosen.id);
   const account = achievements
     ? await findAccountForSubject(achievements.subject.subjectId)
     : null;

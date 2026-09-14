@@ -3,7 +3,11 @@ import { redirect } from 'next/navigation';
 import { ClaimStatus } from '@ina/db';
 import { OrnateFrame, Panel } from '../../components/ui/frame';
 import { PinForm, type PinOption } from '../../components/achievements/pin-form';
-import { MAX_PINNED, loadAchievementsForCharacter } from '../../lib/achievements';
+import {
+  MAX_PINNED,
+  loadAchievementsForCharacterId,
+  loadAchievementsForSubject,
+} from '../../lib/achievements';
 import { savePinsAction } from './actions';
 import { prisma } from '@ina/db';
 import { ClassName, Divider } from '../../components/ui/bits';
@@ -44,10 +48,14 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
 
   const approved = claims.filter((claim) => claim.status === ClaimStatus.APPROVED);
 
-  // Pins are offered through one of the member's own characters, because the
-  // achievements themselves belong to the person behind all of them.
-  const firstCharacter = approved[0]?.character.name;
-  const standing = firstCharacter ? await loadAchievementsForCharacter(firstCharacter) : null;
+  // Straight to the person where one exists — the achievements belong to the
+  // raider, not to whichever character happens to be first in the list. Going
+  // through a NAME here once answered with a stranger who shares one.
+  const standing = viewer.personId
+    ? await loadAchievementsForSubject(viewer.personId)
+    : approved[0]
+      ? await loadAchievementsForCharacterId(approved[0].character.id)
+      : null;
   const account = await prisma.account.findUnique({
     where: { id: viewer.id },
     select: { pinnedAchievements: true },
