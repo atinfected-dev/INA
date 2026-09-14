@@ -31,7 +31,13 @@ function createClient(): PrismaClient {
   }
 
   const client = new PrismaClient({
-    adapter: new PrismaPg({ connectionString }),
+    // Pool size is a deployment decision, not a code one: on a host whose
+    // Postgres is shared with other applications, every process has to stay
+    // well under its share of max_connections. Unset, pg's default of ten.
+    adapter: new PrismaPg({
+      connectionString,
+      max: Number(process.env.DATABASE_POOL_MAX ?? 10),
+    }),
     log: process.env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
   });
 

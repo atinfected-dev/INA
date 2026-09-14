@@ -20,7 +20,13 @@ if [ "$FIGHTS" != "0" ]; then
   exit 1
 fi
 echo "loading…"
-gunzip -c /opt/ina/incoming/ina-data.sql.gz | psql -q -h 127.0.0.1 -U ina -d ina -v ON_ERROR_STOP=1
+# pg_dump 17 writes `SET transaction_timeout`, which Postgres 16 does not know
+# and refuses before a single row is loaded. Nothing else in a data-only dump
+# is version-specific.
+# Loaded as the postgres superuser: the dump disables foreign-key triggers
+# while it copies, and disabling a system trigger is a superuser-only act.
+# The rows still end up owned by the tables' owner, ina.
+gunzip -c /opt/ina/incoming/ina-data.sql.gz   | grep -v '^SET transaction_timeout'   | sudo -u postgres psql -q -d ina -v ON_ERROR_STOP=1
 psql -h 127.0.0.1 -U ina -d ina -Atc 'select (select count(*) from "Report") as reports, (select count(*) from "Fight") as fights, (select count(*) from "Character") as characters, (select count(*) from "Account") as accounts'
 rm -f /opt/ina/incoming/ina-data.sql.gz
 REMOTE

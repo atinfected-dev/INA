@@ -8,6 +8,8 @@ Type=oneshot
 User=ina
 Group=ina
 WorkingDirectory=/opt/ina/app
+Environment=DATABASE_POOL_MAX=3
+Environment=PATH=/opt/ina/node/bin:/usr/local/bin:/usr/bin:/bin
 EnvironmentFile=/opt/ina/app/.env
 ExecStart=/usr/bin/bash /opt/ina/app/deploy/pipeline.sh
 # A full backfill can take hours; a normal run takes seconds. Generous cap.

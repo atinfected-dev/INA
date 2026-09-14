@@ -9,6 +9,9 @@ User=ina
 Group=ina
 WorkingDirectory=/opt/ina/app/apps/web
 Environment=NODE_ENV=production
+# Five connections is plenty for a guild site and leaves the shared Postgres
+# (max_connections 100, also serving BauWerk) its headroom.
+Environment=DATABASE_POOL_MAX=5
 Environment=PATH=/opt/ina/node/bin:/usr/local/bin:/usr/bin:/bin
 # next.config.ts also loads the root .env; this keeps the two in step.
 EnvironmentFile=/opt/ina/app/.env

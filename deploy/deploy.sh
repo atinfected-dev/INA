@@ -54,7 +54,6 @@ if [ -s "$INA_ROOT/db-password" ]; then
   chmod 600 "$APP_DIR/.env"
 else
   echo "no /opt/ina/db-password yet — run deploy/server-setup.sh first, then deploy again" >&2
-  chown -R ina:ina "$INA_ROOT"
   exit 0
 fi
 

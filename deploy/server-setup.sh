@@ -55,17 +55,17 @@ PATH="$NODE_DIR/bin:$PATH" pnpm --version
 log "postgres role $DB_USER and database $DB_NAME"
 PASS_FILE=$INA_ROOT/db-password
 if [ ! -s "$PASS_FILE" ]; then
-  tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32 >"$PASS_FILE"
-  chmod 600 "$PASS_FILE"
+  (umask 077; tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32 >"$PASS_FILE")
 fi
+chmod 600 "$PASS_FILE"
 DB_PASSWORD=$(cat "$PASS_FILE")
 
-if ! sudo -u postgres psql -Atc "select 1 from pg_roles where rolname='$DB_USER'" | grep -q 1; then
+if [ "$(sudo -u postgres psql -Atc "select 1 from pg_roles where rolname='$DB_USER'")" != "1" ]; then
   sudo -u postgres psql -c "create role $DB_USER login password '$DB_PASSWORD'"
 else
   sudo -u postgres psql -c "alter role $DB_USER password '$DB_PASSWORD'"
 fi
-if ! sudo -u postgres psql -Atc "select 1 from pg_database where datname='$DB_NAME'" | grep -q 1; then
+if [ "$(sudo -u postgres psql -Atc "select 1 from pg_database where datname='$DB_NAME'")" != "1" ]; then
   # Locale C like the development database, so ORDER BY on player names does
   # not depend on the host locale and the two never sort differently.
   sudo -u postgres createdb --owner="$DB_USER" --template=template0 --encoding=UTF8 --locale=C "$DB_NAME"
@@ -86,9 +86,14 @@ ln -sf "/etc/nginx/sites-available/$DOMAIN" "/etc/nginx/sites-enabled/$DOMAIN"
 nginx -t
 systemctl reload nginx
 
+# Two cases: no certificate yet, or one that exists but is not wired into
+# this vhost (the domain was set up before INA). Both end with TLS + redirect.
 if [ ! -d "/etc/letsencrypt/live/$DOMAIN" ]; then
   log "certificate"
   certbot --nginx -d "$DOMAIN" -d "www.$DOMAIN" --non-interactive --agree-tos -m "$CERT_EMAIL" --redirect
+elif ! grep -q "listen 443" "/etc/nginx/sites-available/$DOMAIN"; then
+  log "installing the existing certificate into the vhost"
+  certbot install --nginx --cert-name "$DOMAIN" -d "$DOMAIN" -d "www.$DOMAIN" --redirect --non-interactive
 fi
 
 log "done — now run deploy/deploy.sh from the development machine"
