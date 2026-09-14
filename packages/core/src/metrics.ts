@@ -42,7 +42,7 @@ export const METRICS: Record<string, MetricDefinition> = define([
   {
     key: 'parse.best',
     label: 'Bester Parse',
-    formula: 'Höchster erreichter rankPercent über alle gewerteten Kills.',
+    formula: 'Das höchste Parse-Perzentil über alle gewerteten Kills.',
     normalisation: 'raw',
     higherIsBetter: true,
     usesMinimumSample: false,
@@ -52,7 +52,7 @@ export const METRICS: Record<string, MetricDefinition> = define([
     key: 'parse.averageRaw',
     label: 'Ø Parse (roh)',
     formula:
-      'Durchschnitt aller rankPercent-Werte, ohne Mindestanzahl. Ein einzelner Kill kann diese Liste anführen.',
+      'Durchschnitt aller Parse-Perzentile, ohne Mindestanzahl. Ein einzelner Kill kann diese Liste anführen.',
     normalisation: 'raw',
     higherIsBetter: true,
     usesMinimumSample: false,
@@ -62,7 +62,7 @@ export const METRICS: Record<string, MetricDefinition> = define([
     key: 'parse.average',
     label: 'Ø Parse (gewertet)',
     formula:
-      'Durchschnitt aller rankPercent-Werte, nur für Spieler mit mindestens der konfigurierten Anzahl gewerteter Kills.',
+      'Durchschnitt aller Parse-Perzentile, nur für Spieler mit genug gewerteten Kills.',
     normalisation: 'raw',
     higherIsBetter: true,
     usesMinimumSample: true,
@@ -71,7 +71,7 @@ export const METRICS: Record<string, MetricDefinition> = define([
   {
     key: 'parse.median',
     label: 'Median Parse',
-    formula: 'Median aller rankPercent-Werte, ab der konfigurierten Mindestanzahl gewerteter Kills.',
+    formula: 'Der mittlere Parse — die Hälfte der Kills liegt darüber, die Hälfte darunter. Ab genug gewerteten Kills.',
     normalisation: 'raw',
     higherIsBetter: true,
     usesMinimumSample: true,
@@ -81,7 +81,7 @@ export const METRICS: Record<string, MetricDefinition> = define([
     key: 'parse.consistency',
     label: 'Consistency',
     formula:
-      'Durchschnitt der rankPercent-Werte minus deren Standardabweichung. Belohnt gleichmäßige Leistung statt einzelner Ausreißer.',
+      'Durchschnittlicher Parse abzüglich der Schwankung. Belohnt gleichmäßige Leistung statt einzelner Ausreißer.',
     normalisation: 'raw',
     higherIsBetter: true,
     usesMinimumSample: true,
@@ -90,7 +90,7 @@ export const METRICS: Record<string, MetricDefinition> = define([
   {
     key: 'parse.count100',
     label: '100er Parses',
-    formula: 'Anzahl gewerteter Kills mit rankPercent = 100.',
+    formula: 'Anzahl gewerteter Kills mit Parse 100.',
     normalisation: 'total',
     higherIsBetter: true,
     usesMinimumSample: false,
@@ -99,7 +99,7 @@ export const METRICS: Record<string, MetricDefinition> = define([
   {
     key: 'parse.count99',
     label: '99er Parses',
-    formula: 'Anzahl gewerteter Kills mit rankPercent = 99.',
+    formula: 'Anzahl gewerteter Kills mit Parse 99.',
     normalisation: 'total',
     higherIsBetter: true,
     usesMinimumSample: false,
@@ -108,7 +108,7 @@ export const METRICS: Record<string, MetricDefinition> = define([
   {
     key: 'parse.count99plus',
     label: 'Parses ab 99',
-    formula: 'Anzahl gewerteter Kills mit rankPercent >= 99.',
+    formula: 'Anzahl gewerteter Kills mit Parse 99 oder höher.',
     normalisation: 'total',
     higherIsBetter: true,
     usesMinimumSample: false,
@@ -117,7 +117,7 @@ export const METRICS: Record<string, MetricDefinition> = define([
   {
     key: 'parse.count95plus',
     label: 'Parses ab 95',
-    formula: 'Anzahl gewerteter Kills mit rankPercent >= 95.',
+    formula: 'Anzahl gewerteter Kills mit Parse 95 oder höher.',
     normalisation: 'total',
     higherIsBetter: true,
     usesMinimumSample: false,
@@ -126,7 +126,7 @@ export const METRICS: Record<string, MetricDefinition> = define([
   {
     key: 'parse.count90plus',
     label: 'Parses ab 90',
-    formula: 'Anzahl gewerteter Kills mit rankPercent >= 90.',
+    formula: 'Anzahl gewerteter Kills mit Parse 90 oder höher.',
     normalisation: 'total',
     higherIsBetter: true,
     usesMinimumSample: false,
@@ -135,7 +135,7 @@ export const METRICS: Record<string, MetricDefinition> = define([
   {
     key: 'parse.count80plus',
     label: 'Parses ab 80',
-    formula: 'Anzahl gewerteter Kills mit rankPercent >= 80.',
+    formula: 'Anzahl gewerteter Kills mit Parse 80 oder höher.',
     normalisation: 'total',
     higherIsBetter: true,
     usesMinimumSample: false,

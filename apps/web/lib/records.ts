@@ -262,13 +262,13 @@ export async function loadRecords(): Promise<RecordEntry[]> {
           value: '—',
           holder: null,
           unavailable:
-            'Erlittener Schaden ist noch nicht importiert. Dafür braucht es einen weiteren table()-Durchlauf je Kampf.',
+            'Erlittener Schaden ist noch nicht erfasst.',
         }
       : {
           ...entry(
             'mostDamageTaken',
             'Meister erlittener Schaden',
-            'Summe des erlittenen Schadens über alle importierten Pulls. Gescriptete Sofort-Tode ' +
+            'Summe des erlittenen Schadens über alle erfassten Pulls. Gescriptete Sofort-Tode ' +
               'sind ausgeklammert; siehe Erlittener Schaden.',
             mostDamageTaken,
             amount,
@@ -276,7 +276,7 @@ export async function loadRecords(): Promise<RecordEntry[]> {
           // A partial import must not pass for a finished tally.
           context:
             takenPending > 0
-              ? `vorläufig — ${de(takenImported)} von ${de(takenImported + takenPending)} Pulls importiert`
+              ? `vorläufig — ${de(takenImported)} von ${de(takenImported + takenPending)} Pulls erfasst`
               : null,
         },
     {

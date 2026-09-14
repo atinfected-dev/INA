@@ -131,6 +131,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             Marken von Blizzard Entertainment, Inc. in den USA und/oder anderen Ländern. Diese Seite
             steht in keiner Verbindung zu Blizzard Entertainment.
           </p>
+          <p style={{ margin: '0.6rem 0 0' }}>
+            <a href="/impressum">Impressum</a>
+          </p>
         </footer>
       </body>
     </html>

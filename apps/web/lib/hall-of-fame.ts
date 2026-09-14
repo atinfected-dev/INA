@@ -215,7 +215,7 @@ export async function loadHallOfFame(titles: HallOfFameTitle[]): Promise<HallOfF
           value: null,
           tiedWith: [],
           unit: 'count',
-          unavailable: `Für "${title.metric}" sind noch keine Daten importiert.`,
+          unavailable: 'Dafür liegen noch keine Daten vor.',
         };
       }
 
