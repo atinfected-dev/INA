@@ -1,0 +1,83 @@
+/*
+ * The leaderboard table.
+ *
+ * This is where the Classic look is deliberately held back. Gold appears in the
+ * header, the rank column and on hover — nowhere else. Rows are near-black
+ * zebra stripes. At 500 rows this still scans; a gilded row does not.
+ */
+
+.scroller {
+  overflow-x: auto;
+  /* Tables are the one element allowed to be wider than the page body. */
+  max-width: 100%;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: linear-gradient(180deg, #1a1610 0%, #100d09 100%);
+  color: var(--gold-300);
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: left;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--gold-500);
+  white-space: nowrap;
+}
+
+.table tbody td {
+  padding: 0.42rem 0.75rem;
+  border-bottom: 1px solid rgb(255 255 255 / 4%);
+  vertical-align: middle;
+}
+
+.table tbody tr:nth-child(odd) {
+  background-color: var(--bg-row-odd);
+}
+
+.table tbody tr:hover {
+  background-color: var(--bg-row-hover);
+  box-shadow: inset 2px 0 0 var(--gold-300);
+}
+
+.numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Rank column: narrow, muted, with the top three lifted into gold/silver/bronze. */
+.rank {
+  width: 3.2rem;
+  text-align: right;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.rank1 {
+  color: var(--gold-200);
+  font-weight: 600;
+}
+.rank2 {
+  color: #cfd3d6;
+  font-weight: 600;
+}
+.rank3 {
+  color: #c9884a;
+  font-weight: 600;
+}
+
+.empty {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-muted);
+}

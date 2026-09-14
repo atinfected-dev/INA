@@ -1,0 +1,507 @@
+// INA Analytics — data model
+//
+// Design notes that are easy to get wrong later:
+//
+//  * Warcraft Logs reports are identified by their `code`. That is the unique
+//    key that prevents double imports. `revision` bumps when WCL reprocesses a
+//    log, which is the only reason to re-import one.
+//
+//  * ReportFight.startTime/endTime from the API are offsets in milliseconds
+//    RELATIVE to the report start. Both the offset and the resolved absolute
+//    timestamp are stored: the offset is what the API wants back, the absolute
+//    timestamp is what every report and leaderboard groups by.
+//
+//  * Per-fight performance is stored aggregated (one row per player per pull),
+//    never as raw combat log events. Deaths are the one deliberate exception —
+//    they are low-volume and death causes are impossible without them.
+//
+//  * Expansions, zones, bosses and difficulties are imported from worldData.
+//    Nothing about them is hard-coded, so a new Classic expansion is a sync
+//    run rather than a code change.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+// Prisma 7 takes the connection URL from prisma.config.ts and a driver adapter
+// from the PrismaClient constructor, not from this block.
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Configuration
+// ---------------------------------------------------------------------------
+
+model Guild {
+  id           String   @id @default(cuid())
+  /// Warcraft Logs guild id, filled in on first successful lookup.
+  wclGuildId   Int?     @unique
+  name         String
+  serverSlug   String
+  serverRegion String
+  /// GraphQL host this guild's data lives on, e.g. https://classic.warcraftlogs.com
+  apiHost      String   @default("https://classic.warcraftlogs.com")
+  faction      String?
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  reports  Report[]
+  sessions RaidSession[]
+  syncRuns SyncRun[]
+
+  @@unique([name, serverSlug, serverRegion])
+}
+
+/// Free-form key/value settings so thresholds and labels are editable in the
+/// admin UI instead of living in code. See @ina/core for the known keys.
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  displayName  String?
+  createdAt    DateTime  @default(now())
+  lastLoginAt  DateTime?
+}
+
+// ---------------------------------------------------------------------------
+// Game reference data (imported from worldData)
+// ---------------------------------------------------------------------------
+
+model Expansion {
+  id             String  @id @default(cuid())
+  wclExpansionId Int     @unique
+  name           String
+  slug           String  @unique
+  /// The API exposes no expansion dates; these are derived from report
+  /// timestamps during import and may be adjusted in the admin UI.
+  startDate      DateTime?
+  endDate        DateTime?
+  sortOrder      Int     @default(0)
+
+  zones Zone[]
+}
+
+/// A raid instance (Naxxramas, Ulduar, Siege of Orgrimmar, ...).
+model Zone {
+  id          String  @id @default(cuid())
+  wclZoneId   Int     @unique
+  name        String
+  slug        String  @unique
+  frozen      Boolean @default(false)
+  sortOrder   Int     @default(0)
+  expansionId String
+
+  expansion    Expansion       @relation(fields: [expansionId], references: [id], onDelete: Cascade)
+  encounters   Encounter[]
+  difficulties ZoneDifficulty[]
+  reports      Report[]
+
+  @@index([expansionId])
+}
+
+/// A boss.
+model Encounter {
+  id             String @id @default(cuid())
+  wclEncounterId Int    @unique
+  name           String
+  slug           String
+  journalId      Int?
+  sortOrder      Int    @default(0)
+  zoneId         String
+
+  zone   Zone    @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  fights Fight[]
+
+  @@unique([zoneId, slug])
+  @@index([zoneId])
+}
+
+model Difficulty {
+  id              String @id @default(cuid())
+  wclDifficultyId Int    @unique
+  name            String
+
+  zones  ZoneDifficulty[]
+  fights Fight[]
+}
+
+/// Difficulties are reported per zone, together with the raid sizes they allow.
+model ZoneDifficulty {
+  zoneId       String
+  difficultyId String
+  sizes        Int[]
+
+  zone       Zone       @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  difficulty Difficulty @relation(fields: [difficultyId], references: [id], onDelete: Cascade)
+
+  @@id([zoneId, difficultyId])
+}
+
+// ---------------------------------------------------------------------------
+// Identity: a person plays many characters across the years
+// ---------------------------------------------------------------------------
+
+model Person {
+  id          String   @id @default(cuid())
+  displayName String
+  slug        String   @unique
+  note        String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  characters  Character[]
+  attendance  SessionAttendance[]
+}
+
+model Character {
+  id              String    @id @default(cuid())
+  /// Warcraft Logs character id, when the log exposes one.
+  wclCharacterId  Int?      @unique
+  name            String
+  realmSlug       String
+  region          String
+  /// Class as reported by the logs; null until a fight reveals it.
+  className       String?
+  mainSpec        String?
+  personId        String?
+  firstSeenAt     DateTime?
+  lastSeenAt      DateTime?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  person        Person?               @relation(fields: [personId], references: [id], onDelete: SetNull)
+  nameHistory   CharacterNameHistory[]
+  participation FightParticipant[]
+  performances  FightPerformance[]
+  rankings      ParseRanking[]
+  deaths        DeathEvent[]
+  attendance    SessionAttendance[]
+
+  @@unique([name, realmSlug, region])
+  @@index([personId])
+  @@index([className])
+}
+
+/// Renames and transfers, so a character's history survives a name change.
+model CharacterNameHistory {
+  id          String   @id @default(cuid())
+  characterId String
+  name        String
+  realmSlug   String
+  seenFrom    DateTime
+  seenTo      DateTime
+
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@index([characterId])
+  @@index([name])
+}
+
+// ---------------------------------------------------------------------------
+// Reports and fights
+// ---------------------------------------------------------------------------
+
+enum ImportState {
+  DISCOVERED
+  FIGHTS_IMPORTED
+  ANALYZED
+  FAILED
+}
+
+model Report {
+  id          String      @id @default(cuid())
+  /// Warcraft Logs report code — the unique key that prevents double imports.
+  code        String      @unique
+  guildId     String
+  title       String
+  startTime   DateTime
+  endTime     DateTime
+  /// Bumped by Warcraft Logs when a log is reprocessed; a change triggers re-import.
+  revision    Int         @default(0)
+  visibility  String?
+  ownerName   String?
+  zoneId      String?
+  importState ImportState @default(DISCOVERED)
+  importError String?
+  importedAt  DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  guild    Guild           @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  zone     Zone?           @relation(fields: [zoneId], references: [id], onDelete: SetNull)
+  fights   Fight[]
+  sessions SessionReport[]
+
+  @@index([guildId, startTime])
+  @@index([importState])
+}
+
+model Fight {
+  id           String   @id @default(cuid())
+  reportId     String
+  /// Fight id within the report; unique only together with the report.
+  wclFightId   Int
+  /// 0 means trash. Kept raw so unmatched encounters are still traceable.
+  wclEncounterId Int
+  encounterId  String?
+  difficultyId String?
+  /// Raw difficulty int from the API, kept even when no Difficulty row matches.
+  wclDifficulty Int?
+  size         Int?
+  kill         Boolean?
+  /// Offsets in milliseconds relative to the report start, as the API returns them.
+  startOffsetMs Int
+  endOffsetMs   Int
+  /// Absolute timestamps, resolved as report.startTime + offset.
+  startTime    DateTime
+  endTime      DateTime
+  durationMs   Int
+  bossPercentage   Float?
+  fightPercentage  Float?
+  lastPhase        Int?
+  averageItemLevel Float?
+  hardModeLevel    Int?
+  completeRaid     Boolean @default(false)
+  wipeCalledMs     Int?
+
+  report       Report             @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  encounter    Encounter?         @relation(fields: [encounterId], references: [id], onDelete: SetNull)
+  difficulty   Difficulty?        @relation(fields: [difficultyId], references: [id], onDelete: SetNull)
+  participants FightParticipant[]
+  performances FightPerformance[]
+  rankings     ParseRanking[]
+  deaths       DeathEvent[]
+
+  @@unique([reportId, wclFightId])
+  @@index([encounterId, kill])
+  @@index([startTime])
+}
+
+model FightParticipant {
+  id          String  @id @default(cuid())
+  fightId     String
+  characterId String
+  spec        String?
+  role        String?
+  itemLevel   Int?
+
+  fight     Fight     @relation(fields: [fightId], references: [id], onDelete: Cascade)
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([fightId, characterId])
+  @@index([characterId])
+}
+
+// ---------------------------------------------------------------------------
+// Performance — aggregated per player per pull
+// ---------------------------------------------------------------------------
+
+model FightPerformance {
+  id          String  @id @default(cuid())
+  fightId     String
+  characterId String
+  role        String?
+  spec        String?
+
+  damageDone     BigInt @default(0)
+  bossDamageDone BigInt @default(0)
+  damageTaken    BigInt @default(0)
+  healingDone    BigInt @default(0)
+  overhealing    BigInt @default(0)
+  dps            Float  @default(0)
+  hps            Float  @default(0)
+  deaths         Int    @default(0)
+  interrupts     Int    @default(0)
+  dispels        Int    @default(0)
+  activeTimeMs   Int    @default(0)
+  itemLevel      Int?
+
+  fight     Fight     @relation(fields: [fightId], references: [id], onDelete: Cascade)
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([fightId, characterId])
+  @@index([characterId])
+}
+
+enum ParseMetric {
+  DPS
+  HPS
+}
+
+/// Warcraft Logs only ranks kills, so wipes produce no rows here. The UI states
+/// this explicitly rather than silently showing a smaller sample.
+model ParseRanking {
+  id            String      @id @default(cuid())
+  fightId       String
+  characterId   String
+  metric        ParseMetric
+  /// Percentile against everyone who killed this boss.
+  rankPercent   Float
+  /// Percentile against players in a comparable item level bracket.
+  bracketPercent Float?
+  spec          String?
+  partition     Int?
+
+  fight     Fight     @relation(fields: [fightId], references: [id], onDelete: Cascade)
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([fightId, characterId, metric])
+  @@index([characterId, metric])
+  @@index([rankPercent])
+}
+
+/// One row per death. The cause is null when the log does not identify it —
+/// never guessed.
+model DeathEvent {
+  id          String  @id @default(cuid())
+  fightId     String
+  characterId String
+  /// Offset in milliseconds relative to the report start.
+  timestampMs Int
+  abilityId   Int?
+  abilityName String?
+  sourceName  String?
+
+  fight     Fight     @relation(fields: [fightId], references: [id], onDelete: Cascade)
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@index([characterId])
+  @@index([fightId])
+  @@index([abilityId])
+}
+
+// ---------------------------------------------------------------------------
+// Raid nights and attendance
+// ---------------------------------------------------------------------------
+
+/// One raid night. May span several reports if the raid leader split the log.
+model RaidSession {
+  id         String   @id @default(cuid())
+  guildId    String
+  date       DateTime @db.Date
+  startTime  DateTime
+  endTime    DateTime
+  durationMs Int
+
+  guild      Guild               @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  reports    SessionReport[]
+  attendance SessionAttendance[]
+
+  @@unique([guildId, startTime])
+  @@index([guildId, date])
+}
+
+model SessionReport {
+  sessionId String
+  reportId  String
+
+  session RaidSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  report  Report      @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@id([sessionId, reportId])
+}
+
+model SessionAttendance {
+  id          String  @id @default(cuid())
+  sessionId   String
+  characterId String
+  personId    String?
+  /// Summed fight time the character actually took part in.
+  activeMs    Int
+  /// activeMs as a share of the session duration, 0..1.
+  participation Float
+  /// Result of applying the configured threshold to activeMs/participation.
+  isPresent   Boolean
+
+  session   RaidSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  character Character   @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  person    Person?     @relation(fields: [personId], references: [id], onDelete: SetNull)
+
+  @@unique([sessionId, characterId])
+  @@index([personId])
+}
+
+// ---------------------------------------------------------------------------
+// Aggregates that back the leaderboards
+// ---------------------------------------------------------------------------
+
+enum SubjectType {
+  PERSON
+  CHARACTER
+}
+
+enum ScopeType {
+  ALL
+  EXPANSION
+  ZONE
+  ENCOUNTER
+}
+
+/// One row per subject per metric per scope. `sampleSize` is always carried
+/// alongside the value and is shown in the UI, which is what makes the
+/// minimum-sample rankings honest instead of a hidden filter.
+model AggregateStat {
+  id          String      @id @default(cuid())
+  subjectType SubjectType
+  subjectId   String
+  scopeType   ScopeType
+  /// Null for ScopeType.ALL; otherwise the Expansion/Zone/Encounter id.
+  scopeId     String?
+  /// Null means "all difficulties".
+  difficultyId String?
+  /// Metric key; the allowed values are defined in @ina/core so new statistics
+  /// do not require a migration.
+  metric      String
+  value       Float
+  sampleSize  Int         @default(0)
+  computedAt  DateTime    @default(now())
+
+  @@unique([subjectType, subjectId, scopeType, scopeId, difficultyId, metric])
+  @@index([metric, scopeType, scopeId, value])
+  @@index([subjectType, subjectId])
+}
+
+// ---------------------------------------------------------------------------
+// Sync bookkeeping
+// ---------------------------------------------------------------------------
+
+enum SyncType {
+  FULL
+  INCREMENTAL
+}
+
+enum SyncStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model SyncRun {
+  id          String     @id @default(cuid())
+  guildId     String
+  type        SyncType
+  status      SyncStatus @default(RUNNING)
+  startedAt   DateTime   @default(now())
+  finishedAt  DateTime?
+  newReports  Int        @default(0)
+  newFights   Int        @default(0)
+  /// Warcraft Logs meters usage in fractional points, hence Float.
+  pointsSpent Float      @default(0)
+  error       String?
+
+  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@index([guildId, startedAt])
+}

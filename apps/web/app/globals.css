@@ -1,0 +1,143 @@
+/*
+ * INA Analytics — design tokens.
+ *
+ * Look: WoW Classic UI, faction-neutral, gold on black.
+ *
+ * The rule that keeps this usable: ornament belongs to the FRAME, never to the
+ * CONTENT. A gilded border around a 500-row leaderboard still reads; gilding
+ * the rows themselves does not. Showcase pages (Hall of Fame, Records) may go
+ * further; working pages stay calm.
+ *
+ * No Blizzard artwork is used anywhere. Every ornament is drawn in CSS/SVG.
+ */
+
+:root {
+  /* --- Ground ------------------------------------------------------------ */
+  --ink-900: #08070500; /* transparent variant for gradient stops */
+  --bg-base: #0a0907;
+  --bg-sunken: #060504;
+  --bg-panel: #15120d;
+  --bg-panel-raised: #1d1913;
+  --bg-row-odd: #100e0a;
+  --bg-row-hover: #211c14;
+
+  /* --- Gold -------------------------------------------------------------- */
+  --gold-100: #f6e6b4;
+  --gold-200: #e5cc80;
+  --gold-300: #c8aa6e;
+  --gold-400: #9c7f47;
+  --gold-500: #6b552e;
+  --gold-600: #43351c;
+  --gold-700: #2a2112;
+
+  /* --- Text -------------------------------------------------------------- */
+  --text-primary: #e8e0cf;
+  --text-secondary: #a89c84;
+  --text-muted: #6f6753;
+  --text-heading: var(--gold-200);
+
+  /* --- Feedback ---------------------------------------------------------- */
+  --ok: #4caf50;
+  --warn: #d9a441;
+  --danger: #c8402f;
+  --info: #4a90d9;
+
+  /* --- Item quality (also used for parse brackets) ----------------------- */
+  --q-poor: #9d9d9d;
+  --q-common: #ffffff;
+  --q-uncommon: #1eff00;
+  --q-rare: #0070dd;
+  --q-epic: #a335ee;
+  --q-legendary: #ff8000;
+  --q-artifact: #e5cc80;
+  /* Warcraft Logs uses pink for a 99th percentile parse. */
+  --q-astounding: #e268a8;
+
+  /* --- Class colours (Blizzard's published values) ----------------------- */
+  --class-death-knight: #c41e3a;
+  --class-druid: #ff7c0a;
+  --class-hunter: #aad372;
+  --class-mage: #3fc7eb;
+  --class-monk: #00ff98;
+  --class-paladin: #f48cba;
+  --class-priest: #ffffff;
+  --class-rogue: #fff468;
+  --class-shaman: #0070dd;
+  --class-warlock: #8788ee;
+  --class-warrior: #c69b6d;
+
+  /* --- Structure --------------------------------------------------------- */
+  --radius: 2px;
+  --frame-gap: 3px;
+  --shadow-panel: 0 2px 18px rgb(0 0 0 / 70%);
+  --shadow-inset: inset 0 0 32px rgb(0 0 0 / 65%);
+  --content-max: 1320px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--bg-base);
+  /* A faint warm vignette so the black does not read as flat CSS default. */
+  background-image:
+    radial-gradient(ellipse 120% 80% at 50% -10%, rgb(120 92 40 / 14%), transparent 60%),
+    radial-gradient(ellipse 90% 60% at 50% 110%, rgb(80 60 25 / 10%), transparent 60%);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  font-family: var(--font-body), 'Segoe UI', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display), 'Palatino Linotype', Georgia, serif;
+  font-weight: 400;
+  color: var(--text-heading);
+  letter-spacing: 0.02em;
+  margin: 0;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 80%);
+}
+
+h1 {
+  font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.4rem);
+}
+h2 {
+  font-size: clamp(1.25rem, 1.05rem + 0.9vw, 1.6rem);
+}
+h3 {
+  font-size: 1.1rem;
+}
+
+a {
+  color: var(--gold-200);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--gold-100);
+  text-decoration: underline;
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold-200);
+  outline-offset: 2px;
+}
+
+/* Tabular figures everywhere numbers are compared down a column. */
+.numeric {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}

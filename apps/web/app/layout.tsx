@@ -1,0 +1,75 @@
+import type { Metadata } from 'next';
+import { Marcellus, Inter } from 'next/font/google';
+import './globals.css';
+import styles from './shell.module.css';
+
+/*
+ * Friz Quadrata, WoW's display face, is licensed and not redistributable.
+ * Marcellus is a freely licensed glyphic serif with the same Roman-inscription
+ * character, which is what carries the look.
+ */
+const display = Marcellus({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-display',
+  display: 'swap',
+});
+
+const body = Inter({
+  subsets: ['latin'],
+  variable: '--font-body',
+  display: 'swap',
+});
+
+export const metadata: Metadata = {
+  title: {
+    default: 'INA Analytics',
+    template: '%s — INA Analytics',
+  },
+  description:
+    'Gilden-Statistiken und Ranglisten über alle Classic-Erweiterungen, auf Basis der Warcraft-Logs-API.',
+};
+
+const NAV = [
+  { href: '/', label: 'Übersicht' },
+  { href: '/leaderboards', label: 'Ranglisten' },
+  { href: '/records', label: 'Rekorde' },
+  { href: '/hall-of-fame', label: 'Hall of Fame' },
+  { href: '/players', label: 'Spieler' },
+  { href: '/raids', label: 'Raids' },
+] as const;
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="de" className={`${display.variable} ${body.variable}`}>
+      <body>
+        <header className={styles.masthead}>
+          <div className={styles.mastheadInner}>
+            <a href="/" className={styles.brand}>
+              <span className={styles.brandMark} aria-hidden="true" />
+              <span>
+                <span className={styles.brandName}>INA Analytics</span>
+                <span className={styles.brandTag}>Gilden-Historie seit Wrath of the Lich King</span>
+              </span>
+            </a>
+            <nav className={styles.nav} aria-label="Hauptnavigation">
+              {NAV.map((item) => (
+                <a key={item.href} href={item.href} className={styles.navLink}>
+                  {item.label}
+                </a>
+              ))}
+            </nav>
+          </div>
+          <div className={styles.mastheadRule} aria-hidden="true" />
+        </header>
+
+        <main className={styles.main}>{children}</main>
+
+        <footer className={styles.footer}>
+          Daten über die offizielle Warcraft-Logs-API v2. Kein Spielmaterial von Blizzard
+          Entertainment wird verwendet.
+        </footer>
+      </body>
+    </html>
+  );
+}

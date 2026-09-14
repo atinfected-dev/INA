@@ -1,0 +1,121 @@
+/*
+ * The ornate frame: a layered gold border with corner fittings, drawn entirely
+ * in CSS so it scales, themes and costs no image request.
+ *
+ * Structure, outside in:
+ *   .frame      thin dark outer keyline
+ *   ::before    the gold bevel (a gradient, so the light reads as coming from above)
+ *   .inner      black fassung + panel ground
+ *   .corner     four filigree fittings, inline SVG masks
+ */
+
+.frame {
+  position: relative;
+  background: linear-gradient(
+    160deg,
+    var(--gold-300) 0%,
+    var(--gold-500) 22%,
+    var(--gold-600) 50%,
+    var(--gold-500) 78%,
+    var(--gold-300) 100%
+  );
+  padding: 2px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-panel);
+}
+
+/* A darker keyline outside the gold so the frame separates from the page. */
+.frame::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 1px solid #000;
+  border-radius: calc(var(--radius) + 1px);
+  pointer-events: none;
+}
+
+.inner {
+  position: relative;
+  background:
+    linear-gradient(180deg, var(--bg-panel-raised) 0%, var(--bg-panel) 45%, var(--bg-sunken) 100%);
+  border: 1px solid #000;
+  border-radius: 1px;
+  box-shadow: var(--shadow-inset);
+}
+
+/* --- Corner fittings ------------------------------------------------------ */
+
+.corner {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+  background: linear-gradient(135deg, var(--gold-100), var(--gold-300) 45%, var(--gold-500));
+  /* A simple filigree: diagonal spur with a dot, mirrored per corner. */
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'><path d='M0 0h18v3H6a3 3 0 0 0-3 3v12H0z' fill='black'/><circle cx='9.5' cy='9.5' r='2.2' fill='black'/></svg>");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+}
+
+.cornerTopLeft {
+  top: -1px;
+  left: -1px;
+}
+.cornerTopRight {
+  top: -1px;
+  right: -1px;
+  transform: scaleX(-1);
+}
+.cornerBottomLeft {
+  bottom: -1px;
+  left: -1px;
+  transform: scaleY(-1);
+}
+.cornerBottomRight {
+  bottom: -1px;
+  right: -1px;
+  transform: scale(-1);
+}
+
+/* --- Header and body ------------------------------------------------------ */
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 1.1rem 0.7rem;
+  border-bottom: 1px solid var(--gold-700);
+  background: linear-gradient(180deg, rgb(200 170 110 / 9%), transparent);
+}
+
+.title {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.05rem;
+  color: var(--gold-200);
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 2px #000;
+}
+
+.subtitle {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.body {
+  padding: 1.1rem;
+}
+
+.bodyFlush {
+  padding: 0;
+}
+
+/* --- Plain panel: same ground, no gold. For dense working surfaces. ------- */
+
+.plain {
+  background: linear-gradient(180deg, var(--bg-panel) 0%, var(--bg-sunken) 100%);
+  border: 1px solid var(--gold-700);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-panel);
+}

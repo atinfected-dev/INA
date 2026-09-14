@@ -1,0 +1,28 @@
+node_modules/
+.pnpm-store/
+dist/
+build/
+.next/
+out/
+coverage/
+
+# Env & secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Codegen output (regenerated from the committed schema.graphql)
+packages/wcl/src/generated/
+
+*.log
+.DS_Store
+Thumbs.db
+.turbo/
+
+# Prisma client generated from schema.prisma
+packages/db/src/generated/
+
+# Next.js writes these for AI agents on dev start
+apps/web/AGENTS.md
+apps/web/CLAUDE.md
+*.tsbuildinfo

@@ -1,0 +1,18 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# Install scripts are blocked by default, so a transitive dependency cannot
+# execute code at install time. Only the packages listed here may run one.
+allowBuilds:
+  # Prisma needs its postinstall to generate the client and fetch engines.
+  prisma: true
+  '@prisma/client': true
+  '@prisma/engines': true
+  # esbuild ships prebuilt binaries as optional deps; its script is only a
+  # sanity check and is not required.
+  esbuild: false
+  # Optional native accelerators pulled in by Prisma tooling. Both fall back to
+  # a pure-JS path, so skipping their install scripts is safe.
+  msgpackr-extract: false
+  workerd: false

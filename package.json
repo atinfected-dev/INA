@@ -1,0 +1,29 @@
+{
+  "name": "ina-analytics",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@12.4.1",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @ina/web run dev",
+    "dev:worker": "pnpm --filter @ina/worker run dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "db:generate": "pnpm --filter @ina/db run generate",
+    "db:migrate": "pnpm --filter @ina/db run migrate",
+    "db:studio": "pnpm --filter @ina/db run studio",
+    "wcl:introspect": "pnpm --filter @ina/wcl run introspect",
+    "wcl:ping": "pnpm --filter @ina/wcl run check",
+    "codegen": "pnpm --filter @ina/wcl run codegen"
+  },
+  "devDependencies": {
+    "@types/node": "^26.5.1",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.0"
+  }
+}

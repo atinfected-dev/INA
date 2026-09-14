@@ -1,0 +1,28 @@
+# Development stack: just the database.
+#
+# The web and worker containers are added in M7 together with the production
+# compose file; running them here would only slow down the edit/reload loop.
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: ina-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ina
+      POSTGRES_PASSWORD: ina
+      POSTGRES_DB: ina
+      # Deterministic collation, so ORDER BY on player names does not depend on
+      # the host locale.
+      POSTGRES_INITDB_ARGS: '--locale=C --encoding=UTF8'
+    ports:
+      - '5432:5432'
+    volumes:
+      - ina-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ina -d ina']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  ina-postgres-data:
