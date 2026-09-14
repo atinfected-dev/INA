@@ -19,6 +19,23 @@ export {
   isScriptedDamage,
   type DamageTakenMetricKey,
 } from './damage';
+export {
+  ACHIEVEMENTS,
+  ACHIEVEMENT_CATEGORIES,
+  TIER_LABELS,
+  TIER_ORDER,
+  UNAWARDED_ACHIEVEMENTS,
+  evaluate,
+  evaluateAll,
+  rarityLabel,
+  type AchievementCategory,
+  type AchievementDefinition,
+  type AchievementRarity,
+  type AchievementTier,
+  type EarnedAchievement,
+  type MetricKey,
+  type SubjectMetrics,
+} from './achievements';
 export { slugify } from './slug';
 export { hashPassword, verifyPassword } from './password';
 export {

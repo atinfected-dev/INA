@@ -2,6 +2,10 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { ClaimStatus } from '@ina/db';
 import { OrnateFrame, Panel } from '../../components/ui/frame';
+import { PinForm, type PinOption } from '../../components/achievements/pin-form';
+import { MAX_PINNED, loadAchievementsForCharacter } from '../../lib/achievements';
+import { savePinsAction } from './actions';
+import { prisma } from '@ina/db';
 import { ClassName, Divider } from '../../components/ui/bits';
 import { ClaimForm } from '../../components/auth/forms';
 import { getViewer } from '../../lib/auth';
@@ -39,6 +43,24 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   ]);
 
   const approved = claims.filter((claim) => claim.status === ClaimStatus.APPROVED);
+
+  // Pins are offered through one of the member's own characters, because the
+  // achievements themselves belong to the person behind all of them.
+  const firstCharacter = approved[0]?.character.name;
+  const standing = firstCharacter ? await loadAchievementsForCharacter(firstCharacter) : null;
+  const account = await prisma.account.findUnique({
+    where: { id: viewer.id },
+    select: { pinnedAchievements: true },
+  });
+
+  const pinOptions: PinOption[] = (standing?.earned ?? [])
+    .filter((entry) => entry.tier !== null)
+    .map((entry) => ({
+      id: entry.definition.id,
+      name: entry.definition.name,
+      tier: entry.tier!,
+      share: entry.share,
+    }));
 
   return (
     <>
@@ -102,6 +124,30 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
               </li>
             ))}
           </ul>
+        )}
+      </Panel>
+
+      <Divider label="Angepinnte Erfolge" />
+
+      <Panel
+        title="Profil-Auswahl"
+        subtitle={`Bis zu ${MAX_PINNED} Erfolge stehen oben auf deinem Profil`}
+      >
+        {approved.length === 0 ? (
+          <p style={{ margin: 0, color: 'var(--text-muted)' }}>
+            Erst einen Charakter beanspruchen — danach lassen sich Erfolge anpinnen.
+          </p>
+        ) : pinOptions.length === 0 ? (
+          <p style={{ margin: 0, color: 'var(--text-muted)' }}>
+            Noch keine Erfolge errungen. Die Schwellen stehen unter <a href="/erfolge">Erfolge</a>.
+          </p>
+        ) : (
+          <PinForm
+            action={savePinsAction}
+            options={pinOptions}
+            selected={account?.pinnedAchievements ?? []}
+            max={MAX_PINNED}
+          />
         )}
       </Panel>
 

@@ -11,6 +11,13 @@ import {
 } from '../../../lib/players';
 import { classVar, formatAmount, formatDuration, formatNumber } from '../../../lib/wow';
 import { getViewer } from '../../../lib/auth';
+import { AchievementCard } from '../../../components/achievements/card';
+import {
+  applyPins,
+  findAccountForSubject,
+  loadAchievementsForCharacter,
+} from '../../../lib/achievements';
+import achievementStyles from '../../erfolge/achievements.module.css';
 import styles from '../../leaderboards/leaderboards.module.css';
 
 export const revalidate = 900;
@@ -140,6 +147,18 @@ export default async function PlayerProfilePage({
   const { totals, parses } = profile;
   const deathsPerPull = totals.pulls === 0 ? 0 : totals.deaths / totals.pulls;
 
+  // Achievements are person-wide, so they are looked up through the subject
+  // rather than through this one character.
+  const achievements = await loadAchievementsForCharacter(chosen.name);
+  const account = achievements
+    ? await findAccountForSubject(achievements.subject.subjectId)
+    : null;
+  const split = achievements
+    ? applyPins(achievements.earned, account?.pinnedAchievements ?? [])
+    : { pinned: [], rest: [] };
+  const pinnedAchievements = split.pinned;
+  const restAchievements = split.rest;
+
   const deathColumns: readonly Column<DeathCauseLine>[] = [
     {
       key: 'ability',
@@ -235,6 +254,77 @@ export default async function PlayerProfilePage({
               )}
             </div>
           </Panel>
+        </>
+      )}
+
+      {achievements && (
+        <>
+          <Divider label="Erfolge" />
+          {pinnedAchievements.length > 0 && (
+            <Panel
+              title="Angepinnt"
+              subtitle="Selbst ausgewählt"
+            >
+              <div className={achievementStyles.grid}>
+                {pinnedAchievements.map((entry) => (
+                  <AchievementCard
+                    key={entry.definition.id}
+                    definition={entry.definition}
+                    byTier={entry.byTier}
+                    eligible={achievements.eligible}
+                    tier={entry.tier}
+                    value={entry.value}
+                    nextThreshold={entry.nextThreshold}
+                  />
+                ))}
+              </div>
+            </Panel>
+          )}
+
+          <Panel
+            title="Errungen"
+            subtitle={`${de(achievements.earned.length)} von ${de(
+              achievements.earned.length + achievements.open.length,
+            )} · seltenste zuerst`}
+          >
+            {achievements.earned.length === 0 ? (
+              <p style={{ margin: 0, color: 'var(--text-muted)' }}>
+                Noch nichts errungen. Die Schwellen stehen unter <a href="/erfolge">Erfolge</a>.
+              </p>
+            ) : (
+              <div className={achievementStyles.grid}>
+                {restAchievements.slice(0, 9).map((entry) => (
+                  <AchievementCard
+                    key={entry.definition.id}
+                    definition={entry.definition}
+                    byTier={entry.byTier}
+                    eligible={achievements.eligible}
+                    tier={entry.tier}
+                    value={entry.value}
+                    nextThreshold={entry.nextThreshold}
+                  />
+                ))}
+              </div>
+            )}
+          </Panel>
+
+          {achievements.open.length > 0 && (
+            <Panel title="Als Nächstes" subtitle="Am dichtesten an der ersten Stufe">
+              <div className={achievementStyles.grid}>
+                {achievements.open.slice(0, 3).map((entry) => (
+                  <AchievementCard
+                    key={entry.definition.id}
+                    definition={entry.definition}
+                    byTier={entry.byTier}
+                    eligible={achievements.eligible}
+                    tier={null}
+                    value={entry.value}
+                    nextThreshold={entry.nextThreshold}
+                  />
+                ))}
+              </div>
+            </Panel>
+          )}
         </>
       )}
 

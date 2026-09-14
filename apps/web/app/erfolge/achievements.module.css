@@ -1,0 +1,120 @@
+/* Achievement cards.
+ *
+ * Deliberately quieter than the Hall of Fame: there are forty of these on one
+ * page, and forty ornate frames is wallpaper, not a list. The gold is spent on
+ * the tier a subject actually holds. */
+
+.grid {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+}
+
+.card {
+  border: 1px solid var(--gold-700);
+  background: var(--bg-panel-raised);
+  padding: 0.85rem 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cardEarned {
+  composes: card;
+  border-color: var(--gold-400);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 60%);
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.name {
+  font-family: var(--font-display), serif;
+  font-size: 1rem;
+  color: var(--gold-200);
+  margin: 0;
+}
+
+.description {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+/* Tier pips: every step of the ladder, so the card shows what is left. */
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.step {
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  padding: 0.12rem 0.42rem;
+  border: 1px solid var(--gold-700);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.stepReached {
+  composes: step;
+  border-color: currentColor;
+}
+
+.bronze {
+  color: #b87333;
+}
+.silver {
+  color: #c9d1d9;
+}
+.gold {
+  color: var(--gold-300);
+}
+.platinum {
+  color: #9fd4e8;
+}
+.diamond {
+  color: #b39ddb;
+}
+
+.rarity {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.rarityRare {
+  composes: rarity;
+  color: var(--q-artifact);
+}
+
+.progress {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.unavailable {
+  border-left: 2px solid var(--gold-700);
+  padding-left: 0.8rem;
+  margin: 0 0 0.9rem;
+}
+
+.unavailable strong {
+  color: var(--gold-200);
+  font-family: var(--font-display), serif;
+  font-weight: normal;
+}
+
+.unavailable p {
+  margin: 0.2rem 0 0;
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}

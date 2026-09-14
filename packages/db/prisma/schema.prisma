@@ -80,6 +80,8 @@ model Account {
   isAdmin      Boolean  @default(false)
   isActive     Boolean  @default(true)
   personId     String?  @unique
+  /// Achievement ids pinned to the profile, in display order, at most six.
+  pinnedAchievements String[] @default([])
   createdAt    DateTime @default(now())
   lastLoginAt  DateTime?
 

@@ -1,0 +1,70 @@
+.grid {
+  display: grid;
+  gap: 0.4rem;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  margin-bottom: 0.9rem;
+}
+
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid var(--gold-700);
+  background: var(--bg-panel-raised);
+  cursor: pointer;
+  font-size: 0.86rem;
+}
+
+.option[data-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.optionActive {
+  composes: option;
+  border-color: var(--gold-400);
+}
+
+.option strong,
+.optionActive strong {
+  display: block;
+  font-weight: normal;
+  color: var(--text-primary);
+}
+
+.meta {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.counter {
+  margin: 0 0 0.6rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.submit {
+  font: inherit;
+  padding: 0.4rem 1.1rem;
+  border: 1px solid var(--gold-400);
+  background: var(--bg-panel-raised);
+  color: var(--gold-200);
+  cursor: pointer;
+}
+
+.submit:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.error {
+  color: var(--danger);
+  margin: 0 0 0.6rem;
+}
+
+.notice {
+  color: var(--ok);
+  margin: 0 0 0.6rem;
+}

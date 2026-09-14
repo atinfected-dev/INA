@@ -1,6 +1,9 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { prisma } from '@ina/db';
+import { ACHIEVEMENTS } from '@ina/core';
+import { MAX_PINNED } from '../../lib/achievements';
 import { revalidatePath } from 'next/cache';
 import { AuthError, createSession, destroySession, getViewer, login, register, requireAdmin } from '../../lib/auth';
 import { ClaimError, approveClaim, rejectClaim, requestClaim, revokeClaim } from '../../lib/claims';
@@ -98,4 +101,36 @@ export async function decideClaimAction(_prev: FormState, formData: FormData): P
   revalidatePath('/admin/claims');
   revalidatePath('/konto');
   return { notice: 'Gespeichert.' };
+}
+
+/**
+ * Pins up to six achievements to the member's own profile.
+ *
+ * Only the signed-in account's own pins, and only achievements that exist —
+ * the id list comes from a form, so it is treated as input, not as truth.
+ */
+export async function savePinsAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const viewer = await getViewer();
+  if (!viewer) return { error: 'Bitte zuerst anmelden.' };
+
+  const known = new Set(ACHIEVEMENTS.map((entry) => entry.id));
+  const chosen = formData
+    .getAll('pinned')
+    .map(String)
+    .filter((id) => known.has(id))
+    .slice(0, MAX_PINNED);
+
+  await prisma.account.update({
+    where: { id: viewer.id },
+    data: { pinnedAchievements: chosen },
+  });
+
+  revalidatePath('/konto');
+  revalidatePath('/players', 'layout');
+  return {
+    notice:
+      chosen.length === 0
+        ? 'Angepinnte Erfolge entfernt.'
+        : `${chosen.length} Erfolg${chosen.length === 1 ? '' : 'e'} angepinnt.`,
+  };
 }
