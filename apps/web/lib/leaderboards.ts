@@ -103,6 +103,15 @@ export async function loadParseLeaderboard(
       SELECT character_id, encounter_id, difficulty_id, MAX(rank_percent) AS best_parse
       FROM kills
       GROUP BY character_id, encounter_id, difficulty_id
+    ),
+    -- Rolled up per player before the join. A correlated subquery per output
+    -- row instead cost about four seconds on this dataset.
+    per_boss_agg AS (
+      SELECT character_id,
+             COUNT(*)        AS boss_count,
+             AVG(best_parse) AS best_per_boss_mean
+      FROM per_boss
+      GROUP BY character_id
     )
     SELECT k.character_id   AS "characterId",
            k.character_name AS "name",
@@ -110,9 +119,9 @@ export async function loadParseLeaderboard(
            k.realm_name     AS "realmName",
            k.person_id      AS "personId",
            k.person_name    AS "personName",
-           COUNT(*)                                                     AS sample_size,
-           (SELECT COUNT(*) FROM per_boss b WHERE b.character_id = k.character_id)     AS boss_count,
-           (SELECT AVG(b.best_parse) FROM per_boss b WHERE b.character_id = k.character_id) AS best_per_boss_mean,
+           COUNT(*)                AS sample_size,
+           MAX(a.boss_count)       AS boss_count,
+           MAX(a.best_per_boss_mean) AS best_per_boss_mean,
            MAX(k.rank_percent)                                          AS best,
            AVG(k.rank_percent)                                          AS mean,
            PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY k.rank_percent)  AS median,
@@ -123,6 +132,7 @@ export async function loadParseLeaderboard(
            COUNT(*) FILTER (WHERE k.rank_percent >= 90)  AS c90,
            COUNT(*) FILTER (WHERE k.rank_percent >= 80)  AS c80
     FROM kills k
+    JOIN per_boss_agg a ON a.character_id = k.character_id
     GROUP BY k.character_id, k.character_name, k.class_name, k.realm_name,
              k.person_id, k.person_name
   `;

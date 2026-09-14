@@ -33,6 +33,7 @@ export const metadata: Metadata = {
 const NAV = [
   { href: '/', label: 'Übersicht' },
   { href: '/leaderboards', label: 'Ranglisten' },
+  { href: '/deaths', label: 'Tode' },
   { href: '/records', label: 'Rekorde' },
   { href: '/hall-of-fame', label: 'Hall of Fame' },
   { href: '/players', label: 'Spieler' },
