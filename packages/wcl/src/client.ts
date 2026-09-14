@@ -51,6 +51,25 @@ export class WclClient {
   readonly #sleep: (ms: number) => Promise<void>;
   readonly #onRateLimit: ((snapshot: RateLimitSnapshot) => void) | undefined;
 
+  /** Upper bound for any single retry sleep. */
+  static readonly MAX_BACKOFF_MS = 30_000;
+  /**
+   * How long a budget snapshot may be trusted.
+   *
+   * Short on purpose: a report costs roughly 45 points, so at one report every
+   * few seconds a 60-second-old snapshot can be several hundred points behind
+   * reality — enough to blow through the reserve and earn a 429.
+   */
+  static readonly BUDGET_MAX_AGE_MS = 15_000;
+  /**
+   * How long to wait before re-checking an exhausted budget.
+   *
+   * When the budget is gone, Warcraft Logs refuses the rateLimitData query
+   * itself with a 429, so there is no way to read how long the reset still
+   * takes. Polling at a fixed interval is the only honest option.
+   */
+  static readonly BUDGET_RECHECK_MS = 300_000;
+
   #budget: RateLimitSnapshot | undefined;
   /** Shared gate so parallel callers pause together rather than each re-checking. */
   #budgetCheck: Promise<void> | undefined;
@@ -78,11 +97,20 @@ export class WclClient {
     return this.#execute<TResult>(source, variables as Record<string, unknown> | undefined, true);
   }
 
-  /** Reads the current point budget. Cheap, and itself subject to the budget. */
+  /**
+   * Reads the current point budget.
+   *
+   * Throws WclHttpError(429) when the budget is exhausted — Warcraft Logs
+   * refuses this query too in that state.
+   */
   async getRateLimit(): Promise<RateLimitSnapshot> {
+    return this.#readRateLimit(this.#maxAttempts);
+  }
+
+  async #readRateLimit(attempts: number): Promise<RateLimitSnapshot> {
     const data = await this.#execute<{
       rateLimitData: { limitPerHour: number; pointsSpentThisHour: number; pointsResetIn: number };
-    }>(RATE_LIMIT_QUERY, undefined, false);
+    }>(RATE_LIMIT_QUERY, undefined, false, attempts);
 
     const snapshot: RateLimitSnapshot = {
       limitPerHour: data.rateLimitData.limitPerHour,
@@ -109,7 +137,32 @@ export class WclClient {
   async #checkBudget(): Promise<void> {
     for (;;) {
       let snapshot = this.#budget;
-      if (!snapshot || isStale(snapshot)) snapshot = await this.getRateLimit();
+
+      if (!snapshot || isStale(snapshot, WclClient.BUDGET_MAX_AGE_MS)) {
+        try {
+          snapshot = await this.#readRateLimit(1);
+        } catch (error) {
+          // An exhausted budget makes even the meter return 429. There is then
+          // no reset time to read, so poll at a fixed interval instead of
+          // guessing one.
+          if (!(error instanceof WclHttpError) || error.status !== 429) throw error;
+
+          const exhausted: RateLimitSnapshot = {
+            limitPerHour: this.#budget?.limitPerHour ?? 0,
+            pointsSpentThisHour: this.#budget?.limitPerHour ?? 0,
+            pointsResetIn: Math.round(WclClient.BUDGET_RECHECK_MS / 1000),
+            observedAt: Date.now(),
+          };
+          this.#onRateLimit?.(exhausted);
+          if (!this.#waitForReset) {
+            throw new WclRateLimitError(Math.round(WclClient.BUDGET_RECHECK_MS / 1000));
+          }
+
+          this.#budget = undefined;
+          await this.#sleep(WclClient.BUDGET_RECHECK_MS);
+          continue;
+        }
+      }
 
       if (remainingPoints(snapshot) > this.#config.pointReserve) return;
 
@@ -131,21 +184,26 @@ export class WclClient {
     source: string,
     variables: Record<string, unknown> | undefined,
     enforceBudget: boolean,
+    attempts: number = this.#maxAttempts,
   ): Promise<TResult> {
     let lastError: unknown;
 
-    for (let attempt = 1; attempt <= this.#maxAttempts; attempt += 1) {
+    for (let attempt = 1; attempt <= attempts; attempt += 1) {
       if (enforceBudget) await this.#ensureBudget();
 
       try {
         return await this.#semaphore.run(() => this.#send<TResult>(source, variables));
       } catch (error) {
         lastError = error;
-        if (!this.#isRetryable(error) || attempt === this.#maxAttempts) throw error;
+        if (!this.#isRetryable(error) || attempt === attempts) throw error;
 
         // A 401 usually means the cached token expired early; drop it so the
         // next attempt fetches a fresh one.
         if (error instanceof WclHttpError && error.status === 401) this.#tokens.invalidate();
+
+        // A 429 means the budget ran out between snapshots. Discard the stale
+        // snapshot so the next budget check re-reads it and waits visibly.
+        if (error instanceof WclHttpError && error.status === 429) this.#budget = undefined;
 
         await this.#sleep(this.#backoffMs(attempt, error));
       }
@@ -196,12 +254,19 @@ export class WclClient {
     return error instanceof TypeError;
   }
 
-  /** Exponential backoff with jitter; honours Retry-After when the API sends it. */
+  /**
+   * Exponential backoff with jitter.
+   *
+   * Retry-After is taken as a hint but capped: Warcraft Logs answers an
+   * exhausted point budget with a Retry-After of up to an hour, and sleeping
+   * that long inside a retry makes the process look dead. Waiting out an
+   * exhausted budget is the budget check's job — it reports what it is doing.
+   */
   #backoffMs(attempt: number, error: unknown): number {
     if (error instanceof WclHttpError && error.retryAfterSeconds !== undefined) {
-      return error.retryAfterSeconds * 1000;
+      return Math.min(WclClient.MAX_BACKOFF_MS, error.retryAfterSeconds * 1000);
     }
-    const base = Math.min(30_000, 500 * 2 ** (attempt - 1));
+    const base = Math.min(WclClient.MAX_BACKOFF_MS, 500 * 2 ** (attempt - 1));
     return base + Math.random() * 250;
   }
 }

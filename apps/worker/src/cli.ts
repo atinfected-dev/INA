@@ -299,8 +299,22 @@ Nicht gefunden: "${name}" auf ${serverSlug} (${serverRegion}).`);
  */
 async function runAnalyze(limit: number | undefined, force: boolean): Promise<void> {
   const guild = await requireGuild(guildArg());
-  const client = new WclClient();
-  const before = await client.getRateLimit();
+
+  // A full backfill outlives several hourly budgets. Report every pause, or the
+  // process looks hung for up to an hour at a time.
+  let pauses = 0;
+  const client = new WclClient({
+    onRateLimit: (snapshot) => {
+      pauses += 1;
+      const until = new Date(Date.now() + snapshot.pointsResetIn * 1000);
+      console.log(
+        `  ⏸  Punktebudget erschöpft — warte bis ${until.toLocaleTimeString('de-DE')} ` +
+          `(${Math.round(snapshot.pointsResetIn / 60)} min)`,
+      );
+    },
+  });
+
+  const before = await client.getRateLimit().catch(() => null);
   const started = Date.now();
 
   const pending = await prisma.report.findMany({
@@ -347,7 +361,7 @@ async function runAnalyze(limit: number | undefined, force: boolean): Promise<vo
     }
   }
 
-  const after = await client.getRateLimit();
+  const after = await client.getRateLimit().catch(() => null);
   console.log(`
   Kills analysiert  ${fights}`);
   console.log(`  Parses            ${parses}`);
@@ -357,10 +371,12 @@ async function runAnalyze(limit: number | undefined, force: boolean): Promise<vo
   if (unresolved.size > 0) {
     console.log(`  Nicht zuordenbar  ${unresolved.size} Charaktere`);
   }
-  console.log(
-    `  Punkte            ${(after.pointsSpentThisHour - before.pointsSpentThisHour).toFixed(0)}` +
-      ` · verbleibend ${remainingPoints(after).toFixed(0)}`,
-  );
+  if (pauses > 0) console.log(`  Budget-Pausen     ${pauses}`);
+  if (after) {
+    console.log(
+      `  Punkte übrig      ${remainingPoints(after).toFixed(0)} von ${after.limitPerHour}`,
+    );
+  }
   console.log(`  Dauer             ${((Date.now() - started) / 60_000).toFixed(1)} min`);
 }
 
