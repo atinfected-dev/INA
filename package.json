@@ -19,7 +19,8 @@
     "wcl:introspect": "pnpm --filter @ina/wcl run introspect",
     "wcl:ping": "pnpm --filter @ina/wcl run check",
     "codegen": "pnpm --filter @ina/wcl run codegen",
-    "import:reference": "pnpm --filter @ina/worker run cli reference"
+    "import:reference": "pnpm --filter @ina/worker run cli reference",
+    "import:report": "pnpm --filter @ina/worker run cli report"
   },
   "devDependencies": {
     "@types/node": "^26.5.1",

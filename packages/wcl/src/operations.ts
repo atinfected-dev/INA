@@ -152,6 +152,23 @@ query ReportFights($code: String!, $killType: KillType) {
       endTime
       revision
       segments
+      visibility
+      region {
+        slug
+      }
+      guild {
+        id
+        name
+        faction {
+          name
+        }
+        server {
+          slug
+          region {
+            slug
+          }
+        }
+      }
       zone {
         id
         name
@@ -223,6 +240,33 @@ query ReportRankings(
     report(code: $code) {
       code
       rankings(fightIDs: $fightIDs, playerMetric: $playerMetric, timeframe: $timeframe)
+    }
+  }
+}
+`);
+
+/**
+ * Reports for a zone, without a guild filter.
+ *
+ * Used to obtain a real report for development and verification before the
+ * guild is configured, and later as a fallback when a guild's logs were
+ * uploaded to personal rather than guild logs.
+ */
+export const ReportsByZoneDocument = graphql(`
+query ReportsByZone($zoneID: Int!, $limit: Int, $page: Int) {
+  reportData {
+    reports(zoneID: $zoneID, limit: $limit, page: $page) {
+      total
+      has_more_pages
+      data {
+        code
+        title
+        startTime
+        endTime
+        revision
+        zone { id name }
+        guild { id name server { slug region { slug } } }
+      }
     }
   }
 }
