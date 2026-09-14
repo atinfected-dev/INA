@@ -115,3 +115,18 @@ export function formatDuration(ms: number): string {
   const pad = (n: number): string => n.toString().padStart(2, '0');
   return hours > 0 ? `${hours}:${pad(minutes)}:${pad(seconds)}` : `${minutes}:${pad(seconds)}`;
 }
+
+/**
+ * Official class icon from Blizzard's render CDN.
+ *
+ * These are the same files the Battle.net API returns as media, served from
+ * Blizzard's own host — no scraping, no re-hosting. A class this site does
+ * not recognise gets the game's own question-mark icon rather than a broken
+ * image.
+ */
+export function classIconUrl(className: string | null | undefined, size: 56 | 36 = 56): string {
+  const slug = (className ?? '').toLowerCase().replace(/[^a-z]/g, '');
+  const known = CLASS_NAMES.map((name) => name.toLowerCase().replace(/[^a-z]/g, ''));
+  const icon = known.includes(slug) ? `classicon_${slug}` : 'inv_misc_questionmark';
+  return `https://render.worldofwarcraft.com/eu/icons/${size}/${icon}.jpg`;
+}

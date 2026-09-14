@@ -8,7 +8,10 @@
  * the rows themselves does not. Showcase pages (Hall of Fame, Records) may go
  * further; working pages stay calm.
  *
- * No Blizzard artwork is used anywhere. Every ornament is drawn in CSS/SVG.
+ * Ornaments are drawn in CSS/SVG. The only Blizzard assets are the official
+ * class icons from Blizzard's own render CDN — the ones the Battle.net API
+ * hands out — used under the Blizzard Fan Content Policy on this
+ * non-commercial fan site, with the required notice in the footer.
  */
 
 :root {
@@ -20,6 +23,20 @@
   --bg-panel-raised: #1d1913;
   --bg-row-odd: #100e0a;
   --bg-row-hover: #211c14;
+
+  /* --- Jade (Mists of Pandaria) ------------------------------------------
+     The Pandaria palette layered onto the gold: jade for glow and accents,
+     misty teal for the deep ground. Gold stays the frame colour, so the rest
+     of the site keeps its look; jade is spent on showcase surfaces. */
+  --jade-100: #c8f2e0;
+  --jade-200: #8fe0bd;
+  --jade-300: #5fcaa0;
+  --jade-400: #3aa882;
+  --jade-500: #2a7d62;
+  --jade-600: #1c5343;
+  --jade-700: #12342c;
+  --mist-900: #0a1512;
+  --mist-800: #0e1e1a;
 
   /* --- Gold -------------------------------------------------------------- */
   --gold-100: #f6e6b4;

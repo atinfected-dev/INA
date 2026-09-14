@@ -117,8 +117,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <main className={styles.main}>{children}</main>
 
         <footer className={styles.footer}>
-          Daten über die offizielle Warcraft-Logs-API v2. Kein Spielmaterial von Blizzard
-          Entertainment wird verwendet.
+          <p style={{ margin: 0 }}>
+            Nicht-kommerzielle Fanseite. Daten über die offizielle Warcraft-Logs-API v2;
+            Klassen-Icons von Blizzards offiziellem Render-CDN, verwendet gemäß der Blizzard Fan
+            Content Policy.
+          </p>
+          <p style={{ margin: '0.4rem 0 0' }}>
+            World of Warcraft, Warcraft und Blizzard Entertainment sind Marken oder eingetragene
+            Marken von Blizzard Entertainment, Inc. in den USA und/oder anderen Ländern. Diese Seite
+            steht in keiner Verbindung zu Blizzard Entertainment.
+          </p>
         </footer>
       </body>
     </html>

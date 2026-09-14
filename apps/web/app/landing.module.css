@@ -1,0 +1,464 @@
+/*
+ * The front door, in the key of Mists of Pandaria.
+ *
+ * Jade and mist over the site's gold: the Pandaria palette is layered on, not
+ * swapped in, so the inner pages keep their look and the landing page reads as
+ * the same site dressed for the occasion.
+ *
+ * Every piece of atmosphere here — peaks, mist, the cloud scroll — is drawn in
+ * CSS and inline SVG. It scales to any width, costs no image request, and
+ * respects reduced-motion. If a real piece of key art is dropped in as
+ * public/hero.jpg it is used as the deepest layer; nothing else changes.
+ */
+
+/* --- Hero ------------------------------------------------------------------ */
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  /* Break out of the content column to the viewport edges. */
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  margin-top: -2rem;
+  min-height: 34rem;
+  display: grid;
+  /* One explicit column, capped and free to shrink to nothing. An implicit
+     `auto` column would take its minimum from the content's min-content
+     width, and the six-up counter grid reports that as ~960px — on a phone
+     the whole hero then sat off to the right, clipped on both sides. */
+  grid-template-columns: minmax(0, 62rem);
+  justify-content: center;
+  align-items: center;
+  padding-block: 5rem 4rem;
+  padding-inline: 1.25rem;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 30%, rgb(58 168 130 / 22%), transparent 65%),
+    linear-gradient(180deg, var(--mist-800) 0%, var(--mist-900) 55%, var(--bg-base) 100%);
+  border-bottom: 1px solid var(--gold-700);
+}
+
+.heroArt {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center 30%;
+  opacity: 0.55;
+  /* Let the jade wash sit on top of the art so the type stays readable. */
+  mask-image: linear-gradient(180deg, #000 30%, transparent 100%);
+}
+
+/* Three bands of peaks, back to front. Inline SVG data URIs so the shapes are
+   real paths, not gradients pretending to be mountains. */
+.peaks {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 62%;
+  background-repeat: repeat-x;
+  background-position: bottom center;
+  background-size: 1600px 100%;
+  pointer-events: none;
+}
+
+.peaksFar {
+  composes: peaks;
+  opacity: 0.55;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 400' preserveAspectRatio='none'><path d='M0 400V300l90-70 70 40 110-120 80 60 120-90 100 110 90-50 110 70 120-140 90 100 110-60 120 90 80-40 110 50V400z' fill='%2312342c'/></svg>");
+}
+
+.peaksMid {
+  composes: peaks;
+  height: 46%;
+  opacity: 0.8;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 300' preserveAspectRatio='none'><path d='M0 300V220l120-90 90 50 110-110 100 80 130-60 110 100 100-70 140 90 110-120 130 110 100-40 120 70 140-60V300z' fill='%230e2521'/></svg>");
+}
+
+.peaksNear {
+  composes: peaks;
+  height: 30%;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 200' preserveAspectRatio='none'><path d='M0 200V150l160-70 120 50 150-90 130 70 160-40 150 80 140-60 170 60 140-70 160 90 120-30V200z' fill='%230a1512'/></svg>");
+}
+
+/* Mist: soft radial blobs that drift. Two layers moving at different speeds
+   read as depth; one layer reads as a screensaver. */
+.mist {
+  position: absolute;
+  inset: -20% -10%;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  filter: blur(2px);
+}
+
+.mistBack {
+  composes: mist;
+  opacity: 0.5;
+  background-image:
+    radial-gradient(ellipse 30% 18% at 20% 70%, rgb(143 224 189 / 22%), transparent 70%),
+    radial-gradient(ellipse 40% 20% at 75% 62%, rgb(143 224 189 / 16%), transparent 70%);
+  animation: drift 48s ease-in-out infinite alternate;
+}
+
+.mistFront {
+  composes: mist;
+  opacity: 0.6;
+  background-image:
+    radial-gradient(ellipse 28% 14% at 55% 82%, rgb(200 242 224 / 20%), transparent 70%),
+    radial-gradient(ellipse 22% 12% at 10% 88%, rgb(200 242 224 / 18%), transparent 70%);
+  animation: drift 32s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes drift {
+  from {
+    transform: translateX(-3%);
+  }
+  to {
+    transform: translateX(3%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mistBack,
+  .mistFront {
+    animation: none;
+  }
+}
+
+.heroInner {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  min-width: 0;
+}
+
+.kicker {
+  margin: 0 0 0.8rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--jade-300);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(2.6rem, 7vw, 5.2rem);
+  line-height: 1.02;
+  letter-spacing: 0.02em;
+  background: linear-gradient(180deg, var(--gold-100) 0%, var(--gold-200) 45%, var(--gold-400) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 0 #000) drop-shadow(0 0 28px rgb(58 168 130 / 35%));
+}
+
+.tagline {
+  margin: 1.1rem auto 0;
+  max-width: 44rem;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* The Pandaren cloud scroll: a hairline with a curling cloud at the centre.
+   Mirrored halves, so one path does. */
+.scroll {
+  display: block;
+  width: min(34rem, 80%);
+  height: 28px;
+  margin: 1.4rem auto 0;
+  color: var(--gold-300);
+}
+
+.ctaRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.7rem;
+  margin-top: 2rem;
+}
+
+.cta {
+  padding: 0.7rem 1.4rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  color: var(--gold-100);
+  background: linear-gradient(180deg, rgb(200 170 110 / 16%), rgb(200 170 110 / 4%));
+  border: 1px solid var(--gold-400);
+  box-shadow:
+    inset 0 0 0 1px #000,
+    0 2px 14px rgb(0 0 0 / 60%);
+  text-decoration: none;
+}
+
+.cta:hover {
+  color: #fff;
+  border-color: var(--gold-200);
+  background: linear-gradient(180deg, rgb(200 170 110 / 26%), rgb(200 170 110 / 8%));
+  text-decoration: none;
+}
+
+.ctaJade {
+  composes: cta;
+  color: var(--jade-100);
+  border-color: var(--jade-400);
+  background: linear-gradient(180deg, rgb(58 168 130 / 22%), rgb(58 168 130 / 6%));
+}
+
+.ctaJade:hover {
+  border-color: var(--jade-200);
+  background: linear-gradient(180deg, rgb(58 168 130 / 32%), rgb(58 168 130 / 10%));
+}
+
+/* --- Headline numbers ---------------------------------------------------- */
+
+.counters {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 1rem;
+  /* min(10rem, 100%) so a column can never be wider than its container —
+     the usual auto-fit overflow guard on narrow screens. */
+  grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr));
+  margin: 3rem auto 0;
+}
+
+.counter {
+  padding: 1rem 0.6rem;
+  text-align: center;
+  background: linear-gradient(180deg, rgb(10 21 18 / 70%), rgb(6 5 4 / 70%));
+  border: 1px solid var(--jade-700);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 60%);
+  backdrop-filter: blur(4px);
+}
+
+.counterValue {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.7rem, 3.2vw, 2.4rem);
+  color: var(--gold-200);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  text-shadow: 0 1px 2px #000;
+}
+
+.counterLabel {
+  margin-top: 0.35rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--jade-300);
+}
+
+/* --- Sections ------------------------------------------------------------ */
+
+.section {
+  margin-top: 3rem;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.1rem;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
+  font-size: 1.6rem;
+  color: var(--gold-200);
+  letter-spacing: 0.03em;
+}
+
+.sectionLink {
+  font-size: 0.85rem;
+  color: var(--jade-300);
+}
+
+/* --- Journey: the expansions as a jade timeline -------------------------- */
+
+.journey {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  position: relative;
+}
+
+.journey::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0.85rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--jade-500) 12%, var(--jade-500) 88%, transparent);
+}
+
+.stop {
+  position: relative;
+  padding: 2rem 1rem 1rem;
+  background: linear-gradient(180deg, var(--mist-800), var(--bg-panel));
+  border: 1px solid var(--jade-700);
+}
+
+.stop::before {
+  content: '';
+  position: absolute;
+  top: 0.5rem;
+  left: 50%;
+  width: 0.8rem;
+  height: 0.8rem;
+  transform: translateX(-50%) rotate(45deg);
+  background: var(--jade-300);
+  box-shadow:
+    0 0 0 3px var(--mist-900),
+    0 0 12px var(--jade-400);
+}
+
+.stopName {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.05rem;
+  color: var(--gold-200);
+  text-align: center;
+}
+
+.stopSpan {
+  margin: 0.2rem 0 0.7rem;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.stopFacts {
+  display: flex;
+  justify-content: space-around;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.stopFacts strong {
+  display: block;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
+  font-size: 1.15rem;
+  color: var(--jade-200);
+  text-align: center;
+}
+
+/* --- Hall of Fame cards -------------------------------------------------- */
+
+.honours {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+
+.honour {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.9rem;
+  align-items: center;
+  padding: 0.9rem 1rem;
+  background: linear-gradient(135deg, var(--mist-800), var(--bg-panel) 70%);
+  border: 1px solid var(--gold-600);
+  box-shadow: inset 0 0 0 1px #000;
+}
+
+.honourIcon {
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--gold-400);
+  box-shadow:
+    0 0 0 1px #000,
+    0 0 14px rgb(58 168 130 / 30%);
+  background: #000;
+}
+
+.honourTitle {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1rem;
+  color: var(--gold-200);
+}
+
+.honourHolder {
+  margin: 0.15rem 0 0;
+  font-size: 0.95rem;
+}
+
+.honourValue {
+  margin: 0.1rem 0 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* --- Records strip ------------------------------------------------------- */
+
+.records {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+
+.record {
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--jade-700);
+  background: var(--bg-panel);
+}
+
+.recordValue {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.6rem;
+  color: var(--jade-200);
+  line-height: 1.1;
+}
+
+.recordLabel {
+  margin-top: 0.2rem;
+  font-size: 0.82rem;
+  color: var(--gold-200);
+}
+
+.recordHolder {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* --- Latest night -------------------------------------------------------- */
+
+.latest {
+  display: grid;
+  gap: 1.2rem 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+
+.killList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.kill {
+  padding: 0.25rem 0.6rem;
+  font-size: 0.82rem;
+  border: 1px solid var(--jade-600);
+  color: var(--jade-100);
+  background: rgb(58 168 130 / 8%);
+}
+
+@media (max-width: 640px) {
+  .hero {
+    min-height: 0;
+    padding-block: 3.5rem 2.5rem;
+  }
+}
