@@ -105,6 +105,13 @@ export async function approveClaim(claimId: string, decidedBy: string): Promise<
       where: { id: claim.id },
       data: { status: ClaimStatus.APPROVED, decidedAt: new Date(), decidedBy },
     });
+  }, {
+    // Prisma's defaults (2 s to obtain a connection, 5 s to finish) were
+    // written for a database with the process to itself. On the shared host
+    // an aggregate refresh can hold the pool for a few seconds, and an
+    // approval that then times out reads as "Entscheidung fehlgeschlagen".
+    maxWait: 15_000,
+    timeout: 60_000,
   });
 }
 

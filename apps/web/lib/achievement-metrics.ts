@@ -98,12 +98,37 @@ function emptyMetrics(): SubjectMetrics {
 }
 
 
-/** Per-query timing, printed only when INA_PROFILE is set — for finding the slow one. */
-async function timed<T>(label: string, work: Promise<T>): Promise<T> {
-  if (!process.env.INA_PROFILE) return work;
+/**
+ * At most this many of the metric queries run at once.
+ *
+ * The pool per process is small on purpose (the Postgres is shared), and
+ * eight heavy queries fired together would hold every connection for seconds
+ * — long enough for a member's click in the meantime to time out. Three at a
+ * time leaves room; the answer is cached, so the extra second is paid rarely.
+ */
+const MAX_PARALLEL_QUERIES = 3;
+let running = 0;
+const waiting: (() => void)[] = [];
+
+async function slot<T>(work: () => Promise<T>): Promise<T> {
+  if (running >= MAX_PARALLEL_QUERIES) {
+    await new Promise<void>((resolve) => waiting.push(resolve));
+  }
+  running += 1;
+  try {
+    return await work();
+  } finally {
+    running -= 1;
+    waiting.shift()?.();
+  }
+}
+
+/** Runs a query in a slot; timing is printed only when INA_PROFILE is set. */
+async function timed<T>(label: string, work: () => Promise<T>): Promise<T> {
+  if (!process.env.INA_PROFILE) return slot(work);
   const started = performance.now();
   try {
-    return await work;
+    return await slot(work);
   } finally {
     console.log(`[metrics] ${label.padEnd(14)} ${(performance.now() - started).toFixed(0)} ms`);
   }
@@ -114,7 +139,7 @@ const n = (value: unknown): number => (value === null || value === undefined ? 0
 async function computeSubjectMetrics(): Promise<SubjectRow[]> {
   const [identities, participation, classes, nights, parses, performance, deaths, utility] =
     await Promise.all([
-      timed('identities', prisma.$queryRawUnsafe<
+      timed('identities', () => prisma.$queryRawUnsafe<
         {
           subject_id: string;
           is_person: boolean;
@@ -138,7 +163,7 @@ async function computeSubjectMetrics(): Promise<SubjectRow[]> {
       `)),
 
       // Pulls, kills, wipes and everything derived from taking part in a fight.
-      timed('participation', prisma.$queryRawUnsafe<
+      timed('participation', () => prisma.$queryRawUnsafe<
         {
           subject_id: string;
           combat_ms: bigint;
@@ -193,7 +218,7 @@ async function computeSubjectMetrics(): Promise<SubjectRow[]> {
       // Per class and per boss, each rolled up to one row per subject BEFORE
       // the final join. A correlated subquery per subject here rescanned the
       // per-boss table two thousand times and cost four seconds.
-      timed('classes', prisma.$queryRawUnsafe<
+      timed('classes', () => prisma.$queryRawUnsafe<
         {
           subject_id: string;
           classes: bigint;
@@ -248,7 +273,7 @@ async function computeSubjectMetrics(): Promise<SubjectRow[]> {
       // first version answered three of these with a correlated subquery per
       // subject, each rescanning an unindexed intermediate table — twelve
       // seconds for two thousand subjects.
-      timed('nights', prisma.$queryRawUnsafe<
+      timed('nights', () => prisma.$queryRawUnsafe<
         {
           subject_id: string;
           nights: bigint;
@@ -361,7 +386,7 @@ async function computeSubjectMetrics(): Promise<SubjectRow[]> {
         LEFT JOIN streaks      st ON st.subject_id = p.subject_id
       `)),
 
-      timed('parses', prisma.$queryRawUnsafe<
+      timed('parses', () => prisma.$queryRawUnsafe<
         {
           subject_id: string;
           p75: bigint;
@@ -386,7 +411,7 @@ async function computeSubjectMetrics(): Promise<SubjectRow[]> {
         GROUP BY s.subject_id
       `)),
 
-      timed('performance', prisma.$queryRawUnsafe<
+      timed('performance', () => prisma.$queryRawUnsafe<
         {
           subject_id: string;
           damage_done: bigint;
@@ -416,7 +441,7 @@ async function computeSubjectMetrics(): Promise<SubjectRow[]> {
         GROUP BY s.subject_id
       `)),
 
-      timed('deaths', prisma.$queryRawUnsafe<
+      timed('deaths', () => prisma.$queryRawUnsafe<
         { subject_id: string; deaths: bigint; fights_died: bigint; first_deaths: bigint }[]
       >(`
         WITH ${SUBJECTS_CTE},
@@ -441,7 +466,7 @@ async function computeSubjectMetrics(): Promise<SubjectRow[]> {
         GROUP BY s.subject_id
       `)),
 
-      timed('utility', prisma.$queryRawUnsafe<{ subject_id: string; interrupts: bigint; dispels: bigint }[]>(`
+      timed('utility', () => prisma.$queryRawUnsafe<{ subject_id: string; interrupts: bigint; dispels: bigint }[]>(`
         WITH ${SUBJECTS_CTE}
         SELECT s.subject_id,
                COALESCE(SUM(ru.interrupts), 0)::bigint AS interrupts,
@@ -557,7 +582,7 @@ async function computeSubjectMetrics(): Promise<SubjectRow[]> {
  * Difficulty counts separately: the first Heroic kill is its own occasion.
  */
 async function addProgressMetrics(rows: Map<string, SubjectRow>): Promise<void> {
-  const progress = await timed('progress', prisma.$queryRawUnsafe<
+  const progress = await timed('progress', () => prisma.$queryRawUnsafe<
     { subject_id: string; progress_pulls: bigint; first_kills: bigint }[]
   >(`
     WITH ${SUBJECTS_CTE},

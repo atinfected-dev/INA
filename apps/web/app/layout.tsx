@@ -3,6 +3,7 @@ import { Marcellus, Inter } from 'next/font/google';
 import './globals.css';
 import styles from './shell.module.css';
 import { getViewer } from '../lib/auth';
+import { CookieNotice } from '../components/cookie-notice';
 
 /*
  * Friz Quadrata, WoW's display face, is licensed and not redistributable.
@@ -137,6 +138,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </header>
 
         <main className={styles.main}>{children}</main>
+
+        <CookieNotice />
 
         <footer className={styles.footer}>
           <p style={{ margin: 0 }}>
