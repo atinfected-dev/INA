@@ -5,10 +5,10 @@
  * host answers, the point budget is readable, and - if GUILD_* is configured -
  * the guild actually resolves. Run this before blaming the importer.
  */
-import { loadRootEnv } from './env.js';
-import { WclClient } from '../src/client.js';
-import { remainingPoints } from '../src/rate-limit.js';
-import { GuildByNameDocument, WorldReferenceDocument } from '../src/operations.js';
+import { loadRootEnv } from './env';
+import { WclClient } from '../src/client';
+import { remainingPoints } from '../src/rate-limit';
+import { GuildByNameDocument, WorldReferenceDocument } from '../src/operations';
 
 function line(label: string, value: string | number): void {
   console.log(`  ${label.padEnd(22)} ${value}`);

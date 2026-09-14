@@ -1,5 +1,5 @@
-import { WclHttpError } from './errors.js';
-import type { WclConfig } from './config.js';
+import { WclHttpError } from './errors';
+import type { WclConfig } from './config';
 
 interface TokenResponse {
   access_token: string;

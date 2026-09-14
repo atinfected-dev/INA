@@ -1,7 +1,7 @@
 import { prisma, ImportState, SyncStatus, SyncType, type Guild } from '@ina/db';
 import { WclClient } from '@ina/wcl';
-import { discoverReports } from './discover.js';
-import { importReport } from './report.js';
+import { discoverReports } from './discover';
+import { importReport } from './report';
 
 /**
  * A full sync run: discover the guild's reports, then import the contents of

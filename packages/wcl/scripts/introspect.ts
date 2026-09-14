@@ -15,8 +15,8 @@ import {
   printSchema,
   type IntrospectionQuery,
 } from 'graphql';
-import { loadRootEnv } from './env.js';
-import { WclClient } from '../src/client.js';
+import { loadRootEnv } from './env';
+import { WclClient } from '../src/client';
 
 const SCHEMA_PATH = resolve(import.meta.dirname, '../schema.graphql');
 

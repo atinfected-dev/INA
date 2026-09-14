@@ -14,6 +14,10 @@ export interface AppSettings {
    * Minimum number of ranked kills before a player appears in an *averaged*
    * leaderboard. Raw leaderboards ignore this and are shown alongside, so the
    * threshold is a labelled filter rather than a hidden one.
+   *
+   * 150 is a guild decision, not a statistical one: it keeps the list to
+   * raiders with a real body of work behind them. At this level 123 damage
+   * dealers and 33 healers qualify from the imported history.
    */
   minKillsForAverage: number;
 
@@ -54,7 +58,7 @@ export interface HallOfFameTitle {
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  minKillsForAverage: 10,
+  minKillsForAverage: 150,
   attendanceMinMinutes: 30,
   attendanceMinParticipation: 0.25,
   sessionGapHours: 8,

@@ -7,14 +7,14 @@
  *
  *   pnpm --filter @ina/worker run cli reference
  */
-import { loadEnv } from './env.js';
+import { loadEnv } from './env';
 import { prisma } from '@ina/db';
 import { WclClient, remainingPoints } from '@ina/wcl';
-import { importReferenceData } from './import/reference.js';
-import { importReport } from './import/report.js';
-import { discoverReports } from './import/discover.js';
-import { runSync } from './import/sync.js';
-import { importRankings } from './import/rankings.js';
+import { importReferenceData } from './import/reference';
+import { importReport } from './import/report';
+import { discoverReports } from './import/discover';
+import { runSync } from './import/sync';
+import { importRankings } from './import/rankings';
 import { GuildByNameDocument, GuildReportsDocument } from '@ina/wcl';
 
 const COMMANDS = ['reference', 'report', 'discover', 'sync', 'guild', 'analyze'] as const;

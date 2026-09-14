@@ -3,13 +3,23 @@ export {
   SETTINGS_KEY,
   type AppSettings,
   type HallOfFameTitle,
-} from './settings.js';
+} from './settings';
 export {
   METRICS,
   METRIC_KEYS,
   metric,
   type MetricDefinition,
   type MetricNormalisation,
-} from './metrics.js';
-export { slugify } from './slug.js';
-export { hashPassword, verifyPassword } from './password.js';
+} from './metrics';
+export { slugify } from './slug';
+export { hashPassword, verifyPassword } from './password';
+export {
+  PARSE_METRICS,
+  consistencyRating,
+  parseMetric,
+  rankByParseMetric,
+  type ParseAggregate,
+  type ParseMetricDefinition,
+  type ParseMetricKey,
+  type RankedRow,
+} from './ranking';

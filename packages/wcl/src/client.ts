@@ -1,10 +1,10 @@
 import { print, type DocumentNode } from 'graphql';
 import type { TypedDocumentNode } from '@graphql-typed-document-node/core';
-import { loadWclConfig, type WclConfig } from './config.js';
-import { TokenProvider } from './auth.js';
-import { WclGraphQLError, WclHttpError, WclRateLimitError } from './errors.js';
-import { Semaphore } from './semaphore.js';
-import { isStale, msUntilReset, remainingPoints, type RateLimitSnapshot } from './rate-limit.js';
+import { loadWclConfig, type WclConfig } from './config';
+import { TokenProvider } from './auth';
+import { WclGraphQLError, WclHttpError, WclRateLimitError } from './errors';
+import { Semaphore } from './semaphore';
+import { isStale, msUntilReset, remainingPoints, type RateLimitSnapshot } from './rate-limit';
 
 export interface WclClientOptions {
   config?: WclConfig;

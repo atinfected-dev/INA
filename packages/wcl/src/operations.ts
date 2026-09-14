@@ -1,4 +1,4 @@
-import { graphql } from './generated/gql.js';
+import { graphql } from './generated/gql';
 
 /**
  * Every Warcraft Logs operation used by this project.
