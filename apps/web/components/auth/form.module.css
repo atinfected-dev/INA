@@ -1,0 +1,100 @@
+.form {
+  display: grid;
+  gap: 0.8rem;
+  max-width: 26rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.label {
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.input {
+  padding: 0.4rem 0.6rem;
+  font: inherit;
+  color: var(--text-primary);
+  background: rgb(0 0 0 / 45%);
+  border: 1px solid var(--gold-700);
+  border-radius: var(--radius);
+}
+
+.input:focus {
+  border-color: var(--gold-300);
+  outline: none;
+}
+
+.hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.submit {
+  justify-self: start;
+  padding: 0.4rem 1.2rem;
+  font: inherit;
+  letter-spacing: 0.06em;
+  color: var(--gold-100);
+  background: linear-gradient(180deg, rgb(200 170 110 / 24%), rgb(200 170 110 / 8%));
+  border: 1px solid var(--gold-300);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.submit:hover {
+  background: linear-gradient(180deg, rgb(200 170 110 / 34%), rgb(200 170 110 / 14%));
+}
+
+.submit:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+.error {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--danger);
+  border-radius: var(--radius);
+  background: rgb(200 64 47 / 12%);
+  color: #f0b4ac;
+  font-size: 0.88rem;
+}
+
+.notice {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--ok);
+  border-radius: var(--radius);
+  background: rgb(76 175 80 / 12%);
+  color: #bfe3c1;
+  font-size: 0.88rem;
+}
+
+.inlineForm {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.small {
+  padding: 0.2rem 0.7rem;
+  font: inherit;
+  font-size: 0.82rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  border: 1px solid var(--gold-600);
+  background: rgb(200 170 110 / 10%);
+  color: var(--gold-100);
+}
+
+.smallDanger {
+  composes: small;
+  border-color: var(--danger);
+  color: #f0b4ac;
+  background: rgb(200 64 47 / 10%);
+}

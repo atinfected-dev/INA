@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Marcellus, Inter } from 'next/font/google';
 import './globals.css';
 import styles from './shell.module.css';
+import { getViewer } from '../lib/auth';
 
 /*
  * Friz Quadrata, WoW's display face, is licensed and not redistributable.
@@ -40,7 +41,11 @@ const NAV = [
   { href: '/raids', label: 'Raids' },
 ] as const;
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Read here rather than per page: the masthead needs to know, and every page
+  // that shows a real name gates on the same value.
+  const viewer = await getViewer();
+
   return (
     <html lang="de" className={`${display.variable} ${body.variable}`}>
       <body>
@@ -59,6 +64,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   {item.label}
                 </a>
               ))}
+              <a href={viewer ? '/konto' : '/anmelden'} className={styles.navAccount}>
+                {viewer ? viewer.displayName : 'Anmelden'}
+              </a>
             </nav>
           </div>
           <div className={styles.mastheadRule} aria-hidden="true" />

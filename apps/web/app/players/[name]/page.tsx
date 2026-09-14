@@ -10,6 +10,7 @@ import {
   type EncounterLine,
 } from '../../../lib/players';
 import { classVar, formatAmount, formatDuration, formatNumber } from '../../../lib/wow';
+import { getViewer } from '../../../lib/auth';
 import styles from '../../leaderboards/leaderboards.module.css';
 
 export const revalidate = 900;
@@ -130,7 +131,10 @@ export default async function PlayerProfilePage({
     );
   }
 
-  const profile = await loadPlayerProfile(chosen.id);
+  // Real names are for signed-in members only. Passing the flag rather than
+  // filtering afterwards means an anonymous request never loads the value.
+  const viewer = await getViewer();
+  const profile = await loadPlayerProfile(chosen.id, viewer !== null);
   if (!profile) notFound();
 
   const { totals, parses } = profile;
@@ -155,15 +159,16 @@ export default async function PlayerProfilePage({
     <>
       <OrnateFrame
         title={
-          <span style={{ color: classVar(profile.className) }}>
-            {profile.name}
-            {/*
-              The real name belongs to the person behind the character and is
-              deliberately absent from this public render — it is not merely
-              hidden in CSS, it is never fetched. Registration and claiming add
-              it for signed-in members only.
-            */}
-          </span>
+          <>
+            <span style={{ color: classVar(profile.className) }}>{profile.name}</span>
+            {profile.person && (
+              <span style={{ color: 'var(--text-secondary)', fontSize: '0.8em' }}>
+                {' · '}
+                {/* Real name for members, display name for everyone else. */}
+                {profile.person.realName ?? profile.person.displayName}
+              </span>
+            )}
+          </>
         }
         subtitle={[
           profile.className,

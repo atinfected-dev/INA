@@ -63,6 +63,76 @@ model Setting {
   updatedAt DateTime @updatedAt
 }
 
+/// A registered guild member.
+///
+/// Separate from Person on purpose: Person is the analytical identity that an
+/// admin can maintain whether or not the human ever signs up, and character
+/// history must not depend on someone creating an account. An account links to
+/// a Person once a claim is confirmed.
+model Account {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  /// Shown to signed-in members only. Never selected on public pages.
+  realName     String?
+  /// Public handle, safe to show anywhere.
+  displayName  String
+  isAdmin      Boolean  @default(false)
+  isActive     Boolean  @default(true)
+  personId     String?  @unique
+  createdAt    DateTime @default(now())
+  lastLoginAt  DateTime?
+
+  person   Person?          @relation(fields: [personId], references: [id], onDelete: SetNull)
+  claims   CharacterClaim[]
+  sessions Session[]
+}
+
+model Session {
+  /// Opaque random token; only its hash is stored.
+  tokenHash String   @id
+  accountId String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([expiresAt])
+}
+
+enum ClaimStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/// A member's request to be recognised as the owner of a character.
+///
+/// Approval is manual. Nothing in a Warcraft Logs report proves who sat at the
+/// keyboard, so the guild vouches for it rather than the software pretending to
+/// verify something it cannot.
+model CharacterClaim {
+  id          String      @id @default(cuid())
+  accountId   String
+  characterId String
+  status      ClaimStatus @default(PENDING)
+  /// Optional note from the requester, e.g. "mein Zweitchar seit Cata".
+  note        String?
+  createdAt   DateTime    @default(now())
+  decidedAt   DateTime?
+  decidedBy   String?
+  /// Reason shown to the requester when a claim is rejected.
+  decisionNote String?
+
+  account   Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, characterId])
+  @@index([status])
+  @@index([characterId])
+}
+
 model AdminUser {
   id           String    @id @default(cuid())
   email        String    @unique
@@ -167,6 +237,7 @@ model Person {
 
   characters  Character[]
   attendance  SessionAttendance[]
+  account     Account?
 }
 
 model Character {
@@ -191,6 +262,7 @@ model Character {
   updatedAt       DateTime  @updatedAt
 
   person        Person?               @relation(fields: [personId], references: [id], onDelete: SetNull)
+  claims        CharacterClaim[]
   nameHistory   CharacterNameHistory[]
   participation FightParticipant[]
   performances  FightPerformance[]

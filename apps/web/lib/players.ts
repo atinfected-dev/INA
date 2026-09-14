@@ -91,7 +91,7 @@ export interface PlayerProfile {
   mainSpec: string | null;
   firstSeenAt: Date | null;
   lastSeenAt: Date | null;
-  person: { id: string; displayName: string; slug: string } | null;
+  person: { id: string; displayName: string; slug: string; realName: string | null } | null;
   /** Other characters of the same person, this one excluded. */
   siblings: { id: string; name: string; className: string | null; realmName: string }[];
   totals: {
@@ -125,7 +125,14 @@ export async function findCharactersByName(name: string) {
   });
 }
 
-export async function loadPlayerProfile(characterId: string): Promise<PlayerProfile | null> {
+/**
+ * @param includeRealName only ever true for a signed-in viewer. When false the
+ *   value is not selected at all, so it cannot leak through the page payload.
+ */
+export async function loadPlayerProfile(
+  characterId: string,
+  includeRealName = false,
+): Promise<PlayerProfile | null> {
   const character = await prisma.character.findUnique({
     where: { id: characterId },
     select: {
@@ -142,6 +149,7 @@ export async function loadPlayerProfile(characterId: string): Promise<PlayerProf
           id: true,
           displayName: true,
           slug: true,
+          account: includeRealName ? { select: { realName: true } } : false,
           characters: {
             select: { id: true, name: true, className: true, realmName: true },
             orderBy: { name: 'asc' },
@@ -256,6 +264,10 @@ export async function loadPlayerProfile(characterId: string): Promise<PlayerProf
           id: character.person.id,
           displayName: character.person.displayName,
           slug: character.person.slug,
+          realName: includeRealName
+            ? ((character.person as { account?: { realName: string | null } | null }).account
+                ?.realName ?? null)
+            : null,
         }
       : null,
     siblings:

@@ -120,3 +120,21 @@
     display: none;
   }
 }
+
+/* Account entry sits apart from the content navigation. */
+.navAccount {
+  padding: 0.35rem 0.8rem;
+  margin-left: 0.4rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  color: var(--gold-200);
+  border: 1px solid var(--gold-600);
+  border-radius: var(--radius);
+  background: rgb(200 170 110 / 8%);
+}
+
+.navAccount:hover {
+  border-color: var(--gold-300);
+  color: var(--gold-100);
+  text-decoration: none;
+}
