@@ -1,4 +1,7 @@
 import { prisma } from '@ina/db';
+import { SCRIPTED_DAMAGE_THRESHOLD } from '@ina/core';
+import { loadAttendance } from './attendance';
+import { MAIN_RAID_SIZE, MIN_NIGHTS_FOR_TITLE } from './hall-of-fame';
 
 /**
  * Guild records and Hall of Fame holders.
@@ -70,6 +73,9 @@ export async function loadRecords(): Promise<RecordEntry[]> {
     longestRaid,
     fastestKill,
     mostPulledBoss,
+    mostDamageTaken,
+    damageTakenCoverage,
+    attendance,
   ] = await Promise.all([
     prisma.$queryRaw<HolderRow[]>`
       SELECT c.name, c."className", e.name || COALESCE(' (' || d.name || ')', '') AS context,
@@ -183,7 +189,36 @@ export async function loadRecords(): Promise<RecordEntry[]> {
       LEFT JOIN "Difficulty" d ON d.id = f."difficultyId"
       GROUP BY e.name, d.name ORDER BY value DESC LIMIT 1
     `,
+    // Only imported pulls count, and scripted instant kills are left out —
+    // the same rule the damage-taken leaderboard states in the open.
+    prisma.$queryRaw<HolderRow[]>`
+      SELECT c.name, c."className", NULL AS context, SUM(fp."damageTaken")::float AS value
+      FROM "FightPerformance" fp
+      JOIN "Character" c ON c.id = fp."characterId"
+      JOIN "Fight" f     ON f.id = fp."fightId"
+      WHERE f."damageTakenImported" = true
+        AND fp."damageTaken" < ${BigInt(SCRIPTED_DAMAGE_THRESHOLD)}
+      GROUP BY c.id, c.name, c."className" ORDER BY value DESC LIMIT 1
+    `,
+    prisma.$queryRaw<{ imported: bigint; pending: bigint }[]>`
+      SELECT COUNT(*) FILTER (WHERE f."damageTakenImported")     AS imported,
+             COUNT(*) FILTER (WHERE NOT f."damageTakenImported") AS pending
+      FROM "Fight" f
+      JOIN "Report" r ON r.id = f."reportId"
+      WHERE r."contentsArchived" = false
+    `,
+    // Through the same function the attendance page uses, with the same
+    // thresholds. Asking the question twice in two places is how the Hall of
+    // Fame once ended up contradicting the attendance table.
+    loadAttendance({ minAvailable: MIN_NIGHTS_FOR_TITLE, minRaidSize: MAIN_RAID_SIZE }),
   ]);
+
+  const bestAttendance = [...attendance].sort(
+    (a, b) => b.percent - a.percent || b.attended - a.attended,
+  )[0];
+
+  const takenImported = Number(damageTakenCoverage[0]?.imported ?? 0);
+  const takenPending = Number(damageTakenCoverage[0]?.pending ?? 0);
 
   const entry = (
     key: string,
@@ -218,23 +253,49 @@ export async function loadRecords(): Promise<RecordEntry[]> {
     entry('longestRaid', 'Meiste Kampfzeit an einem Abend', 'Summierte Dauer aller Pulls eines Reports. Bewusst nicht die Zeitspanne des Logs: der längste Log dieser Gilde umfasst 121 Stunden bei 36 Minuten Kampf, weil jemand den Logger tagelang laufen ließ.', longestRaid, duration),
     entry('fastestKill', 'Schnellster Bosskill', 'Kürzester Kampf, der mit einem Kill endete — über alle Erweiterungen, also fast zwangsläufig ein längst überlevelter Boss. Der Raid steht dabei.', fastestKill, duration),
     entry('mostPulledBoss', 'Meiste Pulls auf einen Boss', 'Boss mit den meisten Pulls über die gesamte Historie.', mostPulledBoss, de),
-    {
-      key: 'mostDamageTaken',
-      label: 'Meister erlittener Schaden',
-      formula: 'Summe des erlittenen Schadens.',
-      value: '—',
-      holder: null,
-      unavailable:
-        'Erlittener Schaden ist noch nicht importiert. Dafür braucht es einen weiteren table()-Durchlauf je Kampf.',
-    },
+    takenImported === 0
+      ? {
+          key: 'mostDamageTaken',
+          label: 'Meister erlittener Schaden',
+          formula: 'Summe des erlittenen Schadens.',
+          value: '—',
+          holder: null,
+          unavailable:
+            'Erlittener Schaden ist noch nicht importiert. Dafür braucht es einen weiteren table()-Durchlauf je Kampf.',
+        }
+      : {
+          ...entry(
+            'mostDamageTaken',
+            'Meister erlittener Schaden',
+            'Summe des erlittenen Schadens über alle importierten Pulls. Gescriptete Sofort-Tode ' +
+              'sind ausgeklammert; siehe Erlittener Schaden.',
+            mostDamageTaken,
+            amount,
+          ),
+          // A partial import must not pass for a finished tally.
+          context:
+            takenPending > 0
+              ? `vorläufig — ${de(takenImported)} von ${de(takenImported + takenPending)} Pulls importiert`
+              : null,
+        },
     {
       key: 'bestAttendance',
       label: 'Höchste Attendance',
-      formula: 'Anteil der Raidabende, an denen teilgenommen wurde.',
-      value: '—',
-      holder: null,
-      unavailable:
-        'Attendance braucht Raidabende als eigene Einheit — mehrere Reports eines Abends zusammengefasst. Noch nicht gebaut.',
+      formula:
+        `Anteil der Mainraid-Abende zwischen dem ersten und dem letzten Auftreten, an denen ` +
+        `teilgenommen wurde. Ab ${MAIN_RAID_SIZE} Spielern und mindestens ` +
+        `${MIN_NIGHTS_FOR_TITLE} möglichen Abenden; siehe Attendance.`,
+      value: bestAttendance ? `${de1(bestAttendance.percent)} %` : '—',
+      holder: bestAttendance?.name ?? null,
+      holderClass: bestAttendance?.className ?? null,
+      context: bestAttendance
+        ? `${de(bestAttendance.attended)} von ${de(bestAttendance.available)} Abenden`
+        : null,
+      ...(bestAttendance
+        ? {}
+        : {
+            unavailable: 'Noch keine Raidabende gebildet.',
+          }),
     },
   ];
 }

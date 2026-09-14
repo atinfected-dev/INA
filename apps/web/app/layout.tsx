@@ -36,6 +36,7 @@ const NAV = [
   { href: '/leaderboards', label: 'Ranglisten' },
   { href: '/attendance', label: 'Attendance' },
   { href: '/deaths', label: 'Tode' },
+  { href: '/erlittener-schaden', label: 'Schaden erlitten' },
   { href: '/records', label: 'Rekorde' },
   { href: '/hall-of-fame', label: 'Hall of Fame' },
   { href: '/players', label: 'Spieler' },
