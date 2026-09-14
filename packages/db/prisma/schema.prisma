@@ -269,6 +269,7 @@ model Character {
   rankings      ParseRanking[]
   deaths        DeathEvent[]
   attendance    SessionAttendance[]
+  utility       ReportUtility[]
 
   @@unique([name, realmSlug, region])
   @@index([personId])
@@ -320,6 +321,8 @@ model Report {
   /// data would need the user-authenticated endpoint. Recorded so archived
   /// reports are not queried again on every run.
   contentsArchived Boolean @default(false)
+  /// Interrupts and dispels are fetched once for the whole report; see ReportUtility.
+  utilityImported Boolean @default(false)
   importError String?
   importedAt  DateTime?
   createdAt   DateTime    @default(now())
@@ -329,9 +332,32 @@ model Report {
   zone     Zone?           @relation(fields: [zoneId], references: [id], onDelete: SetNull)
   fights   Fight[]
   sessions SessionReport[]
+  utility  ReportUtility[]
 
   @@index([guildId, startTime])
   @@index([importState])
+  @@index([utilityImported])
+}
+
+/// Interrupts and dispels, per report and character.
+///
+/// Deliberately NOT per fight. `table(dataType: Interrupts)` sums everything
+/// in the requested range and puts no fight id on its entries, so per-fight
+/// numbers could only be produced by splitting a total up arbitrarily. One
+/// request covers a whole report for the same few points a single pull costs,
+/// so this is both the honest granularity and by far the cheaper one.
+model ReportUtility {
+  id          String @id @default(cuid())
+  reportId    String
+  characterId String
+  interrupts  Int    @default(0)
+  dispels     Int    @default(0)
+
+  report    Report    @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([reportId, characterId])
+  @@index([characterId])
 }
 
 model Fight {
@@ -377,6 +403,8 @@ model Fight {
   @@unique([reportId, wclFightId])
   @@index([encounterId, kill])
   @@index([startTime])
+  // Backs the "what is left to do" scan over the whole table.
+  @@index([damageTakenImported])
 }
 
 model FightParticipant {

@@ -18,6 +18,7 @@ import { importRankings } from './import/rankings';
 import { importDeaths } from './import/deaths';
 import { rebuildSessions } from './import/sessions';
 import { importDamageTakenForReport } from './import/damage-taken';
+import { importUtilityForReport } from './import/interrupts';
 import { GuildByNameDocument, GuildReportsDocument } from '@ina/wcl';
 import { hashPassword } from '@ina/core';
 
@@ -31,6 +32,7 @@ const COMMANDS = [
   'deaths',
   'sessions',
   'damage-taken',
+  'interrupts',
   'account',
 ] as const;
 type Command = (typeof COMMANDS)[number];
@@ -580,6 +582,76 @@ async function runDamageTaken(limit: number | undefined): Promise<void> {
  * The password is hashed with the same function the login verifies against; a
  * plain text password is never stored.
  */
+/**
+ * Backfills interrupts and dispels.
+ *
+ * One request per report rather than per fight — see import/interrupts.ts for
+ * why that is the honest granularity and not just the cheap one. Roughly 20
+ * points per report, so the whole history fits inside a single hour's budget.
+ */
+async function runInterrupts(limit: number | undefined): Promise<void> {
+  const client = new WclClient({
+    onRateLimit: (snapshot) => {
+      const until = new Date(Date.now() + snapshot.pointsResetIn * 1000);
+      console.log(`  ⏸  Budget erschöpft — warte bis ${until.toLocaleTimeString('de-DE')}`);
+    },
+  });
+  const started = Date.now();
+
+  const pending = await prisma.report.findMany({
+    where: { utilityImported: false, contentsArchived: false, fights: { some: {} } },
+    orderBy: { startTime: 'asc' },
+    select: {
+      id: true,
+      code: true,
+      fights: { orderBy: { endOffsetMs: 'desc' }, take: 1, select: { endOffsetMs: true } },
+    },
+    ...(limit === undefined ? {} : { take: limit }),
+  });
+
+  const total = await prisma.report.count({ where: { contentsArchived: false } });
+  console.log(`Unterbrechungen und Dispels: ${pending.length} von ${total} Reports offen
+`);
+
+  let done = 0;
+  let rows = 0;
+  let interrupts = 0;
+  let dispels = 0;
+  let archived = 0;
+  let failed = 0;
+
+  for (const report of pending) {
+    const endOffsetMs = report.fights[0]?.endOffsetMs ?? 0;
+    const result = await importUtilityForReport(
+      { id: report.id, code: report.code, endOffsetMs },
+      client,
+    );
+    done += result.reports;
+    rows += result.rows;
+    interrupts += result.interrupts;
+    dispels += result.dispels;
+    archived += result.archived;
+    failed += result.failed;
+
+    const elapsed = (Date.now() - started) / 1000;
+    const rate = done / Math.max(elapsed, 1);
+    const remaining = pending.length - done - archived - failed;
+    console.log(
+      `  ${String(done).padStart(4)}/${pending.length} Reports · ${interrupts} Unterbr. · ` +
+        `${dispels} Dispels · noch ~${Math.round(remaining / Math.max(rate, 0.01) / 60)} min`,
+    );
+  }
+
+  console.log(`
+  Reports         ${done}`);
+  console.log(`  Zeilen          ${rows}`);
+  console.log(`  Unterbrechungen ${interrupts}`);
+  console.log(`  Dispels         ${dispels}`);
+  console.log(`  Archiviert      ${archived}`);
+  console.log(`  Fehlgeschlagen  ${failed}`);
+  console.log(`  Dauer           ${((Date.now() - started) / 60_000).toFixed(1)} min`);
+}
+
 async function runAccount(
   email: string | undefined,
   options: { password?: string; displayName?: string; realName?: string; admin: boolean },
@@ -678,6 +750,11 @@ async function main(): Promise<void> {
     case 'damage-taken': {
       const limitArg = process.argv.find((a) => a.startsWith('--limit='));
       await runDamageTaken(limitArg ? Number(limitArg.split('=')[1]) : undefined);
+      break;
+    }
+    case 'interrupts': {
+      const limitArg = process.argv.find((a) => a.startsWith('--limit='));
+      await runInterrupts(limitArg ? Number(limitArg.split('=')[1]) : undefined);
       break;
     }
     case 'sessions':

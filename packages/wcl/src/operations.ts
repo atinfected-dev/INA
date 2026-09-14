@@ -324,3 +324,31 @@ query ReportDamageTaken($code: String!, $fightIDs: [Int]) {
   }
 }
 `);
+
+/**
+ * Interrupts and dispels, fetched together.
+ *
+ * Both are small tables, so asking for them in one request halves the round
+ * trips. `fightIDs` is optional: whether a whole report can be fetched at once
+ * depends on whether the entries name their fight, which is verified against a
+ * real response before the importer relies on it.
+ */
+export const ReportInterruptsDispelsDocument = graphql(`
+query ReportInterruptsDispels($code: String!, $fightIDs: [Int], $encounterID: Int, $difficulty: Int, $killType: KillType, $startTime: Float, $endTime: Float) {
+  reportData {
+    report(code: $code) {
+      code
+      region { slug }
+      masterData {
+        actors(type: "Player") {
+          id
+          name
+          server
+        }
+      }
+      interrupts: table(dataType: Interrupts, fightIDs: $fightIDs, encounterID: $encounterID, difficulty: $difficulty, killType: $killType, startTime: $startTime, endTime: $endTime)
+      dispels: table(dataType: Dispels, fightIDs: $fightIDs, encounterID: $encounterID, difficulty: $difficulty, killType: $killType, startTime: $startTime, endTime: $endTime)
+    }
+  }
+}
+`);

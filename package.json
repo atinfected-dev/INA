@@ -27,6 +27,7 @@
     "deaths": "pnpm --filter @ina/worker run cli deaths",
     "sessions": "pnpm --filter @ina/worker run cli sessions",
     "damage-taken": "pnpm --filter @ina/worker run cli damage-taken",
+    "interrupts": "pnpm --filter @ina/worker run cli interrupts",
     "account": "pnpm --filter @ina/worker run cli account"
   },
   "devDependencies": {
