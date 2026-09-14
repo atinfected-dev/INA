@@ -26,13 +26,25 @@ export const CLASS_NAMES = [
 
 export type WowClass = (typeof CLASS_NAMES)[number];
 
-/** Maps a class name to the CSS variable holding its colour. */
+/**
+ * Maps a class name to the CSS variable holding its colour.
+ *
+ * Matching strips everything but letters, because the same class arrives
+ * spelled differently depending on the endpoint: Warcraft Logs reports
+ * "DeathKnight", the display name is "Death Knight", and the CSS variable is
+ * `--class-death-knight`. Comparing the spellings directly left every Death
+ * Knight uncoloured.
+ */
+const CLASS_VARS = new Map(
+  CLASS_NAMES.map((name) => [
+    name.toLowerCase().replace(/[^a-z]/g, ''),
+    `var(--class-${name.toLowerCase().replace(/\s+/g, '-')})`,
+  ]),
+);
+
 export function classVar(className: string | null | undefined): string {
   if (!className) return 'var(--text-primary)';
-  const slug = className.trim().toLowerCase().replace(/\s+/g, '-');
-  return CLASS_NAMES.some((c) => c.toLowerCase().replace(/\s+/g, '-') === slug)
-    ? `var(--class-${slug})`
-    : 'var(--text-primary)';
+  return CLASS_VARS.get(className.toLowerCase().replace(/[^a-z]/g, '')) ?? 'var(--text-primary)';
 }
 
 export interface ParseBracket {
