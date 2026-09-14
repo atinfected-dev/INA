@@ -39,6 +39,18 @@ export interface LatestNight {
   pulls: number;
   kills: { boss: string; difficulty: string | null }[];
   zone: string | null;
+  zoneSlug: string | null;
+}
+
+export interface RaidTile {
+  name: string;
+  slug: string;
+  expansion: string;
+  expansionSlug: string;
+  pulls: number;
+  kills: number;
+  from: Date;
+  to: Date;
 }
 
 export interface Landing {
@@ -49,12 +61,25 @@ export interface Landing {
   titles: HallOfFameHolder[];
   records: RecordEntry[];
   latest: LatestNight | null;
+  /** Every raid with real pulls behind it, in expansion order. */
+  raids: RaidTile[];
 }
 
 const FEATURED_RECORDS = ['bestParse', 'highestDps', 'mostWipes', 'fastestKill'] as const;
 
 export async function loadLanding(): Promise<Landing> {
-  const [guilds, sessionAgg, fights, kills, raiders, expansions, settings, records, latestSession] =
+  const [
+    guilds,
+    sessionAgg,
+    fights,
+    kills,
+    raiders,
+    expansions,
+    settings,
+    records,
+    raidRows,
+    latestSession,
+  ] =
     await Promise.all([
       prisma.guild.findMany({ orderBy: { isDefault: 'desc' }, select: { name: true } }),
       prisma.raidSession.aggregate({
@@ -104,6 +129,34 @@ export async function loadLanding(): Promise<Landing> {
       `,
       loadSettings(),
       loadRecords(),
+      prisma.$queryRaw<
+        {
+          name: string;
+          slug: string;
+          expansion: string;
+          expansion_slug: string;
+          pulls: bigint;
+          kills: bigint;
+          from: Date;
+          to: Date;
+        }[]
+      >`
+        SELECT z.name,
+               z.slug,
+               x.name AS expansion,
+               x.slug AS expansion_slug,
+               COUNT(f.id)                        AS pulls,
+               COUNT(f.id) FILTER (WHERE f.kill)  AS kills,
+               MIN(f."startTime")                 AS "from",
+               MAX(f."startTime")                 AS "to"
+        FROM "Zone" z
+        JOIN "Expansion" x ON x.id = z."expansionId"
+        JOIN "Encounter" e ON e."zoneId" = z.id
+        JOIN "Fight" f     ON f."encounterId" = e.id
+        GROUP BY z.id, z.name, z.slug, x.name, x.slug, x."sortOrder"
+        HAVING COUNT(f.id) >= 10
+        ORDER BY x."sortOrder", MIN(f."startTime")
+      `,
       prisma.raidSession.findFirst({
         orderBy: { startTime: 'desc' },
         select: {
@@ -125,7 +178,7 @@ export async function loadLanding(): Promise<Landing> {
       orderBy: { startTime: 'asc' },
       select: {
         kill: true,
-        encounter: { select: { name: true, zone: { select: { name: true } } } },
+        encounter: { select: { name: true, zone: { select: { name: true, slug: true } } } },
         difficulty: { select: { name: true } },
       },
     });
@@ -142,6 +195,7 @@ export async function loadLanding(): Promise<Landing> {
           difficulty: fight.difficulty?.name ?? null,
         })),
       zone: nightFights.find((fight) => fight.encounter)?.encounter?.zone.name ?? null,
+      zoneSlug: nightFights.find((fight) => fight.encounter)?.encounter?.zone.slug ?? null,
     };
   }
 
@@ -177,6 +231,16 @@ export async function loadLanding(): Promise<Landing> {
     titles: titles.filter((holder) => holder.name && !holder.unavailable && holder.tiedWith.length <= 1),
     records: featured,
     latest,
+    raids: raidRows.map((row) => ({
+      name: row.name,
+      slug: row.slug,
+      expansion: row.expansion,
+      expansionSlug: row.expansion_slug,
+      pulls: Number(row.pulls),
+      kills: Number(row.kills),
+      from: row.from,
+      to: row.to,
+    })),
   };
 }
 

@@ -1,8 +1,8 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { Panel } from '../components/ui/frame';
 import { ClassName } from '../components/ui/bits';
 import { loadLanding } from '../lib/landing';
+import { HERO_ART, HONOURS_ART, expansionArt, zoneArt } from '../lib/zone-art';
 import { classIconUrl, formatAmount, formatDuration, formatNumber } from '../lib/wow';
 import styles from './landing.module.css';
 
@@ -45,27 +45,38 @@ function honourValue(value: number | null, unit: string): string {
   return de(value);
 }
 
+const monthYear = (date: Date): string =>
+  date.toLocaleDateString('de-DE', { month: 'short', year: 'numeric' });
+
 export default async function HomePage() {
   const landing = await loadLanding();
-  const { totals, expansions, titles, records, latest } = landing;
+  const { totals, expansions, titles, records, latest, raids } = landing;
 
-  // Optional real key art, used only as the deepest layer if someone drops it in.
-  const heroArt = existsSync(path.join(process.cwd(), 'public', 'hero.jpg'));
+  // A local painting in public/hero.jpg wins over the CDN one, if anyone ever
+  // wants to swap it without touching code.
+  const heroArt = existsSync(path.join(process.cwd(), 'public', 'hero.jpg'))
+    ? '/hero.jpg'
+    : HERO_ART;
 
   const years =
     totals.firstNight && totals.lastNight
       ? (totals.lastNight.getTime() - totals.firstNight.getTime()) / (365.25 * 86_400_000)
       : 0;
 
+  const latestArt = latest?.zoneSlug ? zoneArt(latest.zoneSlug, 'large') : null;
+
+  // Only raids Blizzard has a painting for. The two without one — heroic
+  // dungeons and challenge modes — are not raids, and an empty dark tile
+  // between Ulduar and Icecrown would only raise the question why.
+  const paintedRaids = raids.filter((raid) => zoneArt(raid.slug) !== null);
+
   return (
     <>
       <section className={styles.hero} aria-labelledby="hero-title">
-        {heroArt && <div className={styles.heroArt} style={{ backgroundImage: 'url(/hero.jpg)' }} />}
-        <div className={styles.peaksFar} />
+        <div className={styles.heroArt} style={{ backgroundImage: `url(${heroArt})` }} />
+        <div className={styles.heroWash} />
         <div className={styles.mistBack} />
-        <div className={styles.peaksMid} />
         <div className={styles.mistFront} />
-        <div className={styles.peaksNear} />
 
         <div className={styles.heroInner}>
           <p className={styles.kicker}>
@@ -118,69 +129,113 @@ export default async function HomePage() {
           <h2 id="journey" className={styles.sectionTitle}>
             Die Reise
           </h2>
+          <span className={styles.sectionLink}>
+            {de(expansions.length)} Erweiterungen · {de(paintedRaids.length)} Raids
+          </span>
+        </div>
+        <div className={styles.journey}>
+          {expansions.map((stop) => {
+            const art = expansionArt(stop.slug, 'small');
+            return (
+              <article key={stop.slug} className={styles.chapter}>
+                {art && (
+                  <div className={styles.chapterArt} style={{ backgroundImage: `url(${art})` }} />
+                )}
+                <div className={styles.chapterWash} />
+                <div className={styles.chapterBody}>
+                  <h3 className={styles.chapterName}>{stop.name}</h3>
+                  <p className={styles.chapterSpan}>
+                    {monthYear(stop.from)} – {monthYear(stop.to)}
+                  </p>
+                  <div className={styles.chapterFacts}>
+                    <span>
+                      <strong>{de(stop.raids)}</strong>Raids
+                    </span>
+                    <span>
+                      <strong>{de(stop.nights)}</strong>Abende
+                    </span>
+                    <span>
+                      <strong>{de(stop.kills)}</strong>Kills
+                    </span>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className={styles.section} aria-labelledby="raids">
+        <div className={styles.sectionHead}>
+          <h2 id="raids" className={styles.sectionTitle}>
+            Die Schlachtzüge
+          </h2>
           <a href="/raids" className={styles.sectionLink}>
             Alle Raidabende →
           </a>
         </div>
-        <div className={styles.journey}>
-          {expansions.map((stop) => (
-            <article key={stop.slug} className={styles.stop}>
-              <h3 className={styles.stopName}>{stop.name}</h3>
-              <p className={styles.stopSpan}>
-                {stop.from.toLocaleDateString('de-DE', { month: 'short', year: 'numeric' })} –{' '}
-                {stop.to.toLocaleDateString('de-DE', { month: 'short', year: 'numeric' })}
-              </p>
-              <div className={styles.stopFacts}>
-                <span>
-                  <strong>{de(stop.raids)}</strong>Raids
-                </span>
-                <span>
-                  <strong>{de(stop.nights)}</strong>Abende
-                </span>
-                <span>
-                  <strong>{de(stop.kills)}</strong>Kills
-                </span>
-              </div>
-            </article>
-          ))}
+        <div className={styles.tiles}>
+          {paintedRaids.map((raid) => {
+            const art = zoneArt(raid.slug, 'small');
+            return (
+              <a key={raid.slug} href="/raids" className={styles.tile}>
+                <div className={styles.tileArt} style={{ backgroundImage: `url(${art})` }} />
+                <div className={styles.tileWash} />
+                <div className={styles.tileBody}>
+                  <div className={styles.tileKicker}>{raid.expansion}</div>
+                  <h3 className={styles.tileName}>{raid.name}</h3>
+                  <div className={styles.tileFacts}>
+                    {de(raid.pulls)} Pulls · {de(raid.kills)} Kills ·{' '}
+                    {raid.from.toLocaleDateString('de-DE', { year: 'numeric' })}
+                    {raid.to.getFullYear() !== raid.from.getFullYear() &&
+                      `–${raid.to.toLocaleDateString('de-DE', { year: '2-digit' })}`}
+                  </div>
+                </div>
+              </a>
+            );
+          })}
         </div>
       </section>
 
       {titles.length > 0 && (
-        <section className={styles.section} aria-labelledby="honours">
-          <div className={styles.sectionHead}>
-            <h2 id="honours" className={styles.sectionTitle}>
-              Hall of Fame
-            </h2>
-            <a href="/hall-of-fame" className={styles.sectionLink}>
-              Alle Titel →
-            </a>
-          </div>
-          <div className={styles.honours}>
-            {titles.slice(0, 6).map((holder) => (
-              <article key={holder.title.title} className={styles.honour}>
-                {/* Official class icon from Blizzard's render CDN. */}
-                <img
-                  className={styles.honourIcon}
-                  src={classIconUrl(holder.className)}
-                  alt={holder.className ?? ''}
-                  width={48}
-                  height={48}
-                  loading="lazy"
-                />
-                <div>
-                  <h3 className={styles.honourTitle}>{holder.title.title}</h3>
-                  <p className={styles.honourHolder}>
-                    <a href={`/players/${encodeURIComponent(holder.name ?? '')}`}>
-                      <ClassName name={holder.name ?? '—'} className={holder.className} />
-                    </a>
-                  </p>
-                  <p className={styles.honourValue}>
-                    {holder.title.subtitle} · {honourValue(holder.value, holder.unit)}
-                  </p>
-                </div>
-              </article>
-            ))}
+        <section className={styles.honoursBand} aria-labelledby="honours">
+          <div className={styles.honoursArt} style={{ backgroundImage: `url(${HONOURS_ART})` }} />
+          <div className={styles.honoursWash} />
+          <div className={styles.bandInner}>
+            <div className={styles.sectionHead}>
+              <h2 id="honours" className={styles.sectionTitle}>
+                Hall of Fame
+              </h2>
+              <a href="/hall-of-fame" className={styles.sectionLink}>
+                Alle Titel →
+              </a>
+            </div>
+            <div className={styles.honours}>
+              {titles.slice(0, 6).map((holder) => (
+                <article key={holder.title.title} className={styles.honour}>
+                  {/* Official class icon from Blizzard's render CDN. */}
+                  <img
+                    className={styles.honourIcon}
+                    src={classIconUrl(holder.className)}
+                    alt={holder.className ?? ''}
+                    width={48}
+                    height={48}
+                    loading="lazy"
+                  />
+                  <div>
+                    <h3 className={styles.honourTitle}>{holder.title.title}</h3>
+                    <p className={styles.honourHolder}>
+                      <a href={`/players/${encodeURIComponent(holder.name ?? '')}`}>
+                        <ClassName name={holder.name ?? '—'} className={holder.className} />
+                      </a>
+                    </p>
+                    <p className={styles.honourValue}>
+                      {holder.title.subtitle} · {honourValue(holder.value, holder.unit)}
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
           </div>
         </section>
       )}
@@ -218,41 +273,52 @@ export default async function HomePage() {
             <h2 id="latest" className={styles.sectionTitle}>
               Letzter Raidabend
             </h2>
-            <span className={styles.sectionLink}>
-              {latest.date.toLocaleDateString('de-DE', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-              })}
-            </span>
+            <a href="/raids" className={styles.sectionLink}>
+              Alle Abende →
+            </a>
           </div>
-          <Panel title={latest.zone ?? 'Raidabend'} subtitle={`${de(latest.raiders)} Raider`}>
-            <div className={styles.latest}>
-              <div>
-                <div className={styles.counterValue}>{formatDuration(latest.combatMs)}</div>
-                <div className={styles.counterLabel}>Kampfzeit</div>
-              </div>
-              <div>
-                <div className={styles.counterValue}>{de(latest.pulls)}</div>
-                <div className={styles.counterLabel}>Pulls</div>
-              </div>
-              <div>
-                <div className={styles.counterValue}>{de(latest.kills.length)}</div>
-                <div className={styles.counterLabel}>Kills</div>
-              </div>
-            </div>
-            {latest.kills.length > 0 && (
-              <ul className={styles.killList} style={{ marginTop: '1rem' }}>
-                {latest.kills.map((kill, index) => (
-                  <li key={`${kill.boss}-${index}`} className={styles.kill}>
-                    {kill.boss}
-                    {kill.difficulty ? ` · ${kill.difficulty}` : ''}
-                  </li>
-                ))}
-              </ul>
+          <article className={styles.latestCard}>
+            {latestArt && (
+              <div className={styles.latestArt} style={{ backgroundImage: `url(${latestArt})` }} />
             )}
-          </Panel>
+            <div className={styles.latestWash} />
+            <div className={styles.latestBody}>
+              <h3 className={styles.latestZone}>{latest.zone ?? 'Raidabend'}</h3>
+              <p className={styles.latestMeta}>
+                {latest.date.toLocaleDateString('de-DE', {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
+                })}{' '}
+                · {de(latest.raiders)} Raider
+              </p>
+              <div className={styles.latest}>
+                <div>
+                  <div className={styles.counterValue}>{formatDuration(latest.combatMs)}</div>
+                  <div className={styles.counterLabel}>Kampfzeit</div>
+                </div>
+                <div>
+                  <div className={styles.counterValue}>{de(latest.pulls)}</div>
+                  <div className={styles.counterLabel}>Pulls</div>
+                </div>
+                <div>
+                  <div className={styles.counterValue}>{de(latest.kills.length)}</div>
+                  <div className={styles.counterLabel}>Kills</div>
+                </div>
+              </div>
+              {latest.kills.length > 0 && (
+                <ul className={styles.killList}>
+                  {latest.kills.map((kill, index) => (
+                    <li key={`${kill.boss}-${index}`} className={styles.kill}>
+                      {kill.boss}
+                      {kill.difficulty ? ` · ${kill.difficulty}` : ''}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </article>
         </section>
       )}
     </>

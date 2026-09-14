@@ -1,26 +1,42 @@
 /*
- * The front door, in the key of Mists of Pandaria.
+ * The front door, in the key of Mists of Pandaria — with Blizzard's own
+ * paintings behind it.
  *
- * Jade and mist over the site's gold: the Pandaria palette is layered on, not
- * swapped in, so the inner pages keep their look and the landing page reads as
- * the same site dressed for the occasion.
+ * The raid artwork comes from Blizzard's render CDN (see lib/zone-art.ts):
+ * the Terrace of Endless Spring behind the hero, the Throne of Thunder behind
+ * the Hall of Fame, and every raid the guild ever set foot in as its own tile.
+ * The jade wash, the drifting mist and the gold stay on top, so the art reads
+ * as the world the numbers come from rather than as wallpaper.
  *
- * Every piece of atmosphere here — peaks, mist, the cloud scroll — is drawn in
- * CSS and inline SVG. It scales to any width, costs no image request, and
- * respects reduced-motion. If a real piece of key art is dropped in as
- * public/hero.jpg it is used as the deepest layer; nothing else changes.
+ * Every image is loaded from Blizzard's host at the size the layout needs:
+ * 2400×1200 for the two full-bleed bands, 600×300 for cards and tiles.
  */
+
+/* --- Full-bleed bands ---------------------------------------------------- */
+
+.band {
+  position: relative;
+  overflow: hidden;
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  padding-inline: 1.25rem;
+  background-color: var(--mist-900);
+}
+
+.bandArt {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  pointer-events: none;
+}
 
 /* --- Hero ------------------------------------------------------------------ */
 
 .hero {
-  position: relative;
-  overflow: hidden;
-  /* Break out of the content column to the viewport edges. */
-  width: 100vw;
-  margin-inline: calc(50% - 50vw);
+  composes: band;
   margin-top: -2rem;
-  min-height: 34rem;
+  min-height: 38rem;
   display: grid;
   /* One explicit column, capped and free to shrink to nothing. An implicit
      `auto` column would take its minimum from the content's min-content
@@ -30,69 +46,45 @@
   justify-content: center;
   align-items: center;
   padding-block: 5rem 4rem;
-  padding-inline: 1.25rem;
-  background:
-    radial-gradient(ellipse 70% 55% at 50% 30%, rgb(58 168 130 / 22%), transparent 65%),
-    linear-gradient(180deg, var(--mist-800) 0%, var(--mist-900) 55%, var(--bg-base) 100%);
   border-bottom: 1px solid var(--gold-700);
 }
 
 .heroArt {
+  composes: bandArt;
+  background-position: center 40%;
+}
+
+/* The wash that keeps the type readable over a painting: dark at the top
+   where the title sits, clear in the middle where the art should show, and
+   fading into the page ground at the bottom. */
+.heroWash {
   position: absolute;
   inset: 0;
-  background-size: cover;
-  background-position: center 30%;
-  opacity: 0.55;
-  /* Let the jade wash sit on top of the art so the type stays readable. */
-  mask-image: linear-gradient(180deg, #000 30%, transparent 100%);
-}
-
-/* Three bands of peaks, back to front. Inline SVG data URIs so the shapes are
-   real paths, not gradients pretending to be mountains. */
-.peaks {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 62%;
-  background-repeat: repeat-x;
-  background-position: bottom center;
-  background-size: 1600px 100%;
   pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 38%, rgb(6 12 10 / 55%), transparent 70%),
+    linear-gradient(
+      180deg,
+      rgb(10 21 18 / 78%) 0%,
+      rgb(10 21 18 / 30%) 35%,
+      rgb(10 21 18 / 25%) 60%,
+      var(--bg-base) 100%
+    );
 }
 
-.peaksFar {
-  composes: peaks;
-  opacity: 0.55;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 400' preserveAspectRatio='none'><path d='M0 400V300l90-70 70 40 110-120 80 60 120-90 100 110 90-50 110 70 120-140 90 100 110-60 120 90 80-40 110 50V400z' fill='%2312342c'/></svg>");
-}
-
-.peaksMid {
-  composes: peaks;
-  height: 46%;
-  opacity: 0.8;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 300' preserveAspectRatio='none'><path d='M0 300V220l120-90 90 50 110-110 100 80 130-60 110 100 100-70 140 90 110-120 130 110 100-40 120 70 140-60V300z' fill='%230e2521'/></svg>");
-}
-
-.peaksNear {
-  composes: peaks;
-  height: 30%;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 200' preserveAspectRatio='none'><path d='M0 200V150l160-70 120 50 150-90 130 70 160-40 150 80 140-60 170 60 140-70 160 90 120-30V200z' fill='%230a1512'/></svg>");
-}
-
-/* Mist: soft radial blobs that drift. Two layers moving at different speeds
-   read as depth; one layer reads as a screensaver. */
+/* Mist: soft radial blobs that drift over the painting. Two layers moving
+   at different speeds read as depth; one layer reads as a screensaver. */
 .mist {
   position: absolute;
   inset: -20% -10%;
   pointer-events: none;
   background-repeat: no-repeat;
-  filter: blur(2px);
+  filter: blur(3px);
 }
 
 .mistBack {
   composes: mist;
-  opacity: 0.5;
+  opacity: 0.55;
   background-image:
     radial-gradient(ellipse 30% 18% at 20% 70%, rgb(143 224 189 / 22%), transparent 70%),
     radial-gradient(ellipse 40% 20% at 75% 62%, rgb(143 224 189 / 16%), transparent 70%);
@@ -136,21 +128,22 @@
   font-size: 0.78rem;
   letter-spacing: 0.32em;
   text-transform: uppercase;
-  color: var(--jade-300);
+  color: var(--jade-200);
+  text-shadow: 0 1px 3px #000;
 }
 
 .title {
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
   font-weight: 400;
-  font-size: clamp(2.6rem, 7vw, 5.2rem);
+  font-size: clamp(2.6rem, 7vw, 5.4rem);
   line-height: 1.02;
   letter-spacing: 0.02em;
   background: linear-gradient(180deg, var(--gold-100) 0%, var(--gold-200) 45%, var(--gold-400) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  filter: drop-shadow(0 2px 0 #000) drop-shadow(0 0 28px rgb(58 168 130 / 35%));
+  filter: drop-shadow(0 2px 0 #000) drop-shadow(0 0 30px rgb(58 168 130 / 45%));
 }
 
 .tagline {
@@ -158,17 +151,20 @@
   max-width: 44rem;
   font-size: 1.05rem;
   line-height: 1.6;
-  color: var(--text-secondary);
+  color: var(--text-primary);
+  text-shadow:
+    0 1px 4px #000,
+    0 0 18px rgb(0 0 0 / 80%);
 }
 
-/* The Pandaren cloud scroll: a hairline with a curling cloud at the centre.
-   Mirrored halves, so one path does. */
+/* The Pandaren cloud scroll: a hairline with a curling cloud at the centre. */
 .scroll {
   display: block;
   width: min(34rem, 80%);
   height: 28px;
   margin: 1.4rem auto 0;
   color: var(--gold-300);
+  filter: drop-shadow(0 1px 2px #000);
 }
 
 .ctaRow {
@@ -185,31 +181,32 @@
   font-size: 0.95rem;
   letter-spacing: 0.08em;
   color: var(--gold-100);
-  background: linear-gradient(180deg, rgb(200 170 110 / 16%), rgb(200 170 110 / 4%));
+  background: linear-gradient(180deg, rgb(20 16 10 / 85%), rgb(8 6 4 / 85%));
   border: 1px solid var(--gold-400);
   box-shadow:
     inset 0 0 0 1px #000,
-    0 2px 14px rgb(0 0 0 / 60%);
+    0 2px 14px rgb(0 0 0 / 70%);
   text-decoration: none;
+  backdrop-filter: blur(3px);
 }
 
 .cta:hover {
   color: #fff;
   border-color: var(--gold-200);
-  background: linear-gradient(180deg, rgb(200 170 110 / 26%), rgb(200 170 110 / 8%));
+  background: linear-gradient(180deg, rgb(60 48 26 / 90%), rgb(20 16 10 / 90%));
   text-decoration: none;
 }
 
 .ctaJade {
   composes: cta;
   color: var(--jade-100);
-  border-color: var(--jade-400);
-  background: linear-gradient(180deg, rgb(58 168 130 / 22%), rgb(58 168 130 / 6%));
+  border-color: var(--jade-300);
+  background: linear-gradient(180deg, rgb(28 83 67 / 85%), rgb(10 21 18 / 85%));
 }
 
 .ctaJade:hover {
-  border-color: var(--jade-200);
-  background: linear-gradient(180deg, rgb(58 168 130 / 32%), rgb(58 168 130 / 10%));
+  border-color: var(--jade-100);
+  background: linear-gradient(180deg, rgb(42 125 98 / 90%), rgb(18 52 44 / 90%));
 }
 
 /* --- Headline numbers ---------------------------------------------------- */
@@ -228,10 +225,10 @@
 .counter {
   padding: 1rem 0.6rem;
   text-align: center;
-  background: linear-gradient(180deg, rgb(10 21 18 / 70%), rgb(6 5 4 / 70%));
-  border: 1px solid var(--jade-700);
-  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 60%);
-  backdrop-filter: blur(4px);
+  background: linear-gradient(180deg, rgb(10 21 18 / 78%), rgb(6 5 4 / 82%));
+  border: 1px solid var(--jade-600);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 70%);
+  backdrop-filter: blur(6px);
 }
 
 .counterValue {
@@ -273,6 +270,7 @@
   font-size: 1.6rem;
   color: var(--gold-200);
   letter-spacing: 0.03em;
+  text-shadow: 0 1px 3px #000;
 }
 
 .sectionLink {
@@ -280,84 +278,198 @@
   color: var(--jade-300);
 }
 
-/* --- Journey: the expansions as a jade timeline -------------------------- */
+/* --- Journey: one painted chapter per expansion --------------------------- */
 
 .journey {
   display: grid;
-  gap: 0.9rem;
-  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
+}
+
+.chapter {
   position: relative;
-}
-
-.journey::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0.85rem;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--jade-500) 12%, var(--jade-500) 88%, transparent);
-}
-
-.stop {
-  position: relative;
-  padding: 2rem 1rem 1rem;
-  background: linear-gradient(180deg, var(--mist-800), var(--bg-panel));
-  border: 1px solid var(--jade-700);
-}
-
-.stop::before {
-  content: '';
-  position: absolute;
-  top: 0.5rem;
-  left: 50%;
-  width: 0.8rem;
-  height: 0.8rem;
-  transform: translateX(-50%) rotate(45deg);
-  background: var(--jade-300);
+  overflow: hidden;
+  min-height: 15rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1.1rem 1.1rem 1rem;
+  border: 1px solid var(--gold-600);
   box-shadow:
-    0 0 0 3px var(--mist-900),
-    0 0 12px var(--jade-400);
+    inset 0 0 0 1px #000,
+    0 4px 20px rgb(0 0 0 / 60%);
+  background-color: var(--mist-900);
 }
 
-.stopName {
+.chapterArt {
+  composes: bandArt;
+  transition: transform 600ms ease;
+}
+
+.chapter:hover .chapterArt {
+  transform: scale(1.04);
+}
+
+.chapterWash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgb(6 5 4 / 10%) 0%,
+    rgb(6 5 4 / 55%) 55%,
+    rgb(6 5 4 / 92%) 100%
+  );
+}
+
+.chapterBody {
+  position: relative;
+  z-index: 1;
+}
+
+.chapterName {
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
-  font-size: 1.05rem;
-  color: var(--gold-200);
-  text-align: center;
+  font-size: 1.35rem;
+  color: var(--gold-100);
+  text-shadow: 0 1px 3px #000;
 }
 
-.stopSpan {
-  margin: 0.2rem 0 0.7rem;
-  text-align: center;
+.chapterSpan {
+  margin: 0.15rem 0 0.7rem;
   font-size: 0.78rem;
-  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--jade-200);
 }
 
-.stopFacts {
+.chapterFacts {
   display: flex;
-  justify-content: space-around;
-  gap: 0.5rem;
-  font-size: 0.82rem;
+  gap: 1.4rem;
+  font-size: 0.78rem;
   color: var(--text-secondary);
 }
 
-.stopFacts strong {
+.chapterFacts strong {
   display: block;
   font-family: var(--font-display), Georgia, serif;
   font-weight: 400;
-  font-size: 1.15rem;
-  color: var(--jade-200);
-  text-align: center;
+  font-size: 1.2rem;
+  color: var(--gold-200);
 }
 
-/* --- Hall of Fame cards -------------------------------------------------- */
+/* --- Every raid as a painted tile ---------------------------------------- */
+
+.tiles {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(15rem, 100%), 1fr));
+}
+
+.tile {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 2 / 1;
+  display: flex;
+  align-items: flex-end;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--jade-700);
+  box-shadow: inset 0 0 0 1px #000;
+  background-color: var(--mist-900);
+  color: inherit;
+  text-decoration: none;
+}
+
+.tile:hover {
+  border-color: var(--jade-300);
+  text-decoration: none;
+}
+
+.tileArt {
+  composes: bandArt;
+  transition: transform 600ms ease;
+}
+
+.tile:hover .tileArt {
+  transform: scale(1.05);
+}
+
+.tileWash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 30%, rgb(6 5 4 / 88%) 100%);
+}
+
+.tileBody {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+.tileKicker {
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--jade-200);
+}
+
+.tileName {
+  margin: 0.1rem 0 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.05rem;
+  color: var(--gold-100);
+  text-shadow: 0 1px 3px #000;
+}
+
+.tileFacts {
+  margin-top: 0.15rem;
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+}
+
+/* --- Hall of Fame: a band with the Throne of Thunder behind it ----------- */
+
+.honoursBand {
+  composes: band;
+  margin-top: 3rem;
+  padding-block: 3rem;
+  border-top: 1px solid var(--gold-700);
+  border-bottom: 1px solid var(--gold-700);
+}
+
+.honoursArt {
+  composes: bandArt;
+  background-position: center 35%;
+  /* Fixed on wide screens for the parallax feel; on phones fixed backgrounds
+     misbehave, so they scroll with the page there. */
+  background-attachment: fixed;
+}
+
+@media (max-width: 900px) {
+  .honoursArt {
+    background-attachment: scroll;
+  }
+}
+
+.honoursWash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgb(6 5 4 / 85%), rgb(6 5 4 / 62%) 50%, rgb(6 5 4 / 88%));
+}
+
+.bandInner {
+  position: relative;
+  z-index: 1;
+  max-width: var(--content-max);
+  margin: 0 auto;
+}
 
 .honours {
   display: grid;
   gap: 0.9rem;
-  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
 }
 
 .honour {
@@ -366,9 +478,10 @@
   gap: 0.9rem;
   align-items: center;
   padding: 0.9rem 1rem;
-  background: linear-gradient(135deg, var(--mist-800), var(--bg-panel) 70%);
+  background: linear-gradient(135deg, rgb(14 30 26 / 88%), rgb(21 18 13 / 88%) 70%);
   border: 1px solid var(--gold-600);
   box-shadow: inset 0 0 0 1px #000;
+  backdrop-filter: blur(4px);
 }
 
 .honourIcon {
@@ -404,7 +517,7 @@
 .records {
   display: grid;
   gap: 0.9rem;
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
 }
 
 .record {
@@ -431,16 +544,66 @@
   color: var(--text-muted);
 }
 
-/* --- Latest night -------------------------------------------------------- */
+/* --- Latest night, painted with its own raid ----------------------------- */
+
+.latestCard {
+  position: relative;
+  overflow: hidden;
+  padding: 1.3rem 1.3rem 1.2rem;
+  border: 1px solid var(--gold-600);
+  box-shadow:
+    inset 0 0 0 1px #000,
+    0 4px 20px rgb(0 0 0 / 60%);
+  background-color: var(--mist-900);
+}
+
+.latestArt {
+  composes: bandArt;
+  background-position: center 40%;
+}
+
+.latestWash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgb(6 5 4 / 92%) 0%,
+    rgb(6 5 4 / 78%) 55%,
+    rgb(6 5 4 / 45%) 100%
+  );
+}
+
+.latestBody {
+  position: relative;
+  z-index: 1;
+}
+
+.latestZone {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.4rem;
+  color: var(--gold-100);
+  text-shadow: 0 1px 3px #000;
+}
+
+.latestMeta {
+  margin: 0.15rem 0 1rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--jade-200);
+}
 
 .latest {
   display: grid;
   gap: 1.2rem 2rem;
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(9rem, 100%), 1fr));
+  max-width: 34rem;
 }
 
 .killList {
-  margin: 0;
+  margin: 1rem 0 0;
   padding: 0;
   list-style: none;
   display: flex;
@@ -451,9 +614,9 @@
 .kill {
   padding: 0.25rem 0.6rem;
   font-size: 0.82rem;
-  border: 1px solid var(--jade-600);
+  border: 1px solid var(--jade-500);
   color: var(--jade-100);
-  background: rgb(58 168 130 / 8%);
+  background: rgb(10 21 18 / 80%);
 }
 
 @media (max-width: 640px) {

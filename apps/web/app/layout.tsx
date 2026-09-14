@@ -119,8 +119,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <footer className={styles.footer}>
           <p style={{ margin: 0 }}>
             Nicht-kommerzielle Fanseite. Daten über die offizielle Warcraft-Logs-API v2;
-            Klassen-Icons von Blizzards offiziellem Render-CDN, verwendet gemäß der Blizzard Fan
-            Content Policy.
+            Raid-Artworks und Klassen-Icons von Blizzards offiziellem Render-CDN, verwendet gemäß
+            der Blizzard Fan Content Policy.
           </p>
           <p style={{ margin: '0.4rem 0 0' }}>
             World of Warcraft, Warcraft und Blizzard Entertainment sind Marken oder eingetragene

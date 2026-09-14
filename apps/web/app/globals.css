@@ -8,10 +8,11 @@
  * the rows themselves does not. Showcase pages (Hall of Fame, Records) may go
  * further; working pages stay calm.
  *
- * Ornaments are drawn in CSS/SVG. The only Blizzard assets are the official
- * class icons from Blizzard's own render CDN — the ones the Battle.net API
- * hands out — used under the Blizzard Fan Content Policy on this
- * non-commercial fan site, with the required notice in the footer.
+ * Ornaments are drawn in CSS/SVG. The Blizzard assets are the official class
+ * icons and the Encounter Journal raid paintings from Blizzard's own render
+ * CDN — the ones the Battle.net API hands out — used under the Blizzard Fan
+ * Content Policy on this non-commercial fan site, with the required notice in
+ * the footer. Nothing is scraped or re-hosted.
  */
 
 :root {
@@ -99,6 +100,14 @@
 
 html {
   color-scheme: dark;
+}
+
+html {
+  /* The full-bleed bands on the front door are 100vw wide, and 100vw
+     includes the vertical scrollbar — without this the page gains a few
+     pixels of sideways scroll on every desktop. `clip` rather than `hidden`
+     so no scroll container is created and fixed backgrounds keep working. */
+  overflow-x: clip;
 }
 
 body {
