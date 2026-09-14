@@ -90,12 +90,17 @@ export default async function HomePage() {
           </h1>
           <CloudScroll />
           <p className={styles.tagline}>
-            {formatNumber(years, 1)} Jahre Raidgeschichte, aus {de(totals.nights)} Abenden
-            zusammengesetzt. Jeder Pull, jeder Wipe, jeder Erstkill — nach Personen
-            zusammengerechnet, nicht nach Charakteren, und nachvollziehbar bis zur Formel.
+            {de(Math.round(years))} Jahre Raidgeschichte, aus {de(totals.nights)} Abenden
+            zusammengesetzt. Jeder Pull, jeder Wipe, jeder Erstkill.
+            <br />
+            Registriert euch und beansprucht eure Charaktere, um Erfolge zu erhalten oder in der
+            Hall of Fame zu landen.
           </p>
           <div className={styles.ctaRow}>
-            <a href="/mitglieder" className={styles.ctaJade}>
+            <a href="/registrieren" className={styles.ctaJade}>
+              Registrieren
+            </a>
+            <a href="/mitglieder" className={styles.cta}>
               Mitglieder
             </a>
             <a href="/leaderboards" className={styles.cta}>
