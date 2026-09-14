@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { Panel } from '../../components/ui/frame';
+import { OrnateFrame, Panel } from '../../components/ui/frame';
+import { PAGE_ART, zoneArt } from '../../lib/zone-art';
 import { ClassName } from '../../components/ui/bits';
 import { DataTable, type Column } from '../../components/ui/data-table';
 import { loadPlayerIndex, type PlayerIndexRow } from '../../lib/players';
@@ -58,10 +59,11 @@ export default async function PlayersPage({ searchParams }: { searchParams: Prom
 
   return (
     <>
-      <h1>Spieler</h1>
-      <p className={styles.intro}>
-        {de(all.length)} Charaktere haben mindestens einen Boss-Pull in den importierten Logs.
-      </p>
+      <OrnateFrame art={PAGE_ART.players} title="Spieler">
+        <p className={styles.intro} style={{ margin: 0 }}>
+          {de(all.length)} Charaktere haben mindestens einen Boss-Pull in den importierten Logs.
+        </p>
+      </OrnateFrame>
 
       <Panel title="Suche">
         <form method="get" action="/players" className={styles.filterRow}>

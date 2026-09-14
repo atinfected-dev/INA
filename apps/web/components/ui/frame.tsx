@@ -10,6 +10,12 @@ interface FrameProps {
   /** Removes body padding, for panels whose child is a full-bleed table. */
   flush?: boolean;
   className?: string;
+  /**
+   * URL of a raid painting to show behind the frame (see lib/zone-art.ts).
+   * Ornate frames only — a working panel with a painting behind its table
+   * would be exactly the gilded-row mistake this design avoids.
+   */
+  art?: string;
 }
 
 /**
@@ -26,10 +32,19 @@ export function OrnateFrame({
   children,
   flush = false,
   className,
+  art,
 }: FrameProps) {
   return (
-    <section className={[styles.frame, className].filter(Boolean).join(' ')}>
+    <section
+      className={[styles.frame, art ? styles.painted : null, className].filter(Boolean).join(' ')}
+    >
       <div className={styles.inner}>
+        {art && (
+          <>
+            <div className={styles.art} style={{ backgroundImage: `url(${art})` }} />
+            <div className={styles.artWash} />
+          </>
+        )}
         {(title || actions) && (
           <header className={styles.header}>
             <div>

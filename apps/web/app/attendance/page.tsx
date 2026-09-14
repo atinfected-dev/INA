@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { OrnateFrame, Panel } from '../../components/ui/frame';
+import { PAGE_ART, zoneArt } from '../../lib/zone-art';
 import { ClassName, Divider, StatBar } from '../../components/ui/bits';
 import { DataTable, type Column } from '../../components/ui/data-table';
 import {
@@ -106,6 +107,7 @@ export default async function AttendancePage({ searchParams }: { searchParams: P
   return (
     <>
       <OrnateFrame
+        art={PAGE_ART.attendance}
         title="Attendance"
         subtitle={
           overview.firstNight && overview.lastNight

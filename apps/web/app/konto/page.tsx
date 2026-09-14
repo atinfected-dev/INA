@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { ClaimStatus } from '@ina/db';
 import { OrnateFrame, Panel } from '../../components/ui/frame';
+import { PAGE_ART, zoneArt } from '../../lib/zone-art';
 import { PinForm, type PinOption } from '../../components/achievements/pin-form';
 import {
   MAX_PINNED,
@@ -73,6 +74,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   return (
     <>
       <OrnateFrame
+        art={PAGE_ART.account}
         title={viewer.displayName}
         subtitle={[viewer.realName, viewer.email, viewer.isAdmin ? 'Offizier' : null]
           .filter(Boolean)

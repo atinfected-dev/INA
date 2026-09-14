@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { OrnateFrame, Panel } from '../../components/ui/frame';
+import { PAGE_ART, zoneArt } from '../../lib/zone-art';
 import { ClassName, Divider } from '../../components/ui/bits';
 import { DataTable, type Column } from '../../components/ui/data-table';
 import { MEMBER_MIN_NIGHTS, loadMembers, type MemberRow } from '../../lib/members';
@@ -85,6 +86,7 @@ export default async function MembersPage({ searchParams }: { searchParams: Prom
   return (
     <>
       <OrnateFrame
+        art={PAGE_ART.members}
         title="Gildenmitglieder"
         subtitle={`${formatNumber(members.length)} Mitglieder · alles über alle Charaktere zusammengerechnet`}
       >

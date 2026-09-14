@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { OrnateFrame, Panel } from '../../../components/ui/frame';
+import { PAGE_ART, zoneArt } from '../../../lib/zone-art';
 import { ClassName, Divider, ParseValue, SampleSize, StatBar } from '../../../components/ui/bits';
 import { DataTable, type Column } from '../../../components/ui/data-table';
 import {
@@ -11,6 +12,7 @@ import {
 } from '../../../lib/players';
 import { classVar, formatAmount, formatDuration, formatNumber } from '../../../lib/wow';
 import { getViewer } from '../../../lib/auth';
+import { loadTopZoneSlug } from '../../../lib/members';
 import { AchievementCard } from '../../../components/achievements/card';
 import {
   applyPins,
@@ -150,6 +152,10 @@ export default async function PlayerProfilePage({
   // Achievements are person-wide, so they are looked up through the subject
   // rather than through this one character.
   const achievements = await loadAchievementsForCharacterId(chosen.id);
+
+  // The painting of the raid this character pulled most in.
+  const topZone = await loadTopZoneSlug([chosen.id]);
+  const art = (topZone && zoneArt(topZone)) || PAGE_ART.players;
   const account = achievements
     ? await findAccountForSubject(achievements.subject.subjectId)
     : null;
@@ -177,6 +183,7 @@ export default async function PlayerProfilePage({
   return (
     <>
       <OrnateFrame
+        art={art}
         title={
           <>
             <span style={{ color: classVar(profile.className) }}>{profile.name}</span>

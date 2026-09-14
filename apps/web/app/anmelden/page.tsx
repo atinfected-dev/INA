@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { Panel } from '../../components/ui/frame';
+import { OrnateFrame, Panel } from '../../components/ui/frame';
+import { PAGE_ART, zoneArt } from '../../lib/zone-art';
 import { LoginForm } from '../../components/auth/forms';
 import { getViewer } from '../../lib/auth';
 import { loginAction } from '../konto/actions';
@@ -12,7 +13,11 @@ export default async function LoginPage() {
 
   return (
     <>
-      <h1>Anmelden</h1>
+      <OrnateFrame art={PAGE_ART.auth} title="Anmelden" subtitle="Für Gildenmitglieder">
+        <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
+          Mit der E-Mail-Adresse und dem Passwort deines Kontos.
+        </p>
+      </OrnateFrame>
       <Panel title="Anmeldung">
         <LoginForm action={loginAction} />
       </Panel>

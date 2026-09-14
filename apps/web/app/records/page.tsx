@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { OrnateFrame } from '../../components/ui/frame';
+import { PAGE_ART, zoneArt } from '../../lib/zone-art';
 import { Divider, TooltipCard, TooltipRow } from '../../components/ui/bits';
 import { loadRecords, type RecordEntry } from '../../lib/records';
 import { classVar } from '../../lib/wow';
@@ -39,6 +40,7 @@ export default async function RecordsPage() {
   return (
     <>
       <OrnateFrame
+        art={PAGE_ART.records}
         title="Gildenrekorde"
         subtitle="Das Äußerste, was in den Logs steht — über die gesamte Historie"
       >

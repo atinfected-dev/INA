@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { OrnateFrame, Panel } from '../../../components/ui/frame';
+import { PAGE_ART, zoneArt } from '../../../lib/zone-art';
 import { ClassName, Divider, StatBar } from '../../../components/ui/bits';
 import { DataTable, type Column } from '../../../components/ui/data-table';
 import { AchievementCard } from '../../../components/achievements/card';
@@ -9,7 +10,7 @@ import {
   findAccountForSubject,
   loadAchievementsForSubject,
 } from '../../../lib/achievements';
-import { loadMember, type MemberCharacter } from '../../../lib/members';
+import { loadMember, loadTopZoneSlug, type MemberCharacter } from '../../../lib/members';
 import { formatAmount, formatDuration, formatNumber } from '../../../lib/wow';
 import achievementStyles from '../../erfolge/achievements.module.css';
 
@@ -70,6 +71,11 @@ export default async function MemberPage({ params }: { params: Params }) {
 
   const active = member.characters.filter((row) => row.pulls > 0);
 
+  // The painting of the raid this member pulled most in; the roster's
+  // painting when that raid has none.
+  const topZone = await loadTopZoneSlug(active.map((row) => row.id));
+  const art = (topZone && zoneArt(topZone)) || PAGE_ART.members;
+
   const characterColumns: readonly Column<MemberCharacter>[] = [
     {
       key: 'name',
@@ -106,6 +112,7 @@ export default async function MemberPage({ params }: { params: Params }) {
   return (
     <>
       <OrnateFrame
+        art={art}
         title={member.name}
         subtitle={
           member.kind === 'person'

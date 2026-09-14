@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { Panel } from '../../components/ui/frame';
+import { OrnateFrame, Panel } from '../../components/ui/frame';
+import { PAGE_ART, zoneArt } from '../../lib/zone-art';
 import { ClassName, Divider, SampleSize } from '../../components/ui/bits';
 import { DataTable, type Column } from '../../components/ui/data-table';
 import { loadFilterOptions } from '../../lib/leaderboards';
@@ -174,10 +175,11 @@ export default async function DeathsPage({ searchParams }: { searchParams: Promi
 
   return (
     <>
-      <h1>Tode</h1>
-      <p className={styles.intro}>
-        {de(coverage.deaths)} Todesereignisse aus {de(coverage.reportsWithContents)} Raidabenden.
-      </p>
+      <OrnateFrame art={PAGE_ART.deaths} title="Tode">
+        <p className={styles.intro} style={{ margin: 0 }}>
+          {de(coverage.deaths)} Todesereignisse aus {de(coverage.reportsWithContents)} Raidabenden.
+        </p>
+      </OrnateFrame>
 
       <Panel title="Filter">
         <Chips

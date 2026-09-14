@@ -22,7 +22,7 @@
   position: sticky;
   top: 0;
   z-index: 1;
-  background: linear-gradient(180deg, #1a1610 0%, #100d09 100%);
+  background: linear-gradient(180deg, #14201c 0%, #0b100e 100%);
   color: var(--gold-300);
   font-family: var(--font-display), Georgia, serif;
   font-weight: 400;
@@ -31,7 +31,7 @@
   text-transform: uppercase;
   text-align: left;
   padding: 0.55rem 0.75rem;
-  border-bottom: 1px solid var(--gold-500);
+  border-bottom: 1px solid var(--jade-500);
   white-space: nowrap;
 }
 
@@ -47,7 +47,7 @@
 
 .table tbody tr:hover {
   background-color: var(--bg-row-hover);
-  box-shadow: inset 2px 0 0 var(--gold-300);
+  box-shadow: inset 2px 0 0 var(--jade-300);
 }
 
 .numeric {

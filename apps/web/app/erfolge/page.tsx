@@ -6,6 +6,7 @@ import {
   type AchievementCategory,
 } from '@ina/core';
 import { OrnateFrame, Panel } from '../../components/ui/frame';
+import { PAGE_ART, zoneArt } from '../../lib/zone-art';
 import { Divider } from '../../components/ui/bits';
 import { AchievementCard } from '../../components/achievements/card';
 import { RARITY_MIN_NIGHTS, loadAchievementOverview } from '../../lib/achievements';
@@ -37,6 +38,7 @@ export default async function AchievementsPage() {
   return (
     <>
       <OrnateFrame
+        art={PAGE_ART.achievements}
         title="Erfolge"
         subtitle={`${formatNumber(overview.standings.length)} Auszeichnungen · ${formatNumber(overview.eligible)} gewertete Raider`}
       >

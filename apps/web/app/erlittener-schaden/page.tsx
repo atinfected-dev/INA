@@ -6,6 +6,7 @@ import {
   type DamageTakenMetricKey,
 } from '@ina/core';
 import { OrnateFrame, Panel } from '../../components/ui/frame';
+import { PAGE_ART, zoneArt } from '../../lib/zone-art';
 import { ClassName, Divider } from '../../components/ui/bits';
 import { DataTable, type Column } from '../../components/ui/data-table';
 import { loadFilterOptions } from '../../lib/leaderboards';
@@ -136,7 +137,7 @@ export default async function DamageTakenPage({
 
   return (
     <>
-      <OrnateFrame title="Erlittener Schaden" subtitle={metric.label}>
+      <OrnateFrame art={PAGE_ART.damageTaken} title="Erlittener Schaden" subtitle={metric.label}>
         <p style={{ marginTop: 0, color: 'var(--text-secondary)', maxWidth: '68ch' }}>
           {metric.formula} {metric.reason}
         </p>

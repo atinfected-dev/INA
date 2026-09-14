@@ -18,12 +18,14 @@
 :root {
   /* --- Ground ------------------------------------------------------------ */
   --ink-900: #08070500; /* transparent variant for gradient stops */
-  --bg-base: #0a0907;
-  --bg-sunken: #060504;
-  --bg-panel: #15120d;
-  --bg-panel-raised: #1d1913;
-  --bg-row-odd: #100e0a;
-  --bg-row-hover: #211c14;
+  /* Shifted a step toward Pandaria: the same near-black, with the warmth
+     traded for the cool of mist. Gold stays warm on top of it. */
+  --bg-base: #080c0b;
+  --bg-sunken: #050706;
+  --bg-panel: #101614;
+  --bg-panel-raised: #151d1a;
+  --bg-row-odd: #0c1210;
+  --bg-row-hover: #16241f;
 
   /* --- Jade (Mists of Pandaria) ------------------------------------------
      The Pandaria palette layered onto the gold: jade for glow and accents,
@@ -108,6 +110,23 @@ html {
      pixels of sideways scroll on every desktop. `clip` rather than `hidden`
      so no scroll container is created and fixed backgrounds keep working. */
   overflow-x: clip;
+}
+
+/* The painted ground.
+   Mogu'shan Vaults, from Blizzard's render CDN, fixed behind every page at a
+   fraction of its brightness — enough that a table sits in Pandaria rather
+   than on a black rectangle, faint enough that a table is still a table. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgb(58 168 130 / 14%), transparent 70%),
+    linear-gradient(180deg, rgb(8 12 11 / 72%) 0%, rgb(8 12 11 / 88%) 45%, rgb(8 12 11 / 97%) 100%),
+    url('https://render.worldofwarcraft.com/eu/zones/mogushan-vaults-large.jpg') center 30% /
+      cover no-repeat;
+  pointer-events: none;
 }
 
 body {

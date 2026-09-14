@@ -80,14 +80,16 @@
 /* --- Header and body ------------------------------------------------------ */
 
 .header {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
   padding: 0.75rem 1.1rem 0.7rem;
-  border-bottom: 1px solid var(--gold-700);
-  background: linear-gradient(180deg, rgb(200 170 110 / 9%), transparent);
+  border-bottom: 1px solid var(--jade-700);
+  background: linear-gradient(180deg, rgb(58 168 130 / 10%), transparent);
 }
 
 .title {
@@ -104,11 +106,57 @@
 }
 
 .body {
+  position: relative;
+  z-index: 1;
   padding: 1.1rem;
 }
 
 .bodyFlush {
+  position: relative;
+  z-index: 1;
   padding: 0;
+}
+
+/* --- Painted backdrop ------------------------------------------------------
+   One of Blizzard's raid paintings behind an ornate frame, washed dark so
+   the header stays readable and the body ground stays a ground. The frame
+   gets taller with it on purpose: a painting cropped to a hairline is just
+   a stain. */
+
+.art {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center 35%;
+  pointer-events: none;
+}
+
+.artWash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgb(8 12 11 / 55%) 0%, rgb(8 12 11 / 78%) 45%, rgb(8 12 11 / 94%) 100%),
+    linear-gradient(90deg, rgb(8 12 11 / 60%), transparent 40%, transparent 60%, rgb(8 12 11 / 60%));
+}
+
+.painted .title {
+  font-size: 1.5rem;
+  color: var(--gold-100);
+  text-shadow:
+    0 1px 3px #000,
+    0 0 18px rgb(0 0 0 / 80%);
+}
+
+.painted .subtitle {
+  color: var(--jade-200);
+  text-shadow: 0 1px 3px #000;
+}
+
+.painted .header {
+  padding-top: 2.2rem;
+  border-bottom-color: rgb(58 168 130 / 30%);
+  background: none;
 }
 
 /* --- Plain panel: same ground, no gold. For dense working surfaces. ------- */

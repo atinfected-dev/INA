@@ -59,7 +59,7 @@
 .dividerLine {
   flex: 1;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--gold-500) 35%, var(--gold-300) 50%, var(--gold-500) 65%, transparent);
+  background: linear-gradient(90deg, transparent, var(--jade-500) 30%, var(--gold-300) 50%, var(--jade-500) 70%, transparent);
 }
 
 .dividerMark {
@@ -68,7 +68,9 @@
   flex: none;
   transform: rotate(45deg);
   background: linear-gradient(135deg, var(--gold-100), var(--gold-400));
-  box-shadow: 0 0 6px rgb(200 170 110 / 45%);
+  box-shadow:
+    0 0 6px rgb(200 170 110 / 45%),
+    0 0 14px rgb(58 168 130 / 40%);
 }
 
 .dividerLabel {

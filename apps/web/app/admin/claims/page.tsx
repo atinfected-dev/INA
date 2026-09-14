@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { Panel } from '../../../components/ui/frame';
+import { OrnateFrame, Panel } from '../../../components/ui/frame';
+import { PAGE_ART, zoneArt } from '../../../lib/zone-art';
 import { ClassName } from '../../../components/ui/bits';
 import { DecisionForm } from '../../../components/auth/forms';
 import { getViewer } from '../../../lib/auth';
@@ -20,11 +21,12 @@ export default async function ClaimsAdminPage() {
 
   return (
     <>
-      <h1>Offene Anträge</h1>
-      <p style={{ color: 'var(--text-secondary)', maxWidth: '64ch' }}>
+      <OrnateFrame art={PAGE_ART.account} title="Offene Anträge" subtitle="Offiziere">
+      <p style={{ margin: 0, color: 'var(--text-secondary)', maxWidth: '64ch' }}>
         Bestätige nur, was du einordnen kannst. Eine Zuordnung heftet die gesamte Historie eines
         Charakters an eine Person — Parses, Tode, Anwesenheit.
       </p>
+      </OrnateFrame>
 
       <Panel title={`${claims.length} ${claims.length === 1 ? 'Antrag' : 'Anträge'}`}>
         {claims.length === 0 ? (

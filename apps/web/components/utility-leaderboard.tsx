@@ -1,4 +1,5 @@
 import { OrnateFrame, Panel } from './ui/frame';
+import { PAGE_ART } from '../lib/zone-art';
 import { ClassName, Divider } from './ui/bits';
 import { DataTable, type Column } from './ui/data-table';
 import { loadFilterOptions } from '../lib/leaderboards';
@@ -124,6 +125,7 @@ export async function UtilityLeaderboard({
   return (
     <>
       <OrnateFrame
+        art={PAGE_ART.utility}
         title={info.label}
         subtitle={`${formatNumber(
           kind === 'interrupts' ? totals.interrupts : totals.dispels,

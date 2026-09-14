@@ -191,3 +191,23 @@ export async function loadMember(subjectId: string): Promise<MemberProfile | nul
         : seen.reduce((max, row) => (row.lastSeen! > max ? row.lastSeen! : max), seen[0]!.lastSeen!),
   };
 }
+
+/**
+ * The raid a set of characters pulled the most in, as a Warcraft Logs zone
+ * slug — the painting a profile should wear. Null when nothing was pulled.
+ */
+export async function loadTopZoneSlug(characterIds: string[]): Promise<string | null> {
+  if (characterIds.length === 0) return null;
+  const rows = await prisma.$queryRaw<{ slug: string }[]>`
+    SELECT z.slug
+    FROM "FightParticipant" fp
+    JOIN "Fight" f     ON f.id = fp."fightId"
+    JOIN "Encounter" e ON e.id = f."encounterId"
+    JOIN "Zone" z      ON z.id = e."zoneId"
+    WHERE fp."characterId" = ANY(${characterIds}::text[])
+    GROUP BY z.slug
+    ORDER BY COUNT(*) DESC
+    LIMIT 1
+  `;
+  return rows[0]?.slug ?? null;
+}

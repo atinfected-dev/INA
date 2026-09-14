@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { PARSE_METRICS, parseMetric, rankByParseMetric } from '@ina/core';
-import { Panel } from '../../components/ui/frame';
+import { OrnateFrame, Panel } from '../../components/ui/frame';
+import { PAGE_ART, zoneArt } from '../../lib/zone-art';
 import { ClassName, Divider, ParseValue, SampleSize } from '../../components/ui/bits';
 import { DataTable, type Column } from '../../components/ui/data-table';
 import { loadFilterOptions, loadParseLeaderboard, type LeaderboardSubject } from '../../lib/leaderboards';
@@ -162,12 +163,13 @@ export default async function LeaderboardsPage({
 
   return (
     <>
-      <h1>Ranglisten</h1>
-      <p className={styles.intro}>
-        Parse-Perzentile aus {entries.length.toLocaleString('de-DE')} gewerteten Spielern. Warcraft
-        Logs wertet ausschließlich Kills — Wipes erzeugen keine Parses und fehlen hier
-        zwangsläufig.
-      </p>
+      <OrnateFrame art={PAGE_ART.leaderboards} title="Ranglisten" subtitle="Parses">
+        <p className={styles.intro} style={{ margin: 0 }}>
+          Parse-Perzentile aus {entries.length.toLocaleString('de-DE')} gewerteten Spielern.
+          Warcraft Logs wertet ausschließlich Kills — Wipes erzeugen keine Parses und fehlen hier
+          zwangsläufig.
+        </p>
+      </OrnateFrame>
 
       <Panel title="Filter">
         <FilterRow

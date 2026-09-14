@@ -4,8 +4,8 @@
   position: sticky;
   top: 0;
   z-index: 20;
-  background: linear-gradient(180deg, #0d0b08 0%, #080706 100%);
-  backdrop-filter: blur(6px);
+  background: linear-gradient(180deg, rgb(14 30 26 / 92%) 0%, rgb(8 12 11 / 94%) 100%);
+  backdrop-filter: blur(8px);
 }
 
 .mastheadInner {
@@ -25,9 +25,9 @@
   background: linear-gradient(
     90deg,
     transparent,
-    var(--gold-600) 10%,
+    var(--jade-500) 10%,
     var(--gold-300) 50%,
-    var(--gold-600) 90%,
+    var(--jade-500) 90%,
     transparent
   );
 }
@@ -86,9 +86,9 @@
 }
 
 .navLink:hover {
-  color: var(--gold-100);
-  border-color: var(--gold-600);
-  background: rgb(200 170 110 / 8%);
+  color: var(--jade-100);
+  border-color: var(--jade-600);
+  background: rgb(58 168 130 / 10%);
   text-decoration: none;
 }
 
@@ -104,7 +104,7 @@
   margin: 0 auto;
   padding-block: 1.5rem 2.5rem;
   padding-inline: 1.25rem;
-  border-top: 1px solid var(--gold-700);
+  border-top: 1px solid var(--jade-700);
   color: var(--text-muted);
   font-size: 0.78rem;
 }

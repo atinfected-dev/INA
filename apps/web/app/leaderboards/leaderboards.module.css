@@ -36,15 +36,15 @@
 }
 
 .chip:hover {
-  border-color: var(--gold-500);
-  color: var(--gold-100);
+  border-color: var(--jade-400);
+  color: var(--jade-100);
   text-decoration: none;
 }
 
 .chipActive {
-  border-color: var(--gold-300);
-  background: linear-gradient(180deg, rgb(200 170 110 / 22%), rgb(200 170 110 / 8%));
-  color: var(--gold-100);
+  border-color: var(--jade-300);
+  background: linear-gradient(180deg, rgb(58 168 130 / 28%), rgb(58 168 130 / 8%));
+  color: var(--jade-100);
 }
 
 .chipActive:hover {
@@ -62,7 +62,7 @@
 
 .disclosure summary {
   cursor: pointer;
-  color: var(--gold-300);
+  color: var(--jade-200);
   font-size: 0.88rem;
   letter-spacing: 0.04em;
 }

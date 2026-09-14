@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { OrnateFrame } from '../../components/ui/frame';
+import { PAGE_ART, zoneArt } from '../../lib/zone-art';
 import { Divider } from '../../components/ui/bits';
 import { loadSettings } from '../../lib/settings';
 import { loadHallOfFame, type HallOfFameHolder } from '../../lib/hall-of-fame';
@@ -72,7 +73,11 @@ export default async function HallOfFamePage() {
 
   return (
     <>
-      <OrnateFrame title="Hall of Fame" subtitle="Ehrentafeln über die gesamte Gildenhistorie">
+      <OrnateFrame
+        art={PAGE_ART.hallOfFame}
+        title="Hall of Fame"
+        subtitle="Ehrentafeln über die gesamte Gildenhistorie"
+      >
         <p style={{ margin: 0, color: 'var(--text-secondary)', maxWidth: '66ch' }}>
           Die Titel sind Einstellungssache, kein fester Code: welcher Titel wofür vergeben wird,
           steht in den Einstellungen und lässt sich ändern, ohne die Anwendung neu auszurollen.

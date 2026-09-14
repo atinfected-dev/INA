@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { prisma } from '@ina/db';
-import { Panel } from '../../components/ui/frame';
+import { OrnateFrame, Panel } from '../../components/ui/frame';
+import { PAGE_ART, zoneArt } from '../../lib/zone-art';
 import { Divider } from '../../components/ui/bits';
 import { DataTable, type Column } from '../../components/ui/data-table';
 
@@ -68,12 +69,13 @@ export default async function RaidsPage() {
 
   return (
     <>
-      <h1>Raids</h1>
-      <p style={{ color: 'var(--text-secondary)', maxWidth: '68ch' }}>
+      <OrnateFrame art={PAGE_ART.raids} title="Raids">
+      <p style={{ margin: 0, color: 'var(--text-secondary)', maxWidth: '68ch' }}>
         {total} Instanzen aus {expansions.length} Erweiterungen, direkt aus{' '}
         <code>worldData</code> der Warcraft-Logs-API importiert — nichts davon steht im Code.
         Eine neue Classic-Erweiterung erscheint hier nach einem Sync-Lauf von selbst.
       </p>
+      </OrnateFrame>
       <p style={{ color: 'var(--text-muted)', maxWidth: '68ch', fontSize: '0.88rem' }}>
         Manche Raids tauchen doppelt auf. Das ist kein Fehler: Warcraft Logs legt für jede
         Neuauflage eine eigene Zone an — Ulduar 1017 kennt nur Normal, Ulduar 1026 zusätzlich

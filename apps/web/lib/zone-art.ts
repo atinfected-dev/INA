@@ -66,3 +66,24 @@ export const HERO_ART = artUrl('terrace-of-endless-spring');
 export const HONOURS_ART = artUrl('throne-of-thunder');
 /** Behind the records: the Heart of Fear. */
 export const RECORDS_ART = artUrl('heart-of-fear');
+
+/**
+ * The painting each page carries in its header. Spread across the raids the
+ * guild actually fought in, Pandaria first, so no two neighbouring pages wear
+ * the same picture.
+ */
+export const PAGE_ART = {
+  leaderboards: artUrl('throne-of-thunder'),
+  attendance: artUrl('mogushan-vaults'),
+  deaths: artUrl('heart-of-fear'),
+  damageTaken: artUrl('siege-of-orgrimmar'),
+  utility: artUrl('terrace-of-endless-spring'),
+  records: artUrl('dragon-soul'),
+  hallOfFame: artUrl('throne-of-thunder'),
+  members: artUrl('mogushan-vaults'),
+  players: artUrl('heart-of-fear'),
+  raids: artUrl('siege-of-orgrimmar'),
+  achievements: artUrl('terrace-of-endless-spring'),
+  account: artUrl('icecrown-citadel'),
+  auth: artUrl('ulduar'),
+} as const;
