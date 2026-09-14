@@ -136,8 +136,23 @@ export async function importReport(
   const reportStart = new Date(report.startTime);
   const reportEnd = new Date(report.endTime);
 
+  // Only actors that actually took part in a boss fight become characters.
+  //
+  // masterData.actors lists every player the combat log ever recorded, which
+  // includes bystanders: a log started in a capital city picks up hundreds of
+  // strangers. Creating a character for each of them buried ~1100 real raiders
+  // under ~6500 passers-by.
+  const participatingActorIds = new Set<number>();
+  for (const fight of report.fights ?? []) {
+    if (!fight || fight.encounterID === 0) continue;
+    for (const actorId of fight.friendlyPlayers ?? []) {
+      if (actorId !== null) participatingActorIds.add(actorId);
+    }
+  }
+
   for (const actor of report.masterData?.actors ?? []) {
     if (!actor?.id || !actor.name) continue;
+    if (!participatingActorIds.has(actor.id)) continue;
 
     const realm = realmIdentity(actor.server);
     if (realm.slug === '') continue; // No realm at all: cannot form an identity.
