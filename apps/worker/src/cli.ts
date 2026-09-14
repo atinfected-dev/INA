@@ -19,6 +19,7 @@ import { importDeaths } from './import/deaths';
 import { rebuildSessions } from './import/sessions';
 import { importDamageTakenForReport } from './import/damage-taken';
 import { GuildByNameDocument, GuildReportsDocument } from '@ina/wcl';
+import { hashPassword } from '@ina/core';
 
 const COMMANDS = [
   'reference',
@@ -30,6 +31,7 @@ const COMMANDS = [
   'deaths',
   'sessions',
   'damage-taken',
+  'account',
 ] as const;
 type Command = (typeof COMMANDS)[number];
 
@@ -567,6 +569,87 @@ async function runDamageTaken(limit: number | undefined): Promise<void> {
   console.log(`  Dauer           ${((Date.now() - started) / 60_000).toFixed(1)} min`);
 }
 
+/**
+ * Creates an account or updates an existing one.
+ *
+ * Registration through the website makes only the very first account an admin,
+ * which is deliberate — but it leaves no way to appoint a second one, or to
+ * reset a forgotten password. This command is that way. It runs on the server,
+ * never over HTTP, so it is not an authorisation hole in the web app.
+ *
+ * The password is hashed with the same function the login verifies against; a
+ * plain text password is never stored.
+ */
+async function runAccount(
+  email: string | undefined,
+  options: { password?: string; displayName?: string; realName?: string; admin: boolean },
+): Promise<void> {
+  const address = email?.trim().toLowerCase();
+  if (!address || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(address)) {
+    throw new Error('Usage: cli account <email> --password=… [--name=…] [--real=…] [--no-admin]');
+  }
+
+  // Reading it from the environment keeps the password out of the shell history.
+  const password = options.password ?? process.env.INA_ACCOUNT_PASSWORD;
+  const existing = await prisma.account.findUnique({
+    where: { email: address },
+    select: { id: true, displayName: true, isAdmin: true },
+  });
+
+  if (!password && !existing) {
+    throw new Error(
+      'Ein neues Konto braucht ein Passwort (--password=… oder INA_ACCOUNT_PASSWORD).',
+    );
+  }
+  if (password !== undefined && password.length < 12) {
+    throw new Error('Das Passwort muss mindestens 12 Zeichen haben.');
+  }
+
+  const passwordHash = password ? await hashPassword(password) : undefined;
+
+  if (existing) {
+    await prisma.account.update({
+      where: { id: existing.id },
+      data: {
+        isAdmin: options.admin,
+        isActive: true,
+        ...(passwordHash ? { passwordHash } : {}),
+        ...(options.displayName ? { displayName: options.displayName } : {}),
+        ...(options.realName ? { realName: options.realName } : {}),
+      },
+    });
+
+    // A session created under the old password is revoked with it. Leaving it
+    // alive would defeat the one situation a password reset exists for.
+    const revoked = passwordHash
+      ? await prisma.session.deleteMany({ where: { accountId: existing.id } })
+      : { count: 0 };
+
+    console.log(`\n  Konto aktualisiert  ${address}`);
+    console.log(`  Admin               ${options.admin ? 'ja' : 'nein'}`);
+    if (passwordHash) console.log('  Passwort            neu gesetzt');
+    if (revoked.count > 0) console.log(`  Sitzungen beendet   ${revoked.count}`);
+    console.log('\n  Anmelden unter /anmelden\n');
+    return;
+  }
+
+  const account = await prisma.account.create({
+    data: {
+      email: address,
+      passwordHash: passwordHash as string,
+      displayName: options.displayName ?? address.split('@')[0]!,
+      realName: options.realName ?? null,
+      isAdmin: options.admin,
+    },
+    select: { displayName: true },
+  });
+
+  console.log(`\n  Konto angelegt      ${address}`);
+  console.log(`  Anzeigename         ${account.displayName}`);
+  console.log(`  Admin               ${options.admin ? 'ja' : 'nein'}`);
+  console.log('\n  Anmelden unter /anmelden\n');
+}
+
 async function main(): Promise<void> {
   loadEnv();
 
@@ -620,6 +703,19 @@ async function main(): Promise<void> {
         process.argv.includes('--import-only'),
         limitArg ? Number(limitArg.split('=')[1]) : undefined,
       );
+      break;
+    }
+    case 'account': {
+      const flag = (name: string): string | undefined => {
+        const found = process.argv.find((a) => a.startsWith(`--${name}=`));
+        return found?.slice(name.length + 3);
+      };
+      await runAccount(process.argv[3], {
+        password: flag('password'),
+        displayName: flag('name'),
+        realName: flag('real'),
+        admin: !process.argv.includes('--no-admin'),
+      });
       break;
     }
     case 'discover': {
