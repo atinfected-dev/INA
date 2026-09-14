@@ -303,21 +303,51 @@ async function resolveGuildId(
 
   const serverSlug = guild.server?.slug ?? 'unknown';
   const serverRegion = guild.server?.region?.slug ?? 'unknown';
+  const faction = guild.faction?.name ?? null;
 
-  const row = await prisma.guild.upsert({
+  // Two ways a guild can already exist, and both must be honoured:
+  //
+  //  * by wclGuildId, once an import has attached it
+  //  * by name/realm/region, which is how the seed creates the configured guild
+  //    from .env — that row has no wclGuildId yet
+  //
+  // Upserting on wclGuildId alone would try to insert a second row for the
+  // seeded guild and hit the name/realm/region unique constraint.
+  const byWclId = await prisma.guild.findUnique({
     where: { wclGuildId: guild.id },
-    update: { name: guild.name, serverSlug, serverRegion, faction: guild.faction?.name ?? null },
-    create: {
-      wclGuildId: guild.id,
-      name: guild.name,
-      serverSlug,
-      serverRegion,
-      faction: guild.faction?.name ?? null,
+    select: { id: true },
+  });
+
+  if (byWclId) {
+    await prisma.guild.update({
+      where: { id: byWclId.id },
+      data: { name: guild.name, serverSlug, serverRegion, faction },
+    });
+    return byWclId.id;
+  }
+
+  const byName = await prisma.guild.findUnique({
+    where: {
+      name_serverSlug_serverRegion: { name: guild.name, serverSlug, serverRegion },
     },
     select: { id: true },
   });
 
-  return row.id;
+  if (byName) {
+    // First import for the configured guild: attach the Warcraft Logs id.
+    await prisma.guild.update({
+      where: { id: byName.id },
+      data: { wclGuildId: guild.id, faction },
+    });
+    return byName.id;
+  }
+
+  const created = await prisma.guild.create({
+    data: { wclGuildId: guild.id, name: guild.name, serverSlug, serverRegion, faction },
+    select: { id: true },
+  });
+
+  return created.id;
 }
 
 async function lookupEncounter(

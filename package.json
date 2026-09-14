@@ -20,7 +20,9 @@
     "wcl:ping": "pnpm --filter @ina/wcl run check",
     "codegen": "pnpm --filter @ina/wcl run codegen",
     "import:reference": "pnpm --filter @ina/worker run cli reference",
-    "import:report": "pnpm --filter @ina/worker run cli report"
+    "import:report": "pnpm --filter @ina/worker run cli report",
+    "discover": "pnpm --filter @ina/worker run cli discover",
+    "sync": "pnpm --filter @ina/worker run cli sync"
   },
   "devDependencies": {
     "@types/node": "^26.5.1",
