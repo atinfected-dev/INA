@@ -235,7 +235,7 @@ export default async function LeaderboardsPage({
         <p>
           Gewertet wird {parseMetricType === 'DPS' ? 'die Schadenswertung' : 'die Heilungswertung'}.
           Heiler werden auf Heilung gewertet, Tanks und Schadensausteiler auf Schaden; eine
-          Schadenswertung für Heiler wäre aussagelos und wird nicht gespeichert.
+          Schadenswertung für Heiler wäre aussagelos und wird nicht gewertet.
         </p>
       </details>
 

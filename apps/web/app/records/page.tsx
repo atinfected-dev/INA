@@ -46,7 +46,7 @@ export default async function RecordsPage() {
       >
         <p style={{ margin: 0, color: 'var(--text-secondary)', maxWidth: '66ch' }}>
           Jeder Rekord nennt darunter, wie er ermittelt wurde. Rekorde über einzelne Kämpfe stammen
-          aus einem Pull, Summen aus allen importierten Raidabenden.
+          aus einem Pull, Summen aus allen erfassten Raidabenden.
         </p>
       </OrnateFrame>
 

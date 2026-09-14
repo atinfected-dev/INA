@@ -217,7 +217,7 @@ export default async function DeathsPage({ searchParams }: { searchParams: Promi
           anyone whose raiding happened in the archived years.
         */}
         <p>
-          Warcraft Logs archiviert Reportinhalte nach etwa zwei Jahren.{' '}
+          Warcraft Logs hält die Details eines Logs nur etwa zwei Jahre vor.{' '}
           {de(coverage.reportsArchived)} Raidabende — im Wesentlichen die gesamte
           WotLK-Zeit — liefern deshalb keine Todesdaten mehr. Tode <em>und</em> Pulls werden
           ausschließlich über dieselben, noch verfügbaren Raidabende gezählt, damit die Quoten

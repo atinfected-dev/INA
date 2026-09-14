@@ -208,11 +208,9 @@ export async function UtilityLeaderboard({
           halb in der Liste stehen.
         </p>
         <p>
-          <strong>Nur ganze Logs, keine einzelnen Pulls.</strong> Warcraft Logs liefert für
-          Unterbrechungen und Dispels keine Aufschlüsselung nach Kampf — die Antwort summiert den
-          abgefragten Bereich und nennt keine Kampf-Kennung. Eine Aufteilung auf einzelne Bosse
-          wäre erfunden, deshalb gibt es sie hier nicht. Die Kampfzeit im Nenner stammt aus genau
-          denselben Logs, damit Zähler und Nenner dasselbe meinen.
+          <strong>Nur ganze Logs, keine einzelnen Pulls.</strong> Warcraft Logs zählt Unterbrechungen
+          und Dispels je Log, nicht je Kampf. Eine Aufteilung auf einzelne Bosse wäre geraten,
+          deshalb gibt es sie hier nicht. Die Kampfzeit dazu stammt aus denselben Logs.
         </p>
         <p>
           <strong>Rollen stehen nicht im selben Rennen.</strong> Wer unterbricht, hängt an der

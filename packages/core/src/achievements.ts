@@ -747,7 +747,7 @@ export const UNAWARDED_ACHIEVEMENTS: readonly { name: string; reason: string }[]
   {
     name: 'Benchwarmer, Comeback',
     reason:
-      'Warcraft Logs kennt keine Bank. Wer nicht im Log steht, kann gebenched, krank oder im Urlaub gewesen sein — das ist aus den Daten nicht zu unterscheiden. Käme mit RaidBrain.',
+      'Warcraft Logs kennt keine Bank. Wer nicht im Log steht, kann gebenched, krank oder im Urlaub gewesen sein — das ist aus den Logs nicht zu unterscheiden.',
   },
   {
     name: 'Mechanic Magnet, Friendly Fire Victim',
@@ -757,12 +757,12 @@ export const UNAWARDED_ACHIEVEMENTS: readonly { name: string; reason: string }[]
   {
     name: 'Consistency, Tier Dominator, Late Bloomer, Redemption Arc',
     reason:
-      'Brauchen die zeitliche Reihenfolge einzelner Parses statt Summen. Machbar, aber eine eigene Auswertung — später.',
+      'Brauchen die zeitliche Reihenfolge einzelner Parses statt Summen. Kommt später.',
   },
   {
     name: 'Clutch, Last Man Standing, Speedrunner',
     reason:
-      'Brauchen die Todesreihenfolge innerhalb eines Pulls und den Vergleich mit allen Kills desselben Bosses. Machbar, noch nicht gebaut.',
+      'Brauchen die Todesreihenfolge innerhalb eines Pulls und den Vergleich mit allen Kills desselben Bosses. Kommt später.',
   },
   {
     name: 'Name Change Survivor, Expansion Loyalty',

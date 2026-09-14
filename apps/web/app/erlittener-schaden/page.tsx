@@ -146,10 +146,10 @@ export default async function DamageTakenPage({
       {coverage.pendingFights > 0 && (
         <Panel title="Unvollständig">
           <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
-            Erlittener Schaden ist erst für {formatNumber(coverage.importedFights)} von{' '}
-            {formatNumber(coverage.importedFights + coverage.pendingFights)} Pulls importiert. Die
-            Liste ist deshalb noch keine Endabrechnung; gewertet werden ausschließlich die bereits
-            importierten Pulls, damit die fehlenden die Durchschnitte nicht nach unten ziehen.
+            Erlittener Schaden liegt erst für {formatNumber(coverage.importedFights)} von{' '}
+            {formatNumber(coverage.importedFights + coverage.pendingFights)} Pulls vor. Die Liste
+            ist deshalb noch keine Endabrechnung; gewertet werden nur die Pulls, die schon da sind,
+            damit die fehlenden die Durchschnitte nicht nach unten ziehen.
           </p>
         </Panel>
       )}
@@ -234,17 +234,16 @@ export default async function DamageTakenPage({
         <p>
           <strong>Gescriptete Sofort-Tode sind ausgeklammert.</strong> Manche Bosse töten nicht mit
           Schaden, sondern setzen den Wert auf eine Kennzahl: Sha of Pride verbucht mit{' '}
-          <em>Ethereal Corruption</em> genau {formatNumber(SCRIPTED_DAMAGE_THRESHOLD)} — 2²⁹, eine
-          runde Binärzahl. Pulls ab diesem Wert werden nicht gewertet; betroffen sind{' '}
+          <em>Ethereal Corruption</em> genau {formatNumber(SCRIPTED_DAMAGE_THRESHOLD)} — eine
+          Zahl, die kein Kampf zufällig erzeugt. Pulls ab diesem Wert werden nicht gewertet; betroffen sind{' '}
           {formatNumber(coverage.excludedRows)} Pull-Zeilen von{' '}
           {formatNumber(coverage.excludedCharacters)} Spielern. Zum Vergleich: der höchste{' '}
           <em>echte</em> Wert eines einzelnen Pulls liegt bei {formatAmount(coverage.worstRealPull)}
           . Zwischen beiden liegt nichts, die Grenze ist also kein Ermessen.
         </p>
         <p>
-          Importiert wird trotzdem unverfälscht — in der Datenbank stehen die Zahlen so, wie
-          Warcraft Logs sie liefert. Die Regel greift beim Abfragen und ist jederzeit änderbar, ohne
-          erneut zu importieren.
+          Die Zahlen selbst bleiben unverändert so, wie Warcraft Logs sie liefert — ausgeklammert
+          wird nur in dieser Rangliste.
         </p>
         <p>
           Gezeigt werden nur Spieler mit mindestens {formatNumber(DEFAULT_MIN_PULLS)} gewerteten
@@ -264,7 +263,7 @@ export default async function DamageTakenPage({
           rows={ranked}
           rowKey={(row) => row.characterId}
           showRank
-          emptyMessage="Noch kein erlittener Schaden importiert."
+          emptyMessage="Noch kein erlittener Schaden erfasst."
         />
       </Panel>
     </>

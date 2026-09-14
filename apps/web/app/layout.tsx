@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     template: '%s — INA Analytics',
   },
   description:
-    'Gilden-Statistiken und Ranglisten über alle Classic-Erweiterungen, auf Basis der Warcraft-Logs-API.',
+    'Gilden-Statistiken und Ranglisten über alle Classic-Erweiterungen, aus den Warcraft-Logs der Gilde.',
 };
 
 /**
@@ -122,7 +122,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
         <footer className={styles.footer}>
           <p style={{ margin: 0 }}>
-            Nicht-kommerzielle Fanseite. Daten über die offizielle Warcraft-Logs-API v2;
+            Nicht-kommerzielle Fanseite. Daten aus den Warcraft-Logs-Berichten der Gilde;
             Raid-Artworks und Klassen-Icons von Blizzards offiziellem Render-CDN, verwendet gemäß
             der Blizzard Fan Content Policy.
           </p>

@@ -118,8 +118,8 @@ export default async function MembersPage({ searchParams }: { searchParams: Prom
       <details className={styles.disclosure}>
         <summary>Wer steht hier?</summary>
         <p>
-          Die Datenbank kennt {formatNumber(total)} Charaktere und Personen — die allermeisten davon
-          sind Fremde aus Pugs und Ein-Abend-Twinks, die Warcraft Logs neben dem Raid gesehen hat.
+          In den Logs tauchen {formatNumber(total)} Charaktere und Personen auf — die allermeisten
+          davon Fremde aus Pugs und Ein-Abend-Twinks, die neben dem Raid standen.
           Voreingestellt sind deshalb Mitglieder mit mindestens {formatNumber(MEMBER_MIN_NIGHTS)}{' '}
           Raidabenden; die anderen Schwellen zeigen das ungefilterte Bild.
         </p>

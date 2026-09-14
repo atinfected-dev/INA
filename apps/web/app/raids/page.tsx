@@ -71,9 +71,9 @@ export default async function RaidsPage() {
     <>
       <OrnateFrame art={PAGE_ART.raids} title="Raids">
       <p style={{ margin: 0, color: 'var(--text-secondary)', maxWidth: '68ch' }}>
-        {total} Instanzen aus {expansions.length} Erweiterungen, direkt aus{' '}
-        <code>worldData</code> der Warcraft-Logs-API importiert — nichts davon steht im Code.
-        Eine neue Classic-Erweiterung erscheint hier nach einem Sync-Lauf von selbst.
+        {total} Instanzen aus {expansions.length} Erweiterungen — alles, worin die Gilde je einen
+        Pull gemacht hat. Eine neue Classic-Erweiterung erscheint hier von selbst, sobald die
+        ersten Logs dazu vorliegen.
       </p>
       </OrnateFrame>
       <p style={{ color: 'var(--text-muted)', maxWidth: '68ch', fontSize: '0.88rem' }}>
@@ -112,7 +112,7 @@ export default async function RaidsPage() {
                 columns={columns}
                 rows={rows}
                 rowKey={(row) => String(row.wclZoneId)}
-                emptyMessage="Keine Instanzen importiert."
+                emptyMessage="Noch keine Instanzen erfasst."
               />
             </Panel>
           </section>

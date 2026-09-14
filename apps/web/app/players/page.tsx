@@ -61,7 +61,7 @@ export default async function PlayersPage({ searchParams }: { searchParams: Prom
     <>
       <OrnateFrame art={PAGE_ART.players} title="Spieler">
         <p className={styles.intro} style={{ margin: 0 }}>
-          {de(all.length)} Charaktere haben mindestens einen Boss-Pull in den importierten Logs.
+          {de(all.length)} Charaktere haben mindestens einen Boss-Pull in den Logs der Gilde.
         </p>
       </OrnateFrame>
 

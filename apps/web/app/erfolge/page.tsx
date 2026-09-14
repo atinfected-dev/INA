@@ -53,7 +53,7 @@ export default async function AchievementsPage() {
       <details className={leaderboard.disclosure}>
         <summary>Wie wird das berechnet?</summary>
         <p>
-          Jeder Erfolg ist eine <strong>Schwelle auf einer Kennzahl</strong>, keine eigene Abfrage.
+          Jeder Erfolg ist eine <strong>Schwelle auf einer Kennzahl</strong>.
           Die Stufen stehen auf jeder Karte im Klartext — was fehlt, um die nächste zu erreichen,
           ist damit immer ablesbar.
         </p>
@@ -61,16 +61,16 @@ export default async function AchievementsPage() {
           <strong>Seltenheit</strong> misst gegen Raider mit mindestens{' '}
           {formatNumber(RARITY_MIN_NIGHTS)} Raidabenden — dieselbe Schwelle, ab der die Hall of Fame
           jemanden als Gildenmitglied zählt. Von {formatNumber(overview.subjects)} Charakteren und
-          Personen in der Datenbank erfüllen das {formatNumber(overview.eligible)}. Gegen alle zu
-          messen würde jeden Erfolg als „legendär" ausweisen, weil die Datenbank voller Fremder und
+          Personen in den Logs erfüllen das {formatNumber(overview.eligible)}. Gegen alle zu
+          messen würde jeden Erfolg als „legendär" ausweisen, weil die Logs voller Fremder und
           Ein-Abend-Twinks steckt.
         </p>
         <p>
-          Zwei Einschränkungen stecken in den Daten selbst:{' '}
+          Zwei Einschränkungen stecken in den Logs selbst:{' '}
           <strong>Todesbezogene Erfolge</strong> zählen nur Raidabende, deren Logs Warcraft Logs
           noch ausliefert — sonst läse sich ein archiviertes Jahr als makellos überlebt.{' '}
           <strong>Erlittener Schaden</strong> gibt es aus demselben Grund nur für nicht
-          archivierte Logs — 360 der 716 Reports hält Warcraft Logs nicht mehr vor — und er
+          archivierte Logs — 360 der 716 Logs hält Warcraft Logs nicht mehr vor — und er
           klammert gescriptete Sofort-Tode aus.
         </p>
       </details>

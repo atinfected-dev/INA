@@ -79,8 +79,9 @@ export default async function HallOfFamePage() {
         subtitle="Ehrentafeln über die gesamte Gildenhistorie"
       >
         <p style={{ margin: 0, color: 'var(--text-secondary)', maxWidth: '66ch' }}>
-          Die Titel sind Einstellungssache, kein fester Code: welcher Titel wofür vergeben wird,
-          steht in den Einstellungen und lässt sich ändern, ohne die Anwendung neu auszurollen.
+          Jeder Titel geht an die Person mit dem höchsten Wert einer Kennzahl — über die gesamte
+          Gildenhistorie, alle Charaktere zusammengerechnet. Teilen sich mehrere den Spitzenwert,
+          steht der Titel als geteilt, statt ihn zufällig einem zuzusprechen.
         </p>
       </OrnateFrame>
 

@@ -78,7 +78,7 @@ export default async function ContentAdminPage({ searchParams }: { searchParams:
     <>
       <OrnateFrame art={PAGE_ART.account} title="Inhalte" subtitle="Offiziere">
         <p style={{ margin: 0, color: 'var(--text-secondary)', maxWidth: '68ch' }}>
-          Titel, Erfolge und Rekorde, die nicht im Code stehen. Alles hier rechnet mit denselben
+          Titel, Erfolge und Rekorde über das Eingebaute hinaus. Alles hier rechnet mit denselben
           Kennzahlen wie das Eingebaute — ein Erfolg ist eine Schwelle auf einer Kennzahl, ein
           berechneter Rekord ihr Höchstwert. Nur manuelle Rekorde sind Einträge von Hand, und so
           werden sie auch ausgewiesen.
@@ -132,8 +132,7 @@ export default async function ContentAdminPage({ searchParams }: { searchParams:
               ))}
             </select>
             <span className={styles.hint}>
-              Nur Kennzahlen, hinter denen eine Abfrage steht. Neue Kennzahlen sind Code, keine
-              Einstellung.
+              Nur Kennzahlen, die die Seite selbst berechnen kann.
             </span>
           </label>
           <label className={styles.field}>
