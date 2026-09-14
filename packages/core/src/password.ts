@@ -8,7 +8,13 @@ const scrypt = promisify(scryptCallback) as (
 ) => Promise<Buffer>;
 
 /**
- * Password hashing for the single admin account.
+ * Password hashing.
+ *
+ * Exported as `@ina/core/password`, NOT from the package barrel: this file
+ * needs node:crypto, and a client component that imports so much as a label
+ * from `@ina/core` would otherwise drag it into the browser bundle, where
+ * `scrypt` does not exist and module evaluation dies. Server code imports
+ * the subpath; nothing else can reach it by accident.
  *
  * scrypt ships with Node, so there is no native build step in the Docker image
  * and no extra dependency to keep patched — which matters more here than the

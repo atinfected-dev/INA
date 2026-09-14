@@ -41,7 +41,6 @@ export {
   type TierStep,
 } from './achievements';
 export { slugify } from './slug';
-export { hashPassword, verifyPassword } from './password';
 export {
   PARSE_METRICS,
   consistencyRating,

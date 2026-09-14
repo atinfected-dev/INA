@@ -2,7 +2,7 @@ import 'server-only';
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { cookies } from 'next/headers';
 import { prisma } from '@ina/db';
-import { hashPassword, verifyPassword } from '@ina/core';
+import { hashPassword, verifyPassword } from '@ina/core/password';
 
 /**
  * Session handling.

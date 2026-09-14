@@ -6,7 +6,8 @@
  * changes nothing, so it is safe to re-run after editing .env.
  */
 import { resolve } from 'node:path';
-import { DEFAULT_SETTINGS, SETTINGS_KEY, hashPassword } from '@ina/core';
+import { DEFAULT_SETTINGS, SETTINGS_KEY } from '@ina/core';
+import { hashPassword } from '@ina/core/password';
 import { Prisma, prisma } from '../src/index.js';
 
 process.loadEnvFile(resolve(import.meta.dirname, '../../../.env'));

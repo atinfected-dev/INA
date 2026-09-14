@@ -20,7 +20,7 @@ import { rebuildSessions } from './import/sessions';
 import { importDamageTakenForReport } from './import/damage-taken';
 import { importUtilityForReport } from './import/interrupts';
 import { GuildByNameDocument, GuildReportsDocument } from '@ina/wcl';
-import { hashPassword } from '@ina/core';
+import { hashPassword } from '@ina/core/password';
 
 const COMMANDS = [
   'reference',
