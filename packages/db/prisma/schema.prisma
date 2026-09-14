@@ -95,7 +95,12 @@ model Zone {
   id          String  @id @default(cuid())
   wclZoneId   Int     @unique
   name        String
-  slug        String  @unique
+  /// Display/URL helper only — deliberately NOT unique. Warcraft Logs models
+  /// every re-release of a raid as its own zone: Ulduar exists as 1017 (Normal
+  /// only) and 1026 (with Heroic), Naxxramas as 1006 and 1036. Same name, same
+  /// expansion, different data. Identity is wclZoneId; URLs use
+  /// "<wclZoneId>-<slug>".
+  slug        String
   frozen      Boolean @default(false)
   sortOrder   Int     @default(0)
   expansionId String
@@ -106,6 +111,7 @@ model Zone {
   reports      Report[]
 
   @@index([expansionId])
+  @@index([slug])
 }
 
 /// A boss.

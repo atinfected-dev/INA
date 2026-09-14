@@ -210,7 +210,24 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
 
-  apps/worker: {}
+  apps/worker:
+    dependencies:
+      '@ina/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@ina/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@ina/wcl':
+        specifier: workspace:*
+        version: link:../../packages/wcl
+    devDependencies:
+      tsx:
+        specifier: ^4.23.13
+        version: 4.23.13
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
 
   packages/contracts: {}
 

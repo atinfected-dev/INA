@@ -18,7 +18,8 @@
     "db:studio": "pnpm --filter @ina/db run studio",
     "wcl:introspect": "pnpm --filter @ina/wcl run introspect",
     "wcl:ping": "pnpm --filter @ina/wcl run check",
-    "codegen": "pnpm --filter @ina/wcl run codegen"
+    "codegen": "pnpm --filter @ina/wcl run codegen",
+    "import:reference": "pnpm --filter @ina/worker run cli reference"
   },
   "devDependencies": {
     "@types/node": "^26.5.1",
