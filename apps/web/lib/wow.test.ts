@@ -46,6 +46,7 @@ describe('formatAmount', () => {
   // reader to parse the dot as a thousands separator.
   it('uses German separators throughout', () => {
     expect(formatAmount(44_940_000_000)).toBe('44,94 Mrd.');
+    expect(formatAmount(26_000_000_000)).toBe('26 Mrd.');
     expect(formatAmount(186_300_000)).toBe('186,3 Mio.');
     expect(formatAmount(9_870)).toBe('9,9 Tsd.');
     expect(formatAmount(512)).toBe('512');

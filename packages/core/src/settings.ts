@@ -74,8 +74,10 @@ export const DEFAULT_SETTINGS: AppSettings = {
     {
       id: 'sharpshooter',
       title: 'Scharfrichter',
-      subtitle: 'Der höchste Parse, den je jemand gefahren hat',
-      metric: 'parse.best',
+      subtitle: 'Die meisten Parses von genau 100',
+      // Deliberately not "highest parse": 29 characters have hit 100, so that
+      // title would be a 29-way tie decided by sort order.
+      metric: 'parse.count100',
       direction: 'highest',
     },
     {

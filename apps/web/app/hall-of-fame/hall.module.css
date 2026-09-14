@@ -91,3 +91,25 @@
   line-height: 1.5;
   color: var(--text-muted);
 }
+
+/* A shared record: several names, none of them singled out. */
+.tieHeading {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.05rem;
+  color: var(--gold-200);
+}
+
+.tieList {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.15rem 0.6rem;
+  margin-top: 0.3rem;
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+
+.tieMore {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}

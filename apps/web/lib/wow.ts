@@ -87,6 +87,11 @@ export function formatNumber(value: number, decimals = 0): string {
   });
 }
 
+/** Like formatNumber, but drops trailing zeros: 26 Mrd., not 26,00 Mrd. */
+function compact(value: number, decimals: number): string {
+  return value.toLocaleString('de-DE', { maximumFractionDigits: decimals });
+}
+
 /**
  * Compact totals for damage and healing (1,2 Mrd., 987 Tsd.).
  *
@@ -95,9 +100,9 @@ export function formatNumber(value: number, decimals = 0): string {
  */
 export function formatAmount(value: number): string {
   const abs = Math.abs(value);
-  if (abs >= 1_000_000_000) return `${formatNumber(value / 1_000_000_000, 2)} Mrd.`;
-  if (abs >= 1_000_000) return `${formatNumber(value / 1_000_000, 1)} Mio.`;
-  if (abs >= 1_000) return `${formatNumber(value / 1_000, 1)} Tsd.`;
+  if (abs >= 1_000_000_000) return `${compact(value / 1_000_000_000, 2)} Mrd.`;
+  if (abs >= 1_000_000) return `${compact(value / 1_000_000, 1)} Mio.`;
+  if (abs >= 1_000) return `${compact(value / 1_000, 1)} Tsd.`;
   return formatNumber(value);
 }
 

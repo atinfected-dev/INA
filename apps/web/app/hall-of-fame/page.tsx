@@ -36,9 +36,27 @@ function Plaque({ holder }: { holder: HallOfFameHolder }) {
       <h2 className={styles.title}>{holder.title.title}</h2>
       <p className={styles.subtitle}>{holder.title.subtitle}</p>
 
-      <div className={styles.holder} style={{ color: classVar(holder.className) }}>
-        {holder.name ?? 'niemand'}
-      </div>
+      {holder.tiedWith.length > 1 ? (
+        // An honest tie beats an arbitrary winner: with several holders on the
+        // same number, sort order would decide who gets the title.
+        <>
+          <div className={styles.tieHeading}>{holder.tiedWith.length} gleichauf</div>
+          <div className={styles.tieList}>
+            {holder.tiedWith.slice(0, 6).map((tied) => (
+              <span key={tied.name} style={{ color: classVar(tied.className) }}>
+                {tied.name}
+              </span>
+            ))}
+            {holder.tiedWith.length > 6 && (
+              <span className={styles.tieMore}>und {holder.tiedWith.length - 6} weitere</span>
+            )}
+          </div>
+        </>
+      ) : (
+        <div className={styles.holder} style={{ color: classVar(holder.className) }}>
+          {holder.name ?? 'niemand'}
+        </div>
+      )}
       <div className={styles.value}>{formatValue(holder)}</div>
     </article>
   );
