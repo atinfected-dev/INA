@@ -129,6 +129,21 @@ async function requireGuild(nameFilter?: string) {
   return guild;
 }
 
+/**
+ * A readable one-liner for any thrown value.
+ *
+ * Some errors carry an empty message — printing only `error.message` then logs
+ * "FEHLER:" and nothing else, which is useless for diagnosis. The name is
+ * always included.
+ */
+function describeError(error: unknown): string {
+  if (error instanceof Error) {
+    const detail = error.message.trim();
+    return detail === '' ? `${error.name} (ohne Meldung)` : `${error.name}: ${detail.slice(0, 160)}`;
+  }
+  return String(error).slice(0, 160);
+}
+
 /** Reads --guild=<name> from argv. */
 function guildArg(): string | undefined {
   const arg = process.argv.find((a) => a.startsWith('--guild='));
@@ -356,7 +371,7 @@ async function runAnalyze(limit: number | undefined, force: boolean): Promise<vo
       failed += 1;
       console.log(
         `  [${String(index + 1).padStart(3)}/${pending.length}] ${report.code}  FEHLER: ` +
-          (error instanceof Error ? error.message.slice(0, 120) : String(error)),
+          describeError(error),
       );
     }
   }
