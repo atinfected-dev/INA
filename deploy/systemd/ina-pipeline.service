@@ -1,0 +1,15 @@
+[Unit]
+Description=INA Analytics import pipeline (Warcraft Logs sync)
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ina
+Group=ina
+WorkingDirectory=/opt/ina/app
+EnvironmentFile=/opt/ina/app/.env
+ExecStart=/usr/bin/bash /opt/ina/app/deploy/pipeline.sh
+# A full backfill can take hours; a normal run takes seconds. Generous cap.
+TimeoutStartSec=6h
+Nice=10

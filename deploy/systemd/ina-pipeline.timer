@@ -1,0 +1,13 @@
+[Unit]
+Description=Run the INA import pipeline every six hours
+
+[Timer]
+# Raids are weekly; six hours means a Thursday log is on the site by Friday
+# morning without polling Warcraft Logs all day.
+OnBootSec=10min
+OnUnitActiveSec=6h
+RandomizedDelaySec=15min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

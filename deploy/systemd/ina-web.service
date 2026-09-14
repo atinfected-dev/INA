@@ -1,0 +1,25 @@
+[Unit]
+Description=INA Analytics web (isnotalone.de)
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=ina
+Group=ina
+WorkingDirectory=/opt/ina/app/apps/web
+Environment=NODE_ENV=production
+Environment=PATH=/opt/ina/node/bin:/usr/local/bin:/usr/bin:/bin
+# next.config.ts also loads the root .env; this keeps the two in step.
+EnvironmentFile=/opt/ina/app/.env
+ExecStart=/opt/ina/node/bin/node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3100
+Restart=always
+RestartSec=3
+# The service user owns nothing outside /opt/ina.
+ProtectSystem=full
+ProtectHome=true
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

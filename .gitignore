@@ -26,3 +26,4 @@ packages/db/src/generated/
 apps/web/AGENTS.md
 apps/web/CLAUDE.md
 *.tsbuildinfo
+deploy/out/
