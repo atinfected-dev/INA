@@ -79,13 +79,26 @@ export function parseColorVar(percentile: number): string {
   return `var(${parseBracket(percentile).cssVar})`;
 }
 
-/** Compact number formatting for damage and healing totals (1.2M, 987k). */
+/** German number formatting, used everywhere so no page invents its own. */
+export function formatNumber(value: number, decimals = 0): string {
+  return value.toLocaleString('de-DE', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+}
+
+/**
+ * Compact totals for damage and healing (1,2 Mrd., 987 Tsd.).
+ *
+ * Deliberately German: mixing "44.94B" into a page that otherwise writes
+ * "6.314" reads as a thousands separator and turns a billion into a mistake.
+ */
 export function formatAmount(value: number): string {
   const abs = Math.abs(value);
-  if (abs >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(2)}B`;
-  if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
-  if (abs >= 1_000) return `${(value / 1_000).toFixed(1)}k`;
-  return value.toFixed(0);
+  if (abs >= 1_000_000_000) return `${formatNumber(value / 1_000_000_000, 2)} Mrd.`;
+  if (abs >= 1_000_000) return `${formatNumber(value / 1_000_000, 1)} Mio.`;
+  if (abs >= 1_000) return `${formatNumber(value / 1_000, 1)} Tsd.`;
+  return formatNumber(value);
 }
 
 /** Fight durations as m:ss, which is how raiders read pull times. */

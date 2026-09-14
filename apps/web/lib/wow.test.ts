@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { classVar, parseBracket } from './wow';
+import { classVar, formatAmount, parseBracket } from './wow';
 
 describe('classVar', () => {
   // Warcraft Logs spells this without a space, which previously left every
@@ -38,5 +38,21 @@ describe('parseBracket', () => {
   it('never returns undefined, even for nonsense input', () => {
     expect(parseBracket(-5).cssVar).toBe('--q-poor');
     expect(parseBracket(Number.NaN).cssVar).toBe('--q-poor');
+  });
+});
+
+describe('formatAmount', () => {
+  // A page that writes "6.314" for pulls and "44.94B" for damage invites the
+  // reader to parse the dot as a thousands separator.
+  it('uses German separators throughout', () => {
+    expect(formatAmount(44_940_000_000)).toBe('44,94 Mrd.');
+    expect(formatAmount(186_300_000)).toBe('186,3 Mio.');
+    expect(formatAmount(9_870)).toBe('9,9 Tsd.');
+    expect(formatAmount(512)).toBe('512');
+  });
+
+  it('handles negatives and zero', () => {
+    expect(formatAmount(0)).toBe('0');
+    expect(formatAmount(-2_500_000)).toBe('-2,5 Mio.');
   });
 });
