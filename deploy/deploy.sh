@@ -65,6 +65,9 @@ set -euo pipefail
 cd /opt/ina/app
 pnpm install --frozen-lockfile
 pnpm --filter @ina/db run generate
+# The typed GraphQL client is generated from the committed schema and is not
+# in git; without it the worker cannot even start.
+pnpm --filter @ina/wcl run codegen
 pnpm --filter @ina/db exec prisma migrate deploy
 pnpm --filter @ina/web run build
 ASINA

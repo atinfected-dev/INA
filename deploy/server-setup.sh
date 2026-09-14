@@ -77,7 +77,9 @@ install -m 644 "$APP_DIR/deploy/systemd/ina-web.service" /etc/systemd/system/ina
 install -m 644 "$APP_DIR/deploy/systemd/ina-pipeline.service" /etc/systemd/system/ina-pipeline.service
 install -m 644 "$APP_DIR/deploy/systemd/ina-pipeline.timer" /etc/systemd/system/ina-pipeline.timer
 systemctl daemon-reload
-systemctl enable ina-web.service ina-pipeline.timer >/dev/null
+systemctl enable ina-web.service >/dev/null
+# `enable` alone only arms a timer for the next boot; `--now` starts it today.
+systemctl enable --now ina-pipeline.timer >/dev/null
 
 # --- nginx + certificate -----------------------------------------------------
 log "nginx vhost for $DOMAIN"
