@@ -14,9 +14,10 @@ import { importReferenceData } from './import/reference.js';
 import { importReport } from './import/report.js';
 import { discoverReports } from './import/discover.js';
 import { runSync } from './import/sync.js';
+import { importRankings } from './import/rankings.js';
 import { GuildByNameDocument, GuildReportsDocument } from '@ina/wcl';
 
-const COMMANDS = ['reference', 'report', 'discover', 'sync', 'guild'] as const;
+const COMMANDS = ['reference', 'report', 'discover', 'sync', 'guild', 'analyze'] as const;
 type Command = (typeof COMMANDS)[number];
 
 function isCommand(value: string | undefined): value is Command {
@@ -289,6 +290,80 @@ Nicht gefunden: "${name}" auf ${serverSlug} (${serverRegion}).`);
   }
 }
 
+/**
+ * Second import pass: parse percentiles and per-fight performance.
+ *
+ * Runs after the fights are in, because it needs the fight rows to attach to.
+ * Costs about 42 points per report (two rankings calls), so a full backfill is
+ * measured in hours of hourly budget rather than minutes.
+ */
+async function runAnalyze(limit: number | undefined, force: boolean): Promise<void> {
+  const guild = await requireGuild(guildArg());
+  const client = new WclClient();
+  const before = await client.getRateLimit();
+  const started = Date.now();
+
+  const pending = await prisma.report.findMany({
+    where: {
+      guildId: guild.id,
+      ...(force ? {} : { importState: 'FIGHTS_IMPORTED' }),
+    },
+    orderBy: { startTime: 'asc' },
+    select: { code: true },
+    ...(limit === undefined ? {} : { take: limit }),
+  });
+
+  console.log(`Analyse für ${guild.name}: ${pending.length} Reports
+`);
+
+  let fights = 0;
+  let parses = 0;
+  let performances = 0;
+  let skipped = 0;
+  let failed = 0;
+  const unresolved = new Set<string>();
+
+  for (const [index, report] of pending.entries()) {
+    try {
+      const r = await importRankings(report.code, client, { force });
+      if (r.skipped) {
+        skipped += 1;
+      } else {
+        fights += r.fights;
+        parses += r.parses;
+        performances += r.performances;
+        for (const u of r.unresolvedCharacters) unresolved.add(u);
+      }
+      console.log(
+        `  [${String(index + 1).padStart(3)}/${pending.length}] ${report.code}  ` +
+          (r.skipped ? `übersprungen: ${r.skippedReason}` : `${r.fights} Kills, ${r.parses} Parses`),
+      );
+    } catch (error) {
+      failed += 1;
+      console.log(
+        `  [${String(index + 1).padStart(3)}/${pending.length}] ${report.code}  FEHLER: ` +
+          (error instanceof Error ? error.message.slice(0, 120) : String(error)),
+      );
+    }
+  }
+
+  const after = await client.getRateLimit();
+  console.log(`
+  Kills analysiert  ${fights}`);
+  console.log(`  Parses            ${parses}`);
+  console.log(`  Leistungsdaten    ${performances}`);
+  console.log(`  Übersprungen      ${skipped}`);
+  console.log(`  Fehlgeschlagen    ${failed}`);
+  if (unresolved.size > 0) {
+    console.log(`  Nicht zuordenbar  ${unresolved.size} Charaktere`);
+  }
+  console.log(
+    `  Punkte            ${(after.pointsSpentThisHour - before.pointsSpentThisHour).toFixed(0)}` +
+      ` · verbleibend ${remainingPoints(after).toFixed(0)}`,
+  );
+  console.log(`  Dauer             ${((Date.now() - started) / 60_000).toFixed(1)} min`);
+}
+
 async function main(): Promise<void> {
   loadEnv();
 
@@ -314,6 +389,14 @@ async function main(): Promise<void> {
         process.argv.includes('--add'),
       );
       break;
+    case 'analyze': {
+      const limitArg = process.argv.find((a) => a.startsWith('--limit='));
+      await runAnalyze(
+        limitArg ? Number(limitArg.split('=')[1]) : undefined,
+        process.argv.includes('--force'),
+      );
+      break;
+    }
     case 'sync': {
       const limitArg = process.argv.find((a) => a.startsWith('--limit='));
       await runSyncCommand(
