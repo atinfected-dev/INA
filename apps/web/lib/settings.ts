@@ -1,4 +1,4 @@
-import { prisma } from '@ina/db';
+import { prisma, type Prisma } from '@ina/db';
 import { DEFAULT_SETTINGS, SETTINGS_KEY, type AppSettings } from '@ina/core';
 
 /**
@@ -13,4 +13,19 @@ export async function loadSettings(): Promise<AppSettings> {
     return DEFAULT_SETTINGS;
   }
   return { ...DEFAULT_SETTINGS, ...(row.value as Partial<AppSettings>) };
+}
+
+/** Stores a partial update on top of what is there; the defaults fill the rest. */
+export async function saveSettings(update: Partial<AppSettings>): Promise<AppSettings> {
+  const current = await loadSettings();
+  const next = { ...current, ...update };
+  // Plain data all the way down, but TypeScript cannot see that through the
+  // typed arrays; the cast says so once, here.
+  const value = next as unknown as Prisma.InputJsonValue;
+  await prisma.setting.upsert({
+    where: { key: SETTINGS_KEY },
+    create: { key: SETTINGS_KEY, value },
+    update: { value },
+  });
+  return next;
 }

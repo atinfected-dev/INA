@@ -1,5 +1,5 @@
 import { prisma } from '@ina/db';
-import type { HallOfFameTitle } from '@ina/core';
+import { METRICS, type HallOfFameTitle } from '@ina/core';
 
 /**
  * Hall of Fame holders.
@@ -189,6 +189,18 @@ export function topHolders<T extends { value: number }>(rows: readonly T[]): T[]
   if (top === undefined) return [];
   return rows.filter((row) => row.value === top.value);
 }
+
+/**
+ * The metrics a title can be awarded for: exactly the ones with a query
+ * behind them. Offered to officers as a list, so a title can never name a
+ * metric this page cannot answer.
+ */
+export const HALL_OF_FAME_METRICS: { key: string; label: string; unit: HallOfFameHolder['unit'] }[] =
+  Object.entries(LOADERS).map(([key, loader]) => ({
+    key,
+    label: METRICS[key]?.label ?? key,
+    unit: loader.unit,
+  }));
 
 export async function loadHallOfFame(titles: HallOfFameTitle[]): Promise<HallOfFameHolder[]> {
   return Promise.all(

@@ -7,6 +7,7 @@ import {
   evaluateAll,
 } from '@ina/core';
 import { loadSubjectMetrics, type SubjectRow } from './achievement-metrics';
+import { loadCustomAchievements } from './custom-content';
 import { MIN_NIGHTS_FOR_TITLE } from './hall-of-fame';
 
 /**
@@ -64,12 +65,16 @@ async function evaluateEveryone(): Promise<{
   rows: Evaluated[];
   holders: Map<string, TierHolders>;
   eligible: number;
+  definitions: AchievementDefinition[];
 }> {
-  const subjects = await loadSubjectMetrics();
+  // Officer-added achievements sit next to the built-in ones and go through
+  // the same evaluator — there is no second kind of achievement.
+  const [subjects, custom] = await Promise.all([loadSubjectMetrics(), loadCustomAchievements()]);
+  const definitions: AchievementDefinition[] = [...ACHIEVEMENTS, ...custom];
 
   const rows = subjects.map((subject) => ({
     subject,
-    earned: evaluateAll(subject.metrics),
+    earned: evaluateAll(subject.metrics, definitions),
   }));
 
   const holders = new Map<string, TierHolders>();
@@ -92,14 +97,14 @@ async function evaluateEveryone(): Promise<{
     }
   }
 
-  return { rows, holders, eligible };
+  return { rows, holders, eligible, definitions };
 }
 
 export async function loadAchievementOverview(): Promise<AchievementOverview> {
-  const { rows, holders, eligible } = await evaluateEveryone();
+  const { rows, holders, eligible, definitions } = await evaluateEveryone();
 
   return {
-    standings: ACHIEVEMENTS.map((definition) => ({
+    standings: definitions.map((definition) => ({
       definition,
       byTier: holders.get(definition.id) ?? {},
     })),

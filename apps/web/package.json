@@ -8,7 +8,8 @@
     "start": "next start -p 3100",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "verify:content": "tsx scripts/verify-custom-content.ts"
   },
   "dependencies": {
     "@ina/core": "workspace:*",

@@ -22,6 +22,9 @@ export {
 export {
   ACHIEVEMENTS,
   ACHIEVEMENT_CATEGORIES,
+  SUBJECT_METRIC_KEYS,
+  METRIC_LABELS,
+  unitForMetric,
   TIER_LABELS,
   TIER_ORDER,
   UNAWARDED_ACHIEVEMENTS,
@@ -35,6 +38,7 @@ export {
   type EarnedAchievement,
   type MetricKey,
   type SubjectMetrics,
+  type TierStep,
 } from './achievements';
 export { slugify } from './slug';
 export { hashPassword, verifyPassword } from './password';

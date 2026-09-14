@@ -62,7 +62,11 @@ const NAV = [
 ] as const;
 
 /** Only officers see the achievement catalogue; members see their own on their profile. */
-const ADMIN_NAV = [{ href: '/erfolge', label: 'Erfolge' }] as const;
+const ADMIN_NAV = [
+  { href: '/erfolge', label: 'Erfolge' },
+  { href: '/admin/inhalte', label: 'Inhalte' },
+  { href: '/admin/claims', label: 'Anträge' },
+] as const;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // Read here rather than per page: the masthead needs to know, and every page

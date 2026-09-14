@@ -63,6 +63,37 @@ model Setting {
   updatedAt DateTime @updatedAt
 }
 
+/// An achievement an officer added: a threshold on a metric, evaluated by the
+/// same code as the built-in ones. `steps` is [{ tier, threshold }].
+model CustomAchievement {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  category    String
+  metric      String
+  unit        String
+  steps       Json
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+/// A record an officer added. With `metric` set it is computed — the subject
+/// with the highest value; without, it is a manual entry for something the
+/// logs cannot know, and is shown as such.
+model CustomRecord {
+  id          String   @id @default(cuid())
+  label       String
+  formula     String
+  metric      String?
+  unit        String?
+  value       String?
+  holder      String?
+  holderClass String?
+  context     String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
 /// A registered guild member.
 ///
 /// Separate from Person on purpose: Person is the analytical identity that an

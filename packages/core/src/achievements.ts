@@ -152,6 +152,62 @@ export interface SubjectMetrics {
 
 export type MetricKey = keyof SubjectMetrics;
 
+/** What each metric is called when an officer picks one from a list. */
+export const METRIC_LABELS: Record<MetricKey, string> = {
+  combatMs: 'Kampfzeit',
+  raidTimeMs: 'Zeit im Raid',
+  pulls: 'Pulls',
+  bossKills: 'Bosskills',
+  nights: 'Raidabende',
+  wipes: 'Wipes',
+  expansions: 'Erweiterungen',
+  zones: 'Verschiedene Raids',
+  bossesKilled: 'Verschiedene Bosse gelegt',
+  progressPulls: 'Progress-Pulls',
+  firstKills: 'Erstkills',
+  heroicKills: 'Heroic-Kills',
+  maxPullsOneBoss: 'Meiste Pulls auf einem Boss',
+  parses75: 'Parses ab 75',
+  parses90: 'Parses ab 90',
+  parses95: 'Parses ab 95',
+  parses99: 'Parses ab 99',
+  parses100: 'Parses 100',
+  bosses90: 'Bosse mit Parse ab 90',
+  damageDone: 'Schaden',
+  healingDone: 'Heilung',
+  damageTaken: 'Erlittener Schaden',
+  interrupts: 'Unterbrechungen',
+  dispels: 'Dispels',
+  deaths: 'Tode',
+  fightsDied: 'Kämpfe mit Tod',
+  firstDeaths: 'Als Erster gestorben',
+  killsWithoutDeath: 'Kills ohne Tod',
+  nightsWithoutDeath: 'Abende ohne Tod',
+  attendanceStreak: 'Abende in Folge',
+  classes: 'Verschiedene Klassen',
+  maxKillsOneClass: 'Kills auf einer Klasse',
+  maxCombatMsOneClass: 'Kampfzeit auf einer Klasse',
+  charactersWithKills: 'Charaktere mit Kills',
+  realms: 'Realms',
+  mergedCharacters: 'Zusammengeführte Charaktere',
+  longestNightMs: 'Längster Abend',
+  maxPullsOneNight: 'Meiste Pulls an einem Abend',
+  lateNightCombatMs: 'Kampfzeit nach Mitternacht',
+  firstNightIndex: 'Erster Abend (Position)',
+};
+
+/** Named apart from the METRICS registry's keys, which describe leaderboards. */
+export const SUBJECT_METRIC_KEYS = Object.keys(METRIC_LABELS) as MetricKey[];
+
+/** Milliseconds metrics are entered and shown as hours. */
+export function unitForMetric(metric: MetricKey): AchievementDefinition['unit'] {
+  if (metric.endsWith('Ms')) return 'hours';
+  if (metric === 'damageDone' || metric === 'healingDone' || metric === 'damageTaken') {
+    return 'amount';
+  }
+  return 'count';
+}
+
 export interface TierStep {
   tier: AchievementTier;
   threshold: number;
@@ -767,8 +823,11 @@ export function evaluate(
   return { definition, tier, value, nextThreshold };
 }
 
-export function evaluateAll(metrics: SubjectMetrics): EarnedAchievement[] {
-  return ACHIEVEMENTS.map((definition) => evaluate(definition, metrics));
+export function evaluateAll(
+  metrics: SubjectMetrics,
+  definitions: readonly AchievementDefinition[] = ACHIEVEMENTS,
+): EarnedAchievement[] {
+  return definitions.map((definition) => evaluate(definition, metrics));
 }
 
 /** An achievement plus how many of the measured subjects hold it. */

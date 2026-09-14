@@ -2,6 +2,7 @@ import { prisma } from '@ina/db';
 import { SCRIPTED_DAMAGE_THRESHOLD } from '@ina/core';
 import { loadAttendance } from './attendance';
 import { MAIN_RAID_SIZE, MIN_NIGHTS_FOR_TITLE } from './hall-of-fame';
+import { loadCustomRecords } from './custom-content';
 
 /**
  * Guild records and Hall of Fame holders.
@@ -239,7 +240,7 @@ export async function loadRecords(): Promise<RecordEntry[]> {
     };
   };
 
-  return [
+  const entries: RecordEntry[] = [
     entry('bestParse', 'Höchster Parse', 'Das höchste je erreichte Parse-Perzentil.', bestParse, (v) => de1(v)),
     entry('most100', 'Meiste 100er Parses', 'Anzahl gewerteter Kills mit Perzentil 100.', most100, de),
     entry('most99', 'Meiste Parses ab 99', 'Anzahl gewerteter Kills mit Perzentil 99 oder höher.', most99, de),
@@ -298,4 +299,7 @@ export async function loadRecords(): Promise<RecordEntry[]> {
           }),
     },
   ];
+
+  // Officer-added records come last, computed where they can be.
+  return [...entries, ...(await loadCustomRecords())];
 }
