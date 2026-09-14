@@ -1,4 +1,5 @@
 import { prisma } from '@ina/db';
+import { keyOf, memo } from './cache';
 import type { SubjectMetrics } from '@ina/core';
 import { loadSubjectMetrics, type SubjectRow } from './achievement-metrics';
 import { MAIN_RAID_SIZE, MIN_NIGHTS_FOR_TITLE } from './hall-of-fame';
@@ -90,7 +91,7 @@ export interface MemberProfile {
   lastSeen: Date | null;
 }
 
-export async function loadMember(subjectId: string): Promise<MemberProfile | null> {
+async function computeLoadMember(subjectId: string): Promise<MemberProfile | null> {
   const subjects = await loadSubjectMetrics();
   const subject = subjects.find((row) => row.subjectId === subjectId);
   if (!subject) return null;
@@ -196,7 +197,7 @@ export async function loadMember(subjectId: string): Promise<MemberProfile | nul
  * The raid a set of characters pulled the most in, as a Warcraft Logs zone
  * slug — the painting a profile should wear. Null when nothing was pulled.
  */
-export async function loadTopZoneSlug(characterIds: string[]): Promise<string | null> {
+async function computeLoadTopZoneSlug(characterIds: string[]): Promise<string | null> {
   if (characterIds.length === 0) return null;
   const rows = await prisma.$queryRaw<{ slug: string }[]>`
     SELECT z.slug
@@ -210,4 +211,14 @@ export async function loadTopZoneSlug(characterIds: string[]): Promise<string | 
     LIMIT 1
   `;
   return rows[0]?.slug ?? null;
+}
+
+/** Per-subject answer, cached like the aggregates: repeat views cost nothing. */
+export function loadMember(...args: Parameters<typeof computeLoadMember>): ReturnType<typeof computeLoadMember> {
+  return memo(keyOf('member', { args }), () => computeLoadMember(...args));
+}
+
+/** Per-subject answer, cached like the aggregates: repeat views cost nothing. */
+export function loadTopZoneSlug(...args: Parameters<typeof computeLoadTopZoneSlug>): ReturnType<typeof computeLoadTopZoneSlug> {
+  return memo(keyOf('top-zone', { args }), () => computeLoadTopZoneSlug(...args));
 }

@@ -1,4 +1,5 @@
 import { prisma } from '@ina/db';
+import { keyOf, memo } from './cache';
 
 /**
  * Player data for the index and the profile pages.
@@ -129,7 +130,7 @@ export async function findCharactersByName(name: string) {
  * @param includeRealName only ever true for a signed-in viewer. When false the
  *   value is not selected at all, so it cannot leak through the page payload.
  */
-export async function loadPlayerProfile(
+async function computeLoadPlayerProfile(
   characterId: string,
   includeRealName = false,
 ): Promise<PlayerProfile | null> {
@@ -303,4 +304,9 @@ export async function loadPlayerProfile(
       deaths: Number(row.deaths),
     })),
   };
+}
+
+/** Per-subject answer, cached like the aggregates: repeat views cost nothing. */
+export function loadPlayerProfile(...args: Parameters<typeof computeLoadPlayerProfile>): ReturnType<typeof computeLoadPlayerProfile> {
+  return memo(keyOf('player-profile', { args }), () => computeLoadPlayerProfile(...args));
 }

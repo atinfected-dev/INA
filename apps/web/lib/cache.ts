@@ -14,11 +14,19 @@
  *
  * Officer actions that change what the pages show call `invalidateAll()`, so
  * a new title or record appears at once rather than a quarter hour later.
+ *
+ * Stale answers are served while a fresh one is computed: when an entry has
+ * passed its time to live, the caller gets the old value at once and the
+ * recomputation runs in the background for the next caller. Nobody ever
+ * waits on an expired entry — only the very first request after a restart
+ * waits, and the service warms that one up itself at start.
  */
 
 interface Entry {
   value: Promise<unknown>;
   expiresAt: number;
+  /** A background refresh already under way, so only one runs at a time. */
+  refreshing: boolean;
 }
 
 const store = new Map<string, Entry>();
@@ -32,14 +40,28 @@ export async function memo<T>(
 ): Promise<T> {
   const now = Date.now();
   const hit = store.get(key);
-  if (hit && hit.expiresAt > now) return hit.value as Promise<T>;
+
+  if (hit) {
+    if (hit.expiresAt <= now && !hit.refreshing) {
+      hit.refreshing = true;
+      work()
+        .then((fresh) => {
+          store.set(key, { value: Promise.resolve(fresh), expiresAt: Date.now() + ttlMs, refreshing: false });
+        })
+        .catch(() => {
+          // Keep serving the last good answer; try again on the next call.
+          hit.refreshing = false;
+        });
+    }
+    return hit.value as Promise<T>;
+  }
 
   const value = work().catch((error: unknown) => {
     // A failure must not be served for fifteen minutes.
     store.delete(key);
     throw error;
   });
-  store.set(key, { value, expiresAt: now + ttlMs });
+  store.set(key, { value, expiresAt: now + ttlMs, refreshing: false });
   return value;
 }
 

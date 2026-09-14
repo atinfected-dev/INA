@@ -16,6 +16,10 @@ Environment=PATH=/opt/ina/node/bin:/usr/local/bin:/usr/bin:/bin
 # next.config.ts also loads the root .env; this keeps the two in step.
 EnvironmentFile=/opt/ina/app/.env
 ExecStart=/opt/ina/node/bin/node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3100
+# Warm the in-process cache once the server answers, so the first visitor
+# after a restart does not pay for the aggregate queries. Retries because
+# ExecStartPost fires as soon as the process exists, not when it listens.
+ExecStartPost=/usr/bin/bash -c 'for i in $(seq 1 40); do curl -sf -o /dev/null http://127.0.0.1:3100/ && curl -sf -o /dev/null http://127.0.0.1:3100/mitglieder && curl -sf -o /dev/null http://127.0.0.1:3100/records && exit 0; sleep 2; done; exit 0'
 Restart=always
 RestartSec=3
 # The service user owns nothing outside /opt/ina.
