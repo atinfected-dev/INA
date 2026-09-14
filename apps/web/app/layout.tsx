@@ -40,6 +40,7 @@ const NAV = [
   { href: '/records', label: 'Rekorde' },
   { href: '/hall-of-fame', label: 'Hall of Fame' },
   { href: '/erfolge', label: 'Erfolge' },
+  { href: '/mitglieder', label: 'Mitglieder' },
   { href: '/players', label: 'Spieler' },
   { href: '/raids', label: 'Raids' },
 ] as const;
