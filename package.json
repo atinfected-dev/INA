@@ -25,7 +25,8 @@
     "sync": "pnpm --filter @ina/worker run cli sync",
     "analyze": "pnpm --filter @ina/worker run cli analyze",
     "deaths": "pnpm --filter @ina/worker run cli deaths",
-    "sessions": "pnpm --filter @ina/worker run cli sessions"
+    "sessions": "pnpm --filter @ina/worker run cli sessions",
+    "damage-taken": "pnpm --filter @ina/worker run cli damage-taken"
   },
   "devDependencies": {
     "@types/node": "^26.5.1",

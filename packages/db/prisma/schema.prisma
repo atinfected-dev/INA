@@ -361,6 +361,10 @@ model Fight {
   hardModeLevel    Int?
   completeRaid     Boolean @default(false)
   wipeCalledMs     Int?
+  /// Damage taken needs one API call per fight — the table endpoint returns no
+  /// per-fight breakdown when several fights are requested at once. The flag
+  /// makes a multi-hour backfill resumable.
+  damageTakenImported Boolean @default(false)
 
   report       Report             @relation(fields: [reportId], references: [id], onDelete: Cascade)
   encounter    Encounter?         @relation(fields: [encounterId], references: [id], onDelete: SetNull)

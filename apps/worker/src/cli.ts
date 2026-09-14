@@ -17,6 +17,7 @@ import { runSync } from './import/sync';
 import { importRankings } from './import/rankings';
 import { importDeaths } from './import/deaths';
 import { rebuildSessions } from './import/sessions';
+import { importDamageTakenForReport } from './import/damage-taken';
 import { GuildByNameDocument, GuildReportsDocument } from '@ina/wcl';
 
 const COMMANDS = [
@@ -28,6 +29,7 @@ const COMMANDS = [
   'analyze',
   'deaths',
   'sessions',
+  'damage-taken',
 ] as const;
 type Command = (typeof COMMANDS)[number];
 
@@ -500,6 +502,71 @@ ${guild.name}`);
   }
 }
 
+/**
+ * Backfills damage taken. One call per fight, so this is the long one:
+ * roughly 4 points and two seconds per fight.
+ */
+async function runDamageTaken(limit: number | undefined): Promise<void> {
+  const client = new WclClient({
+    onRateLimit: (snapshot) => {
+      const until = new Date(Date.now() + snapshot.pointsResetIn * 1000);
+      console.log(`  ⏸  Budget erschöpft — warte bis ${until.toLocaleTimeString('de-DE')}`);
+    },
+  });
+  const started = Date.now();
+
+  const pending = await prisma.fight.findMany({
+    where: { damageTakenImported: false, report: { contentsArchived: false } },
+    orderBy: [{ reportId: 'asc' }, { wclFightId: 'asc' }],
+    select: { id: true, wclFightId: true, report: { select: { code: true } } },
+    ...(limit === undefined ? {} : { take: limit }),
+  });
+
+  const total = await prisma.fight.count({
+    where: { report: { contentsArchived: false } },
+  });
+
+  console.log(`Erlittener Schaden: ${pending.length} von ${total} Kämpfen offen
+`);
+
+  // Grouped by report so the actor table is resolved once per report.
+  const byReport = new Map<string, { id: string; wclFightId: number; reportCode: string }[]>();
+  for (const fight of pending) {
+    const code = fight.report.code;
+    const list = byReport.get(code) ?? [];
+    list.push({ id: fight.id, wclFightId: fight.wclFightId, reportCode: code });
+    byReport.set(code, list);
+  }
+
+  let done = 0;
+  let rows = 0;
+  let archived = 0;
+  let failed = 0;
+
+  for (const [code, fights] of byReport) {
+    const result = await importDamageTakenForReport(code, fights, client);
+    done += result.fights;
+    rows += result.rows;
+    archived += result.archived;
+    failed += result.failed;
+
+    const elapsed = (Date.now() - started) / 1000;
+    const rate = done / Math.max(elapsed, 1);
+    const remaining = pending.length - done - archived;
+    console.log(
+      `  ${String(done).padStart(5)}/${pending.length} Kämpfe · ${rows} Werte · ` +
+        `${rate.toFixed(1)}/s · noch ~${Math.round(remaining / Math.max(rate, 0.01) / 60)} min`,
+    );
+  }
+
+  console.log(`
+  Kämpfe          ${done}`);
+  console.log(`  Werte           ${rows}`);
+  console.log(`  Archiviert      ${archived}`);
+  console.log(`  Fehlgeschlagen  ${failed}`);
+  console.log(`  Dauer           ${((Date.now() - started) / 60_000).toFixed(1)} min`);
+}
+
 async function main(): Promise<void> {
   loadEnv();
 
@@ -525,6 +592,11 @@ async function main(): Promise<void> {
         process.argv.includes('--add'),
       );
       break;
+    case 'damage-taken': {
+      const limitArg = process.argv.find((a) => a.startsWith('--limit='));
+      await runDamageTaken(limitArg ? Number(limitArg.split('=')[1]) : undefined);
+      break;
+    }
     case 'sessions':
       await runSessions();
       break;

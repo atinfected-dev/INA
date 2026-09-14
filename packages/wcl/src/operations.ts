@@ -298,3 +298,29 @@ query ReportDeaths($code: String!, $fightIDs: [Int]) {
   }
 }
 `);
+
+/**
+ * Damage taken for a single fight, with the actor table to resolve it.
+ *
+ * Deliberately one fight per call: the endpoint sums several fights together
+ * and offers no per-fight breakdown, so asking for a whole night would give a
+ * total that could only be split up by guessing.
+ */
+export const ReportDamageTakenDocument = graphql(`
+query ReportDamageTaken($code: String!, $fightIDs: [Int]) {
+  reportData {
+    report(code: $code) {
+      code
+      region { slug }
+      masterData {
+        actors(type: "Player") {
+          id
+          name
+          server
+        }
+      }
+      table(dataType: DamageTaken, fightIDs: $fightIDs, killType: All)
+    }
+  }
+}
+`);
