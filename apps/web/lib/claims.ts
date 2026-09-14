@@ -78,40 +78,42 @@ export async function approveClaim(claimId: string, decidedBy: string): Promise<
   });
   if (!claim) throw new ClaimError('Antrag nicht gefunden.');
 
-  await prisma.$transaction(async (tx) => {
-    let personId = claim.account.personId;
+  let personId = claim.account.personId;
 
-    if (!personId) {
-      const displayName = claim.account.realName?.trim() || claim.account.displayName;
-      const base = slugify(displayName) || `spieler-${claim.account.id.slice(0, 6)}`;
+  if (!personId) {
+    const displayName = claim.account.realName?.trim() || claim.account.displayName;
+    const base = slugify(displayName) || `spieler-${claim.account.id.slice(0, 6)}`;
 
-      // Slugs are unique; two members with the same name must not collide.
-      let slug = base;
-      for (let suffix = 2; await tx.person.findUnique({ where: { slug } }); suffix += 1) {
-        slug = `${base}-${suffix}`;
-      }
-
-      const person = await tx.person.create({
-        data: { displayName, slug },
-        select: { id: true },
-      });
-      personId = person.id;
-
-      await tx.account.update({ where: { id: claim.account.id }, data: { personId } });
+    // Slugs are unique; two members with the same name must not collide.
+    let slug = base;
+    for (let suffix = 2; await prisma.person.findUnique({ where: { slug } }); suffix += 1) {
+      slug = `${base}-${suffix}`;
     }
 
-    await tx.character.update({ where: { id: claim.characterId }, data: { personId } });
-    await tx.characterClaim.update({
-      where: { id: claim.id },
-      data: { status: ClaimStatus.APPROVED, decidedAt: new Date(), decidedBy },
+    // One nested write creates the person and connects account and character
+    // in a single statement — atomic without an interactive transaction,
+    // which on the production host fails with "transaction not found" as soon
+    // as any query ran before it (Prisma 7 with the pg driver adapter).
+    const person = await prisma.person.create({
+      data: {
+        displayName,
+        slug,
+        account: { connect: { id: claim.account.id } },
+        characters: { connect: { id: claim.characterId } },
+      },
+      select: { id: true },
     });
-  }, {
-    // Prisma's defaults (2 s to obtain a connection, 5 s to finish) were
-    // written for a database with the process to itself. On the shared host
-    // an aggregate refresh can hold the pool for a few seconds, and an
-    // approval that then times out reads as "Entscheidung fehlgeschlagen".
-    maxWait: 15_000,
-    timeout: 60_000,
+    personId = person.id;
+  } else {
+    await prisma.character.update({ where: { id: claim.characterId }, data: { personId } });
+  }
+
+  // Not in the same statement as the links above. If this update alone fails,
+  // the claim stays pending while the character is already linked; approving
+  // it again is harmless — the person exists, the link is a no-op.
+  await prisma.characterClaim.update({
+    where: { id: claim.id },
+    data: { status: ClaimStatus.APPROVED, decidedAt: new Date(), decidedBy },
   });
 }
 

@@ -41,17 +41,40 @@ function createClient(): PrismaClient {
     log: process.env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
   });
 
-  if (process.env.NODE_ENV !== 'production') globalThis.__inaPrisma = client;
   return client;
 }
 
+/**
+ * Exactly one client per process.
+ *
+ * The module-level variable is the singleton in production. The globalThis
+ * copy exists for development only, where Next re-evaluates this module on
+ * every hot reload and a plain module variable would start over each time.
+ *
+ * The first version cached on globalThis alone — and only outside production.
+ * In production every property access therefore built a NEW client with its
+ * own pool: connections leaked until Postgres refused them, and an interactive
+ * transaction began on one client while its queries ran on another, which
+ * Prisma reports as "transaction not found". Development never showed it.
+ */
+let instance: PrismaClient | undefined;
+
 export function getPrisma(): PrismaClient {
-  return globalThis.__inaPrisma ?? createClient();
+  if (process.env.NODE_ENV !== 'production') {
+    globalThis.__inaPrisma ??= createClient();
+    return globalThis.__inaPrisma;
+  }
+  instance ??= createClient();
+  return instance;
 }
 
 export const prisma: PrismaClient = new Proxy({} as PrismaClient, {
-  get(_target, property, receiver) {
-    return Reflect.get(getPrisma(), property, receiver);
+  get(_target, property) {
+    const client = getPrisma();
+    const value = Reflect.get(client, property, client);
+    // Methods must run with the real client as `this`, not with this proxy:
+    // Prisma's own internals reach for `this._engine` and friends.
+    return typeof value === 'function' ? value.bind(client) : value;
   },
   has(_target, property) {
     return Reflect.has(getPrisma(), property);
