@@ -59,8 +59,9 @@ export default async function AchievementsPage() {
           Zwei Einschränkungen stecken in den Daten selbst:{' '}
           <strong>Todesbezogene Erfolge</strong> zählen nur Raidabende, deren Logs Warcraft Logs
           noch ausliefert — sonst läse sich ein archiviertes Jahr als makellos überlebt.{' '}
-          <strong>Erlittener Schaden</strong> ist erst teilweise importiert und klammert gescriptete
-          Sofort-Tode aus.
+          <strong>Erlittener Schaden</strong> gibt es aus demselben Grund nur für nicht
+          archivierte Logs — 360 der 716 Reports hält Warcraft Logs nicht mehr vor — und er
+          klammert gescriptete Sofort-Tode aus.
         </p>
       </details>
 

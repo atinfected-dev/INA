@@ -176,7 +176,11 @@ export default async function MemberPage({ params }: { params: Params }) {
         >
           <Stat label="Schaden" value={formatAmount(m.damageDone)} />
           <Stat label="Heilung" value={formatAmount(m.healingDone)} />
-          <Stat label="Erlitten" value={formatAmount(m.damageTaken)} hint="teilweise importiert" />
+          <Stat
+            label="Erlitten"
+            value={formatAmount(m.damageTaken)}
+            hint="ohne archivierte Logs"
+          />
           <Stat label="Unterbrechungen" value={de(m.interrupts)} />
           <Stat label="Dispels" value={de(m.dispels)} />
           <Stat label="Tode" value={de(m.deaths)} hint={`${de(m.firstDeaths)}× als Erster`} />
