@@ -23,12 +23,30 @@ const body = Inter({
 });
 
 export const metadata: Metadata = {
+  // Absolute URLs for the link preview; without this every image path would
+  // be relative and the card would show nothing.
+  metadataBase: new URL('https://isnotalone.de'),
   title: {
     default: 'INA Analytics',
     template: '%s — INA Analytics',
   },
   description:
     'Gilden-Statistiken und Ranglisten über alle Classic-Erweiterungen, aus den Warcraft-Logs der Gilde.',
+  openGraph: {
+    type: 'website',
+    locale: 'de_DE',
+    siteName: 'Is Not Alone',
+    title: 'Is Not Alone — Raidgeschichte seit Wrath of the Lich King',
+    description:
+      'Vier Jahre Raidgeschichte. Jeder Pull, jeder Wipe, jeder Erstkill — Ranglisten, Rekorde, Hall of Fame und Erfolge der Gilde.',
+    url: 'https://isnotalone.de',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Is Not Alone — Raidgeschichte seit Wrath of the Lich King',
+    description:
+      'Vier Jahre Raidgeschichte. Jeder Pull, jeder Wipe, jeder Erstkill — Ranglisten, Rekorde, Hall of Fame und Erfolge der Gilde.',
+  },
 };
 
 /**

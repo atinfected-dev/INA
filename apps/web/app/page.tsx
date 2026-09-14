@@ -95,6 +95,10 @@ export default async function HomePage() {
             <br />
             Registriert euch und beansprucht eure Charaktere, um Erfolge zu erhalten oder in der
             Hall of Fame zu landen.
+            <br />
+            Zukünftige Sheets, Raidplanung, Guides und Co. werdet ihr auch hier finden.
+            <br />
+            <span style={{ color: 'var(--gold-200)', letterSpacing: '0.12em' }}>WOW-Forever</span>
           </p>
           <div className={styles.ctaRow}>
             <a href="/registrieren" className={styles.ctaJade}>
