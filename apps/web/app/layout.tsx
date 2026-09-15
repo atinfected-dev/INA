@@ -153,7 +153,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             steht in keiner Verbindung zu Blizzard Entertainment.
           </p>
           <p style={{ margin: '0.6rem 0 0' }}>
-            <a href="/impressum">Impressum</a>
+            <a href="/impressum">Impressum</a> · <a href="/datenschutz">Datenschutz</a>
           </p>
         </footer>
       </body>

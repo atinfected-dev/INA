@@ -46,8 +46,8 @@ export function CookieNotice() {
       <p className={styles.text}>
         Diese Seite setzt <strong>ein einziges Cookie</strong>, und das erst beim Anmelden: es
         hält deine Sitzung. Kein Tracking, keine Werbung, keine Analyse. Klassensymbole und
-        Raid-Bilder werden von Blizzards Servern geladen. Mehr im{' '}
-        <a href="/impressum">Impressum</a>.
+        Raid-Bilder werden von Blizzards Servern geladen. Mehr in der{' '}
+        <a href="/datenschutz">Datenschutzerklärung</a>.
       </p>
       <button type="button" className={styles.button} onClick={accept}>
         Verstanden
