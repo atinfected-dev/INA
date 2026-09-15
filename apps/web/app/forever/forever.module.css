@@ -495,7 +495,13 @@
   margin-top: 3rem;
   padding-inline: 1.25rem;
   padding-block: 2.6rem 3rem;
-  background-color: #cdb98e;
+  /* Blizzard's paper texture is a dark tan on its own — their page lightens
+     it with a mask. A near-opaque parchment layer over it does the same here
+     and leaves just enough grain to read as paper, not as a flat fill. */
+  background-color: #e4d4b0;
+  background-image:
+    linear-gradient(rgb(232 216 182 / 86%), rgb(232 216 182 / 86%)),
+    var(--paper);
   background-size: 100% auto;
   background-position: top center;
   border-top: 1px solid #4d3d22;

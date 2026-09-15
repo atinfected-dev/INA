@@ -215,7 +215,7 @@ export default async function ForeverPage({ searchParams }: { searchParams: Sear
         className={styles.paper}
         id="wissen"
         aria-labelledby="wissen-title"
-        style={{ backgroundImage: `url(${FOREVER_BG.paper})` }}
+        style={{ '--paper': `url(${FOREVER_BG.paper})` } as React.CSSProperties}
       >
         <div className={styles.paperInner}>
           <Head id="wissen-title" title="Alles über Forever" aside="Stand der Ankündigung · auf Deutsch" />

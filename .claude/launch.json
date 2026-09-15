@@ -4,8 +4,25 @@
     {
       "name": "ina-web",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "@ina/web", "run", "dev"],
+      "runtimeArgs": [
+        "--filter",
+        "@ina/web",
+        "run",
+        "dev"
+      ],
       "port": 3100
+    },
+    {
+      "name": "snapshot",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "3199",
+        "--directory",
+        "C:/Users/Frede/AppData/Local/Temp/claude/C--INA/2e0d1604-2179-4cc0-9979-0d0a2b3bb9b0/scratchpad"
+      ],
+      "port": 3199
     }
   ]
 }
