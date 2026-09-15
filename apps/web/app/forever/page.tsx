@@ -29,7 +29,9 @@ import { deleteForeverCharacterAction, saveForeverCharacterAction } from './acti
 import styles from './forever.module.css';
 import forms from '../../components/auth/form.module.css';
 
-export const metadata: Metadata = { title: 'Forever' };
+export const metadata: Metadata = {
+  title: { absolute: 'Is Not Alone — World of Warcraft: Forever' },
+};
 
 type Search = Promise<Record<string, string | string[] | undefined>>;
 
