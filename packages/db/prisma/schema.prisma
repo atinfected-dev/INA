@@ -103,8 +103,12 @@ model CustomTitle {
   holder      String
   holderClass String?
   note        String?
+  /// classic or forever: which Hall of Fame the plaque hangs in.
+  era         String   @default("classic")
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
+
+  @@index([era])
 }
 
 /// The character a member intends to play in World of Warcraft: Forever.
@@ -112,7 +116,9 @@ model CustomTitle {
 model ForeverCharacter {
   id        String   @id @default(cuid())
   accountId String   @unique
+  /// Forever characters have a first and a last name.
   name      String
+  surname   String   @default("")
   race      String
   className String
   faction   String

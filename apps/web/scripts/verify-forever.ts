@@ -74,6 +74,7 @@ async function main(): Promise<void> {
     // --- Character -----------------------------------------------------------
     await saveForeverCharacter(account.id, {
       name: 'Rundläufer',
+      surname: 'Testmann',
       race: 'skyborne',
       faction: 'horde',
       className: 'Shaman',
@@ -82,10 +83,12 @@ async function main(): Promise<void> {
     });
     const mine = await loadMyForeverCharacter(account.id);
     check('Skyborne-Schamane (Horde) gespeichert', mine?.className === 'Shaman' && mine.faction === 'horde');
+    check('Vor- und Nachname gespeichert', mine?.name === 'Rundläufer' && mine.surname === 'Testmann');
     check('Aufstellung enthält den Charakter', (await loadForeverRoster()).some((row) => row.id === mine?.id));
 
     await saveForeverCharacter(account.id, {
       name: 'Rundläufer',
+      surname: 'Testmann',
       race: 'undead',
       faction: '',
       className: 'Paladin',
@@ -98,16 +101,19 @@ async function main(): Promise<void> {
     check('Leere Notiz wird nicht gespeichert', changed?.note === null);
 
     await rejects('Nachtelf-Paladin wird abgelehnt', () =>
-      saveForeverCharacter(account.id, { name: 'Falsch', race: 'nightelf', faction: '', className: 'Paladin', role: 'Tank', note: '' }),
+      saveForeverCharacter(account.id, { name: 'Falsch', surname: 'Testmann', race: 'nightelf', faction: '', className: 'Paladin', role: 'Tank', note: '' }),
     );
     await rejects('Skyborne-Schamane auf Allianzseite wird abgelehnt', () =>
-      saveForeverCharacter(account.id, { name: 'Falsch', race: 'skyborne', faction: 'alliance', className: 'Shaman', role: 'Heiler', note: '' }),
+      saveForeverCharacter(account.id, { name: 'Falsch', surname: 'Testmann', race: 'skyborne', faction: 'alliance', className: 'Shaman', role: 'Heiler', note: '' }),
     );
     await rejects('Skyborne ohne Fraktion wird abgelehnt', () =>
-      saveForeverCharacter(account.id, { name: 'Falsch', race: 'skyborne', faction: '', className: 'Warrior', role: 'Tank', note: '' }),
+      saveForeverCharacter(account.id, { name: 'Falsch', surname: 'Testmann', race: 'skyborne', faction: '', className: 'Warrior', role: 'Tank', note: '' }),
     );
     await rejects('Name mit Leerzeichen wird abgelehnt', () =>
-      saveForeverCharacter(account.id, { name: 'Zwei Worte', race: 'orc', faction: '', className: 'Mage', role: 'Schaden', note: '' }),
+      saveForeverCharacter(account.id, { name: 'Zwei Worte', surname: 'Testmann', race: 'orc', faction: '', className: 'Mage', role: 'Schaden', note: '' }),
+    );
+    await rejects('Fehlender Nachname wird abgelehnt', () =>
+      saveForeverCharacter(account.id, { name: 'Ohne', surname: '', race: 'orc', faction: '', className: 'Mage', role: 'Schaden', note: '' }),
     );
 
     // --- Progress and knowledge ---------------------------------------------------

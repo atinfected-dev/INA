@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
 import {
   CLASS_LABELS,
   FACTION_LABELS,
@@ -65,8 +64,9 @@ function Head({ id, title, aside }: { id: string; title: string; aside?: React.R
 }
 
 export default async function ForeverPage({ searchParams }: { searchParams: Search }) {
+  // Public: the roster, the guides and the knowledge base are for everyone.
+  // Only a member's own character needs an account.
   const viewer = await getViewer();
-  if (!viewer) redirect('/anmelden');
 
   const search = await searchParams;
   const ok = typeof search.ok === 'string' ? search.ok : null;
@@ -75,7 +75,7 @@ export default async function ForeverPage({ searchParams }: { searchParams: Sear
   const [posts, roster, mine, progress] = await Promise.all([
     loadForeverPosts(),
     loadForeverRoster(),
-    loadMyForeverCharacter(viewer.id),
+    viewer ? loadMyForeverCharacter(viewer.id) : Promise.resolve(null),
     loadForeverProgress(),
   ]);
 
@@ -121,8 +121,8 @@ export default async function ForeverPage({ searchParams }: { searchParams: Sear
             wie sie ist.
           </p>
           <div className={styles.ctaRow}>
-            <a href="#mein-charakter" className={styles.ctaGold}>
-              {mine ? 'Mein Charakter' : 'Charakter eintragen'}
+            <a href={viewer ? '#mein-charakter' : '/anmelden'} className={styles.ctaGold}>
+              {mine ? 'Mein Charakter' : viewer ? 'Charakter eintragen' : 'Anmelden & Charakter eintragen'}
             </a>
             <a href="#guides" className={styles.cta}>
               Guides
@@ -169,7 +169,7 @@ export default async function ForeverPage({ searchParams }: { searchParams: Sear
           id="posts"
           title="Infos, Guides, Raidsheets"
           aside={
-            viewer.isAdmin ? (
+            viewer?.isAdmin ? (
               <a href="/admin/inhalte#forever" className={styles.sectionLink}>
                 Beitrag anlegen →
               </a>
@@ -332,7 +332,7 @@ export default async function ForeverPage({ searchParams }: { searchParams: Sear
                           )}
                           <div>
                             <div className={styles.rosterName} style={{ color: classVar(row.className) }}>
-                              {row.name}
+                              {row.name} {row.surname}
                             </div>
                             <div className={styles.rosterMeta}>
                               {race?.name ?? row.race} · {CLASS_LABELS[row.className]} ·{' '}
@@ -355,8 +355,27 @@ export default async function ForeverPage({ searchParams }: { searchParams: Sear
       {/* --- My character ------------------------------------------------------ */}
       <Divider label="Mein Charakter" />
 
+      {!viewer ? (
+        <Panel
+          title="Wen spielst du in Forever?"
+          subtitle="Zum Eintragen braucht es ein Konto — die Aufstellung sehen alle."
+        >
+          <p className={styles.prose}>
+            Melde dich an, um deinen geplanten Charakter mit Vor- und Nachnamen, Volk, Klasse und
+            Rolle einzutragen. Noch kein Konto? Registrieren dauert eine Minute.
+          </p>
+          <div className={styles.ctaRow} style={{ justifyContent: 'flex-start', marginTop: '0.4rem' }}>
+            <a href="/anmelden" className={styles.ctaGold} id="mein-charakter">
+              Anmelden
+            </a>
+            <a href="/registrieren" className={styles.cta}>
+              Registrieren
+            </a>
+          </div>
+        </Panel>
+      ) : (
       <Panel
-        title={mine ? `${mine.name} — ${CLASS_LABELS[mine.className]}` : 'Wen spielst du in Forever?'}
+        title={mine ? `${mine.name} ${mine.surname} — ${CLASS_LABELS[mine.className]}` : 'Wen spielst du in Forever?'}
         subtitle={
           mine
             ? `Zuletzt geändert ${mine.updatedAt.toLocaleDateString('de-DE')}`
@@ -367,6 +386,7 @@ export default async function ForeverPage({ searchParams }: { searchParams: Sear
           action={saveForeverCharacterAction}
           initial={{
             name: mine?.name ?? '',
+            surname: mine?.surname ?? '',
             race: mine?.race ?? 'human',
             className: mine?.className ?? '',
             faction: mine?.faction ?? '',
@@ -382,6 +402,7 @@ export default async function ForeverPage({ searchParams }: { searchParams: Sear
           </form>
         )}
       </Panel>
+      )}
 
       {/* --- Raids ---------------------------------------------------------------- */}
       <section className={styles.section} aria-labelledby="raids">

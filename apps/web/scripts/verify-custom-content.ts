@@ -122,6 +122,7 @@ async function main(): Promise<void> {
     holder: 'Harry',
     holderClass: 'Warrior',
     note: 'verliehen im Test',
+    era: 'classic',
   });
   // What every officer action does after a change: the Hall of Fame is
   // cached, and the earlier check above already filled it for these titles.

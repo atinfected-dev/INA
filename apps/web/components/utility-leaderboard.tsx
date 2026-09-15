@@ -15,7 +15,7 @@ import {
   type UtilityRow,
 } from '../lib/utility';
 import { formatDuration, formatNumber } from '../lib/wow';
-import styles from '../app/leaderboards/leaderboards.module.css';
+import styles from '../app/(historie)/leaderboards/leaderboards.module.css';
 
 /**
  * Interrupts and dispels share one board.

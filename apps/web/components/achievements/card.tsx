@@ -6,7 +6,7 @@ import {
 } from '@ina/core';
 import type { TierHolders } from '../../lib/achievements';
 import { formatAmount, formatNumber } from '../../lib/wow';
-import styles from '../../app/erfolge/achievements.module.css';
+import styles from '../../app/(historie)/erfolge/achievements.module.css';
 
 /**
  * One achievement card.

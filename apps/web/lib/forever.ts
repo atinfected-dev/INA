@@ -104,7 +104,10 @@ export async function deleteForeverPost(id: string): Promise<void> {
 
 export interface ForeverCharacterRow {
   id: string;
+  /** First name, as typed at creation. */
   name: string;
+  /** Last name — Forever characters carry both. */
+  surname: string;
   race: string;
   className: ForeverClass;
   faction: Faction;
@@ -125,6 +128,7 @@ export async function loadForeverRoster(): Promise<ForeverCharacterRow[]> {
     .map((row) => ({
       id: row.id,
       name: row.name,
+      surname: row.surname,
       race: row.race,
       className: row.className as ForeverClass,
       faction: row.faction as Faction,
@@ -146,6 +150,7 @@ export async function loadMyForeverCharacter(accountId: string): Promise<Forever
   return {
     id: row.id,
     name: row.name,
+    surname: row.surname,
     race: row.race,
     className: row.className,
     faction: row.faction,
@@ -158,6 +163,7 @@ export async function loadMyForeverCharacter(accountId: string): Promise<Forever
 
 export interface CharacterInput {
   name: string;
+  surname: string;
   race: string;
   className: string;
   faction: string;
@@ -174,8 +180,12 @@ export interface CharacterInput {
  */
 export async function saveForeverCharacter(accountId: string, input: CharacterInput): Promise<void> {
   const name = input.name.trim();
+  const surname = input.surname.trim();
   if (!/^[A-Za-zÀ-ÿ]{2,12}$/.test(name)) {
-    throw new ForeverError('Charakternamen haben 2 bis 12 Buchstaben, ohne Leer- oder Sonderzeichen.');
+    throw new ForeverError('Der Vorname hat 2 bis 12 Buchstaben, ohne Leer- oder Sonderzeichen.');
+  }
+  if (!/^[A-Za-zÀ-ÿ]{2,16}$/.test(surname)) {
+    throw new ForeverError('Der Nachname hat 2 bis 16 Buchstaben, ohne Leer- oder Sonderzeichen.');
   }
 
   const race = raceById(input.race);
@@ -193,6 +203,7 @@ export async function saveForeverCharacter(accountId: string, input: CharacterIn
 
   const data = {
     name,
+    surname,
     race: race.id,
     className: input.className,
     faction,

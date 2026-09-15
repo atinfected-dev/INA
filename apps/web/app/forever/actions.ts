@@ -29,6 +29,7 @@ export async function saveForeverCharacterAction(formData: FormData): Promise<vo
   try {
     await saveForeverCharacter(viewer.id, {
       name: text(formData, 'name'),
+      surname: text(formData, 'surname'),
       race: text(formData, 'race'),
       className: text(formData, 'className'),
       faction: text(formData, 'faction'),
@@ -41,7 +42,7 @@ export async function saveForeverCharacterAction(formData: FormData): Promise<vo
     back({ error: 'Das hat nicht geklappt.' });
   }
   revalidatePath(PAGE);
-  back({ ok: `${text(formData, 'name').trim()} steht auf der Liste.` });
+  back({ ok: `${text(formData, 'name').trim()} ${text(formData, 'surname').trim()} steht auf der Liste.` });
 }
 
 export async function deleteForeverCharacterAction(): Promise<void> {

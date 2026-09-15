@@ -214,3 +214,48 @@
     box-shadow: none;
   }
 }
+
+/* --- The way over to Forever ---------------------------------------------- */
+
+/* Brand and the Forever link sit together on the left; the Classic
+   navigation keeps the right. */
+.brandRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Forever's own colours, so the link reads as a door to the other half of
+   the site rather than as one more page of this one. */
+.foreverLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.8rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fff7c6;
+  border: 1px solid #f7b90a;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgb(31 95 139 / 55%), rgb(11 26 41 / 85%));
+  box-shadow:
+    inset 0 0 0 1px rgb(0 0 0 / 60%),
+    0 0 14px rgb(247 185 10 / 18%);
+  text-decoration: none;
+}
+
+.foreverLink:hover {
+  color: #fff;
+  border-color: #ffec71;
+  background: linear-gradient(180deg, rgb(47 127 181 / 65%), rgb(11 26 41 / 90%));
+  text-decoration: none;
+}
+
+.foreverLink img {
+  width: 18px;
+  height: 20px;
+  filter: drop-shadow(0 0 4px rgb(247 185 10 / 45%));
+}

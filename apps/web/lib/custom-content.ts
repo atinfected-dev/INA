@@ -299,11 +299,20 @@ export interface CustomTitleRow {
   holder: string;
   holderClass: string | null;
   note: string | null;
+  era: Era;
   createdAt: Date;
 }
 
-export async function listCustomTitles(): Promise<CustomTitleRow[]> {
-  return prisma.customTitle.findMany({
+/** Which hall a plaque hangs in: the Classic history or Forever. */
+export type Era = 'classic' | 'forever';
+
+export function isEra(value: string): value is Era {
+  return value === 'classic' || value === 'forever';
+}
+
+export async function listCustomTitles(era?: Era): Promise<CustomTitleRow[]> {
+  const rows = await prisma.customTitle.findMany({
+    where: era ? { era } : undefined,
     orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
     select: {
       id: true,
@@ -312,9 +321,11 @@ export async function listCustomTitles(): Promise<CustomTitleRow[]> {
       holder: true,
       holderClass: true,
       note: true,
+      era: true,
       createdAt: true,
     },
   });
+  return rows.map((row) => ({ ...row, era: isEra(row.era) ? row.era : 'classic' }));
 }
 
 /**
@@ -324,8 +335,8 @@ export async function listCustomTitles(): Promise<CustomTitleRow[]> {
  * show and cannot be tied. The note takes the value's place on the plaque
  * ("verliehen 2026", "seit dem ersten Abend").
  */
-export async function loadManualTitles(): Promise<HallOfFameHolder[]> {
-  const rows = await listCustomTitles();
+export async function loadManualTitles(era: Era): Promise<HallOfFameHolder[]> {
+  const rows = await listCustomTitles(era);
   return rows.map((row) => ({
     title: {
       id: CUSTOM_PREFIX + row.id,
@@ -349,10 +360,12 @@ export interface NewTitle {
   holder: string;
   holderClass: string;
   note: string;
+  era: string;
 }
 
 export async function createCustomTitle(input: NewTitle): Promise<void> {
   const title = input.title.trim();
+  if (!isEra(input.era)) throw new ContentError('Unbekannte Ära.');
   const subtitle = input.subtitle.trim();
   const holder = input.holder.trim();
   const holderClass = input.holderClass.trim();
@@ -370,6 +383,7 @@ export async function createCustomTitle(input: NewTitle): Promise<void> {
       holder,
       holderClass: holderClass === '' ? null : holderClass,
       note: input.note.trim() === '' ? null : input.note.trim(),
+      era: input.era,
     },
   });
 }

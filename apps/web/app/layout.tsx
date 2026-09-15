@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { Marcellus, Inter } from 'next/font/google';
 import './globals.css';
 import styles from './shell.module.css';
-import { getViewer } from '../lib/auth';
 import { CookieNotice } from '../components/cookie-notice';
 
 /*
@@ -51,110 +50,25 @@ export const metadata: Metadata = {
 };
 
 /**
- * Navigation.
+ * The document shell only: fonts, the cookie notice, the footer.
  *
- * The leaderboards are grouped: parses, attendance, deaths, damage taken,
- * interrupts and dispels are six answers to the same kind of question, and six
- * top-level entries buried the rest of the site.
- *
- * Raid nights have no entry of their own — a list of logs is a working tool,
- * not something a member comes here to read. The pages still exist and stay
- * reachable from everything that links into them.
+ * The site has two faces with their own mastheads — the Classic history under
+ * `(historie)` and World of Warcraft: Forever under `/forever` — so each route
+ * group brings its own header and content column.
  */
-const NAV = [
-  { href: '/', label: 'Übersicht' },
-  {
-    label: 'Ranglisten',
-    items: [
-      { href: '/leaderboards', label: 'Parses' },
-      { href: '/attendance', label: 'Attendance' },
-      { href: '/deaths', label: 'Tode' },
-      { href: '/erlittener-schaden', label: 'Schaden erlitten' },
-      { href: '/unterbrechungen', label: 'Unterbrechungen' },
-      { href: '/dispels', label: 'Dispels' },
-    ],
-  },
-  { href: '/records', label: 'Rekorde' },
-  { href: '/hall-of-fame', label: 'Hall of Fame' },
-  { href: '/mitglieder', label: 'Mitglieder' },
-  { href: '/players', label: 'Spieler' },
-] as const;
-
-/** Signed-in members get the Forever page first: the guild's plan for World of Warcraft: Forever. */
-const MEMBER_NAV = [{ href: '/forever', label: 'Forever' }] as const;
-
-/** Only officers see the achievement catalogue; members see their own on their profile. */
-const ADMIN_NAV = [
-  { href: '/erfolge', label: 'Erfolge' },
-  { href: '/admin/inhalte', label: 'Inhalte' },
-  { href: '/admin/claims', label: 'Anträge' },
-] as const;
-
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  // Read here rather than per page: the masthead needs to know, and every page
-  // that shows a real name gates on the same value.
-  const viewer = await getViewer();
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="de" className={`${display.variable} ${body.variable}`}>
       <body>
-        <header className={styles.masthead}>
-          <div className={styles.mastheadInner}>
-            <a href="/" className={styles.brand}>
-              <span className={styles.brandMark} aria-hidden="true" />
-              <span>
-                <span className={styles.brandName}>INA Analytics</span>
-                <span className={styles.brandTag}>Gilden-Historie seit Wrath of the Lich King</span>
-              </span>
-            </a>
-            <nav className={styles.nav} aria-label="Hauptnavigation">
-              {NAV.map((item) =>
-                'items' in item ? (
-                  <details key={item.label} className={styles.navGroup}>
-                    <summary>{item.label}</summary>
-                    <div className={styles.navMenu}>
-                      {item.items.map((entry) => (
-                        <a key={entry.href} href={entry.href}>
-                          {entry.label}
-                        </a>
-                      ))}
-                    </div>
-                  </details>
-                ) : (
-                  <a key={item.href} href={item.href} className={styles.navLink}>
-                    {item.label}
-                  </a>
-                ),
-              )}
-              {viewer &&
-                MEMBER_NAV.map((item) => (
-                  <a key={item.href} href={item.href} className={styles.navLink}>
-                    {item.label}
-                  </a>
-                ))}
-              {viewer?.isAdmin &&
-                ADMIN_NAV.map((item) => (
-                  <a key={item.href} href={item.href} className={styles.navLink}>
-                    {item.label}
-                  </a>
-                ))}
-              <a href={viewer ? '/konto' : '/anmelden'} className={styles.navAccount}>
-                {viewer ? viewer.displayName : 'Anmelden'}
-              </a>
-            </nav>
-          </div>
-          <div className={styles.mastheadRule} aria-hidden="true" />
-        </header>
-
-        <main className={styles.main}>{children}</main>
+        {children}
 
         <CookieNotice />
 
         <footer className={styles.footer}>
           <p style={{ margin: 0 }}>
             Nicht-kommerzielle Fanseite. Daten aus den Warcraft-Logs-Berichten der Gilde;
-            Raid-Artworks und Klassen-Icons von Blizzards offiziellem Render-CDN, verwendet gemäß
-            der Blizzard Fan Content Policy.
+            Raid-Artworks, Klassen-Icons und Forever-Grafiken von Blizzards offiziellen Servern,
+            verwendet gemäß der Blizzard Fan Content Policy.
           </p>
           <p style={{ margin: '0.4rem 0 0' }}>
             World of Warcraft, Warcraft und Blizzard Entertainment sind Marken oder eingetragene

@@ -244,6 +244,6 @@ export function loadHallOfFame(titles: HallOfFameTitle[]): Promise<HallOfFameHol
   // cleared by every officer action, so a new manual title shows at once.
   return memo(keyOf('hall-of-fame', { titles: titles.map((t) => `${t.id}:${t.metric}:${t.direction}`) }), async () => [
     ...(await computeHallOfFame(titles)),
-    ...(await loadManualTitles()),
+    ...(await loadManualTitles('classic')),
   ]);
 }

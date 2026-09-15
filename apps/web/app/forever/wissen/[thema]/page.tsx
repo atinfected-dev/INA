@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { Panel } from '../../../../components/ui/frame';
 import { Divider } from '../../../../components/ui/bits';
-import { getViewer } from '../../../../lib/auth';
 import { WISSEN_STAND, WISSEN_TOPICS, topicBySlug, type Section } from '../../../../lib/forever-wissen';
 import {
   FOREVER_BG,
@@ -115,9 +114,6 @@ function SectionBlock({ section, editions }: { section: Section; editions: boole
 }
 
 export default async function WissenPage({ params }: { params: Params }) {
-  const viewer = await getViewer();
-  if (!viewer) redirect('/anmelden');
-
   const { thema } = await params;
   const topic = topicBySlug(thema);
   if (!topic) notFound();

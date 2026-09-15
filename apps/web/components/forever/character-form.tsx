@@ -26,6 +26,7 @@ import styles from '../auth/form.module.css';
 
 export interface CharacterFormValues {
   name: string;
+  surname: string;
   race: string;
   className: ForeverClass | '';
   faction: Faction | '';
@@ -52,7 +53,7 @@ export function CharacterForm({
   return (
     <form action={action} className={styles.form} id="mein-charakter">
       <label className={styles.field}>
-        <span className={styles.label}>Name</span>
+        <span className={styles.label}>Vorname</span>
         <input
           className={styles.input}
           name="name"
@@ -61,8 +62,26 @@ export function CharacterForm({
           maxLength={12}
           pattern="[A-Za-zÀ-ÿ]{2,12}"
           defaultValue={initial.name}
-          placeholder="Wie im Spiel: 2–12 Buchstaben"
+          placeholder="2–12 Buchstaben"
         />
+      </label>
+
+      <label className={styles.field}>
+        <span className={styles.label}>Nachname</span>
+        <input
+          className={styles.input}
+          name="surname"
+          required
+          minLength={2}
+          maxLength={16}
+          pattern="[A-Za-zÀ-ÿ]{2,16}"
+          defaultValue={initial.surname}
+          placeholder="2–16 Buchstaben"
+        />
+        <span className={styles.hint}>
+          Forever-Charaktere tragen Vor- und Nachnamen. Die Namensreservierung läuft ab dem 27.
+          Oktober — trag ein, was du dir wünschst.
+        </span>
       </label>
 
       <label className={styles.field}>

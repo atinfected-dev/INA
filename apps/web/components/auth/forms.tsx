@@ -2,7 +2,7 @@
 
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
-import type { FormState } from '../../app/konto/actions';
+import type { FormState } from '../../app/(historie)/konto/actions';
 import styles from './form.module.css';
 
 /**

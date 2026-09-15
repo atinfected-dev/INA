@@ -3,7 +3,7 @@
 import { useActionState, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { TIER_LABELS, type AchievementTier } from '@ina/core';
-import type { FormState } from '../../app/konto/actions';
+import type { FormState } from '../../app/(historie)/konto/actions';
 import styles from './pin-form.module.css';
 
 /**
