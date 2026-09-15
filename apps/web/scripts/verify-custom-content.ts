@@ -24,6 +24,7 @@ import { loadAchievementOverview } from '../lib/achievements';
 import { loadRecords } from '../lib/records';
 import { loadHallOfFame } from '../lib/hall-of-fame';
 import { loadSettings, saveSettings } from '../lib/settings';
+import { invalidateAll } from '../lib/cache';
 
 function check(label: string, ok: boolean): void {
   console.log(`${ok ? '✓' : '✗'} ${label}`);
@@ -122,6 +123,9 @@ async function main(): Promise<void> {
     holderClass: 'Warrior',
     note: 'verliehen im Test',
   });
+  // What every officer action does after a change: the Hall of Fame is
+  // cached, and the earlier check above already filled it for these titles.
+  invalidateAll();
   const honour = (await loadHallOfFame((await loadSettings()).hallOfFameTitles)).find(
     (h) => h.title.title === 'Verifikations-Ehrentitel',
   );
