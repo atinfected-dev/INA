@@ -10,6 +10,9 @@
 .forever {
   position: relative;
   isolation: isolate;
+  /* Colour is inherited as a value, not as a variable: without this, text
+     that sets no colour of its own keeps the page's green-tinted default. */
+  color: var(--text-primary);
 
   --jade-100: #dff1ff;
   --jade-200: #9bd7ff;
@@ -525,6 +528,7 @@
   --bg-panel: rgb(255 250 240 / 40%);
   --bg-sunken: rgb(255 250 240 / 25%);
   --shadow-panel: 0 2px 12px rgb(60 40 10 / 25%);
+  color: var(--text-primary);
 }
 
 .paperInner {
