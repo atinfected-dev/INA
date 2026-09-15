@@ -12,8 +12,10 @@ import {
   ContentError,
   createCustomAchievement,
   createCustomRecord,
+  createCustomTitle,
   deleteCustomAchievement,
   deleteCustomRecord,
+  deleteCustomTitle,
   titleId,
 } from '../../../lib/custom-content';
 
@@ -154,5 +156,27 @@ export async function removeRecordAction(formData: FormData): Promise<void> {
   await guarded(async () => {
     await deleteCustomRecord(text(formData, 'id'));
     return 'Rekord entfernt.';
+  });
+}
+
+// --- Manual Hall of Fame titles -----------------------------------------------
+
+export async function addManualTitleAction(formData: FormData): Promise<void> {
+  await guarded(async () => {
+    await createCustomTitle({
+      title: text(formData, 'title'),
+      subtitle: text(formData, 'subtitle'),
+      holder: text(formData, 'holder'),
+      holderClass: text(formData, 'holderClass'),
+      note: text(formData, 'note'),
+    });
+    return `Titel „${text(formData, 'title').trim()}“ verliehen.`;
+  });
+}
+
+export async function removeManualTitleAction(formData: FormData): Promise<void> {
+  await guarded(async () => {
+    await deleteCustomTitle(text(formData, 'id'));
+    return 'Titel entfernt.';
   });
 }

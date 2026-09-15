@@ -59,7 +59,7 @@ function Plaque({ holder }: { holder: HallOfFameHolder }) {
           {holder.name ?? 'niemand'}
         </div>
       )}
-      <div className={styles.value}>{formatValue(holder)}</div>
+      <div className={styles.value}>{holder.note ?? formatValue(holder)}</div>
     </article>
   );
 }

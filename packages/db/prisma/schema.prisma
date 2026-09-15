@@ -94,6 +94,19 @@ model CustomRecord {
   createdAt   DateTime @default(now())
 }
 
+/// A Hall of Fame title awarded by hand — no metric, an officer names the
+/// holder. For the honours no log records.
+model CustomTitle {
+  id          String   @id @default(cuid())
+  title       String
+  subtitle    String
+  holder      String
+  holderClass String?
+  note        String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
 /// A registered guild member.
 ///
 /// Separate from Person on purpose: Person is the analytical identity that an

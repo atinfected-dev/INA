@@ -14,14 +14,16 @@ import { PAGE_ART } from '../../../lib/zone-art';
 import { getViewer } from '../../../lib/auth';
 import { loadSettings } from '../../../lib/settings';
 import { HALL_OF_FAME_METRICS } from '../../../lib/hall-of-fame';
-import { listCustomRecords, loadCustomAchievements } from '../../../lib/custom-content';
+import { listCustomRecords, listCustomTitles, loadCustomAchievements } from '../../../lib/custom-content';
 import { CLASS_NAMES } from '../../../lib/wow';
 import { formatMetric } from '../../../components/achievements/card';
 import {
   addAchievementAction,
+  addManualTitleAction,
   addRecordAction,
   addTitleAction,
   removeAchievementAction,
+  removeManualTitleAction,
   removeRecordAction,
   removeTitleAction,
 } from './actions';
@@ -68,10 +70,11 @@ export default async function ContentAdminPage({ searchParams }: { searchParams:
   const ok = typeof search.ok === 'string' ? search.ok : null;
   const error = typeof search.fehler === 'string' ? search.fehler : null;
 
-  const [settings, achievements, records] = await Promise.all([
+  const [settings, achievements, records, manualTitles] = await Promise.all([
     loadSettings(),
     loadCustomAchievements(),
     listCustomRecords(),
+    listCustomTitles(),
   ]);
 
   return (
@@ -144,6 +147,73 @@ export default async function ContentAdminPage({ searchParams }: { searchParams:
           </label>
           <button type="submit" className={styles.submit}>
             Titel anlegen
+          </button>
+        </form>
+      </Panel>
+
+      <Panel
+        title="Ehrentitel ohne Kennzahl"
+        subtitle={`${manualTitles.length} von Hand verliehen · für alles, was kein Log aufzeichnet`}
+      >
+        {manualTitles.length > 0 && (
+          <ul style={{ margin: '0 0 1.2rem', padding: 0, listStyle: 'none', display: 'grid', gap: '0.5rem' }}>
+            {manualTitles.map((row) => (
+              <li
+                key={row.id}
+                style={{ display: 'flex', gap: '0.8rem', alignItems: 'baseline', flexWrap: 'wrap' }}
+              >
+                <strong style={{ color: 'var(--gold-200)' }}>{row.title}</strong>
+                <ClassName name={row.holder} className={row.holderClass} />
+                <span style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>
+                  {row.subtitle}
+                </span>
+                {row.note && (
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{row.note}</span>
+                )}
+                <Remove action={removeManualTitleAction} id={row.id} label={row.title} />
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <form action={addManualTitleAction} className={styles.form}>
+          <label className={styles.field}>
+            <span className={styles.label}>Titel</span>
+            <input className={styles.input} name="title" required minLength={2} placeholder="Langschläfer" />
+          </label>
+          <label className={styles.field}>
+            <span className={styles.label}>Wofür</span>
+            <input
+              className={styles.input}
+              name="subtitle"
+              required
+              minLength={4}
+              placeholder="Während des Raids mehrmals eingeschlafen"
+            />
+            <span className={styles.hint}>Steht als Untertitel auf der Tafel.</span>
+          </label>
+          <label className={styles.field}>
+            <span className={styles.label}>Träger</span>
+            <input className={styles.input} name="holder" required minLength={2} placeholder="Charakter- oder Personenname" />
+          </label>
+          <label className={styles.field}>
+            <span className={styles.label}>Klasse des Trägers</span>
+            <select className={styles.input} name="holderClass">
+              <option value="">—</option>
+              {CLASS_NAMES.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+            <span className={styles.hint}>Färbt den Namen; ohne Klasse bleibt er neutral.</span>
+          </label>
+          <label className={styles.field}>
+            <span className={styles.label}>Zusatz</span>
+            <input className={styles.input} name="note" placeholder="verliehen 2026 · steht anstelle einer Zahl" />
+          </label>
+          <button type="submit" className={styles.submit}>
+            Titel verleihen
           </button>
         </form>
       </Panel>

@@ -1,5 +1,6 @@
 import { prisma } from '@ina/db';
 import { METRICS, type HallOfFameTitle } from '@ina/core';
+import { loadManualTitles } from './custom-content';
 import { keyOf, memo } from './cache';
 
 /**
@@ -30,6 +31,8 @@ export interface HallOfFameHolder {
   unit: 'count' | 'amount' | 'percentile' | 'percent';
   /** Set when the metric cannot be answered from imported data. */
   unavailable?: string;
+  /** For titles given by hand: the line shown where a number would be. */
+  note?: string;
 }
 
 /**
@@ -237,7 +240,10 @@ async function computeHallOfFame(titles: HallOfFameTitle[]): Promise<HallOfFameH
 }
 
 export function loadHallOfFame(titles: HallOfFameTitle[]): Promise<HallOfFameHolder[]> {
-  return memo(keyOf('hall-of-fame', { titles: titles.map((t) => `${t.id}:${t.metric}:${t.direction}`) }), () =>
-    computeHallOfFame(titles),
-  );
+  // Metric titles first, then the ones officers gave by hand. The cache is
+  // cleared by every officer action, so a new manual title shows at once.
+  return memo(keyOf('hall-of-fame', { titles: titles.map((t) => `${t.id}:${t.metric}:${t.direction}`) }), async () => [
+    ...(await computeHallOfFame(titles)),
+    ...(await loadManualTitles()),
+  ]);
 }

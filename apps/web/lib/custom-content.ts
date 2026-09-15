@@ -14,6 +14,7 @@ import {
 } from '@ina/core';
 import { loadSubjectMetrics } from './achievement-metrics';
 import type { RecordEntry } from './records';
+import type { HallOfFameHolder } from './hall-of-fame';
 import { CLASS_NAMES, formatAmount, formatNumber } from './wow';
 
 /**
@@ -287,4 +288,92 @@ export function titleId(title: string, existing: readonly string[]): string {
     n += 1;
   }
   return candidate;
+}
+
+// --- Manual Hall of Fame titles ----------------------------------------------
+
+export interface CustomTitleRow {
+  id: string;
+  title: string;
+  subtitle: string;
+  holder: string;
+  holderClass: string | null;
+  note: string | null;
+  createdAt: Date;
+}
+
+export async function listCustomTitles(): Promise<CustomTitleRow[]> {
+  return prisma.customTitle.findMany({
+    orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+    select: {
+      id: true,
+      title: true,
+      subtitle: true,
+      holder: true,
+      holderClass: true,
+      note: true,
+      createdAt: true,
+    },
+  });
+}
+
+/**
+ * Manual titles in the shape the Hall of Fame renders.
+ *
+ * No value and exactly one holder: a title given by hand has no number to
+ * show and cannot be tied. The note takes the value's place on the plaque
+ * ("verliehen 2026", "seit dem ersten Abend").
+ */
+export async function loadManualTitles(): Promise<HallOfFameHolder[]> {
+  const rows = await listCustomTitles();
+  return rows.map((row) => ({
+    title: {
+      id: CUSTOM_PREFIX + row.id,
+      title: row.title,
+      subtitle: row.subtitle,
+      metric: 'manual',
+      direction: 'highest',
+    },
+    name: row.holder,
+    className: row.holderClass,
+    value: null,
+    tiedWith: [{ name: row.holder, className: row.holderClass }],
+    unit: 'count',
+    note: row.note ?? 'Von der Gilde verliehen',
+  }));
+}
+
+export interface NewTitle {
+  title: string;
+  subtitle: string;
+  holder: string;
+  holderClass: string;
+  note: string;
+}
+
+export async function createCustomTitle(input: NewTitle): Promise<void> {
+  const title = input.title.trim();
+  const subtitle = input.subtitle.trim();
+  const holder = input.holder.trim();
+  const holderClass = input.holderClass.trim();
+  if (title.length < 2) throw new ContentError('Der Titel ist zu kurz.');
+  if (subtitle.length < 4) throw new ContentError('Die Begründung fehlt — wofür gibt es den Titel?');
+  if (holder.length < 2) throw new ContentError('Ein Titel braucht einen Träger.');
+  if (holderClass !== '' && !(CLASS_NAMES as readonly string[]).includes(holderClass)) {
+    throw new ContentError('Unbekannte Klasse.');
+  }
+
+  await prisma.customTitle.create({
+    data: {
+      title,
+      subtitle,
+      holder,
+      holderClass: holderClass === '' ? null : holderClass,
+      note: input.note.trim() === '' ? null : input.note.trim(),
+    },
+  });
+}
+
+export async function deleteCustomTitle(id: string): Promise<void> {
+  await prisma.customTitle.deleteMany({ where: { id } });
 }
