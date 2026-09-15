@@ -9,7 +9,8 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "verify:content": "tsx scripts/verify-custom-content.ts"
+    "verify:content": "tsx scripts/verify-custom-content.ts",
+    "verify:forever": "tsx scripts/verify-forever.ts"
   },
   "dependencies": {
     "@ina/core": "workspace:*",

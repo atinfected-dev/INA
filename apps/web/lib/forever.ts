@@ -1,5 +1,6 @@
 import { prisma } from '@ina/db';
 import {
+  CLASS_LABELS,
   classesFor,
   factionFor,
   isFaction,
@@ -186,7 +187,7 @@ export async function saveForeverCharacter(accountId: string, input: CharacterIn
 
   if (!isForeverClass(input.className)) throw new ForeverError('Unbekannte Klasse.');
   if (!classesFor(race, faction).includes(input.className)) {
-    throw new ForeverError(`${race.name} können in Forever keine ${input.className} sein.`);
+    throw new ForeverError(`Diese Kombination gibt es in Forever nicht: ${race.name} und ${CLASS_LABELS[input.className]}.`);
   }
   if (!isForeverRole(input.role)) throw new ForeverError('Unbekannte Rolle.');
 
