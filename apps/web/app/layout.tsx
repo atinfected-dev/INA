@@ -80,6 +80,9 @@ const NAV = [
   { href: '/players', label: 'Spieler' },
 ] as const;
 
+/** Signed-in members get the Forever page first: the guild's plan for World of Warcraft: Forever. */
+const MEMBER_NAV = [{ href: '/forever', label: 'Forever' }] as const;
+
 /** Only officers see the achievement catalogue; members see their own on their profile. */
 const ADMIN_NAV = [
   { href: '/erfolge', label: 'Erfolge' },
@@ -123,6 +126,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   </a>
                 ),
               )}
+              {viewer &&
+                MEMBER_NAV.map((item) => (
+                  <a key={item.href} href={item.href} className={styles.navLink}>
+                    {item.label}
+                  </a>
+                ))}
               {viewer?.isAdmin &&
                 ADMIN_NAV.map((item) => (
                   <a key={item.href} href={item.href} className={styles.navLink}>

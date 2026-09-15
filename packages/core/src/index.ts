@@ -40,6 +40,25 @@ export {
   type SubjectMetrics,
   type TierStep,
 } from './achievements';
+export {
+  CLASS_LABELS,
+  FACTION_LABELS,
+  FOREVER_CLASSES,
+  FOREVER_DATES,
+  FOREVER_RACES,
+  FOREVER_ROLES,
+  classesFor,
+  daysUntilRelease,
+  factionFor,
+  isFaction,
+  isForeverClass,
+  isForeverRole,
+  raceById,
+  type Faction,
+  type ForeverClass,
+  type ForeverRace,
+  type ForeverRole,
+} from './forever';
 export { slugify } from './slug';
 export {
   PARSE_METRICS,

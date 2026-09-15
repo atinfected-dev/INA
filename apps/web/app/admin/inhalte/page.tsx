@@ -15,14 +15,17 @@ import { getViewer } from '../../../lib/auth';
 import { loadSettings } from '../../../lib/settings';
 import { HALL_OF_FAME_METRICS } from '../../../lib/hall-of-fame';
 import { listCustomRecords, listCustomTitles, loadCustomAchievements } from '../../../lib/custom-content';
+import { POST_KINDS, loadForeverPosts, type PostKind } from '../../../lib/forever';
 import { CLASS_NAMES } from '../../../lib/wow';
 import { formatMetric } from '../../../components/achievements/card';
 import {
   addAchievementAction,
+  addForeverPostAction,
   addManualTitleAction,
   addRecordAction,
   addTitleAction,
   removeAchievementAction,
+  removeForeverPostAction,
   removeManualTitleAction,
   removeRecordAction,
   removeTitleAction,
@@ -70,11 +73,12 @@ export default async function ContentAdminPage({ searchParams }: { searchParams:
   const ok = typeof search.ok === 'string' ? search.ok : null;
   const error = typeof search.fehler === 'string' ? search.fehler : null;
 
-  const [settings, achievements, records, manualTitles] = await Promise.all([
+  const [settings, achievements, records, manualTitles, foreverPosts] = await Promise.all([
     loadSettings(),
     loadCustomAchievements(),
     listCustomRecords(),
     listCustomTitles(),
+    loadForeverPosts(),
   ]);
 
   return (
@@ -90,6 +94,70 @@ export default async function ContentAdminPage({ searchParams }: { searchParams:
 
       {ok && <p className={styles.notice}>{ok}</p>}
       {error && <p className={styles.error}>{error}</p>}
+
+      {/* --- Forever ------------------------------------------------------ */}
+      <Divider label="Forever" />
+
+      <Panel
+        title="Beiträge für die Forever-Seite"
+        subtitle={`${foreverPosts.length} Beiträge · Infos, Guides, Raidsheets für angemeldete Mitglieder`}
+      >
+        <a id="forever" />
+        {foreverPosts.length > 0 && (
+          <ul style={{ margin: '0 0 1.2rem', padding: 0, listStyle: 'none', display: 'grid', gap: '0.5rem' }}>
+            {foreverPosts.map((post) => (
+              <li
+                key={post.id}
+                style={{ display: 'flex', gap: '0.8rem', alignItems: 'baseline', flexWrap: 'wrap' }}
+              >
+                <strong style={{ color: 'var(--gold-200)' }}>{post.title}</strong>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>
+                  {POST_KINDS[post.kind].label}
+                  {post.pinned ? ' · angepinnt' : ''}
+                  {post.url ? ' · mit Link' : ''}
+                </span>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                  {post.createdAt.toLocaleDateString('de-DE')}
+                </span>
+                <Remove action={removeForeverPostAction} id={post.id} label={post.title} />
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <form action={addForeverPostAction} className={styles.form}>
+          <label className={styles.field}>
+            <span className={styles.label}>Art</span>
+            <select className={styles.input} name="kind">
+              {(Object.keys(POST_KINDS) as PostKind[]).map((kind) => (
+                <option key={kind} value={kind}>
+                  {POST_KINDS[kind].label} — {POST_KINDS[kind].description}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className={styles.field}>
+            <span className={styles.label}>Titel</span>
+            <input className={styles.input} name="title" required minLength={2} />
+          </label>
+          <label className={styles.field}>
+            <span className={styles.label}>Text</span>
+            <textarea className={styles.input} name="body" rows={5} placeholder="Absätze bleiben erhalten." />
+          </label>
+          <label className={styles.field}>
+            <span className={styles.label}>Link</span>
+            <input className={styles.input} name="url" type="url" placeholder="https://… — z. B. ein Google Sheet" />
+            <span className={styles.hint}>Text oder Link, mindestens eines von beiden.</span>
+          </label>
+          <label className={styles.field} style={{ flexDirection: 'row', alignItems: 'center', gap: '0.5rem' }}>
+            <input type="checkbox" name="pinned" />
+            <span className={styles.label} style={{ margin: 0 }}>Oben anpinnen</span>
+          </label>
+          <button type="submit" className={styles.submit}>
+            Beitrag veröffentlichen
+          </button>
+        </form>
+      </Panel>
 
       {/* --- Hall of Fame ------------------------------------------------- */}
       <Divider label="Hall of Fame" />

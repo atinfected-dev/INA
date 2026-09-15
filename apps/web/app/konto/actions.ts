@@ -1,5 +1,6 @@
 'use server';
 
+import type { Route } from 'next';
 import { redirect } from 'next/navigation';
 import { prisma } from '@ina/db';
 import { ACHIEVEMENTS } from '@ina/core';
@@ -52,7 +53,9 @@ export async function loginAction(_prev: FormState, formData: FormData): Promise
   } catch (error) {
     return { error: message(error, 'Anmeldung fehlgeschlagen.') };
   }
-  redirect('/konto');
+  // Members land on the Forever page: the plan for what comes next, not the
+  // account settings.
+  redirect('/forever' as Route);
 }
 
 export async function logoutAction(): Promise<void> {

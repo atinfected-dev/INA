@@ -7,6 +7,7 @@ import { TIER_ORDER, type AchievementTier } from '@ina/core';
 import { requireAdmin } from '../../../lib/auth';
 import { loadSettings, saveSettings } from '../../../lib/settings';
 import { invalidateAll } from '../../../lib/cache';
+import { ForeverError, createForeverPost, deleteForeverPost } from '../../../lib/forever';
 import { HALL_OF_FAME_METRICS } from '../../../lib/hall-of-fame';
 import {
   ContentError,
@@ -51,6 +52,7 @@ function revalidateContent(): void {
   revalidatePath('/');
   revalidatePath('/mitglieder', 'layout');
   revalidatePath('/players', 'layout');
+  revalidatePath('/forever');
 }
 
 async function guarded(work: () => Promise<string>): Promise<never> {
@@ -63,7 +65,7 @@ async function guarded(work: () => Promise<string>): Promise<never> {
   try {
     ok = await work();
   } catch (error) {
-    if (error instanceof ContentError) back({ error: error.message });
+    if (error instanceof ContentError || error instanceof ForeverError) back({ error: error.message });
     console.error(error);
     back({ error: 'Das hat nicht geklappt.' });
   }
@@ -178,5 +180,29 @@ export async function removeManualTitleAction(formData: FormData): Promise<void>
   await guarded(async () => {
     await deleteCustomTitle(text(formData, 'id'));
     return 'Titel entfernt.';
+  });
+}
+
+// --- Forever posts -------------------------------------------------------------
+
+export async function addForeverPostAction(formData: FormData): Promise<void> {
+  await guarded(async () => {
+    const viewer = await requireAdmin();
+    await createForeverPost({
+      kind: text(formData, 'kind'),
+      title: text(formData, 'title'),
+      body: text(formData, 'body'),
+      url: text(formData, 'url'),
+      pinned: formData.get('pinned') === 'on',
+      authorId: viewer.id,
+    });
+    return `Beitrag „${text(formData, 'title').trim()}“ veröffentlicht.`;
+  });
+}
+
+export async function removeForeverPostAction(formData: FormData): Promise<void> {
+  await guarded(async () => {
+    await deleteForeverPost(text(formData, 'id'));
+    return 'Beitrag entfernt.';
   });
 }

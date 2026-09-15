@@ -1,0 +1,259 @@
+/* The Forever page: the guild's plan for World of Warcraft: Forever.
+ *
+ * Same language as the front door — Blizzard's paintings under a jade wash,
+ * gold for names and headings — with the working parts (posts, roster, the
+ * character form) kept calm so they stay readable when they fill up. */
+
+.countdown {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-top: 1.4rem;
+  padding: 0.6rem 1.2rem;
+  border: 1px solid var(--gold-400);
+  background: rgb(8 12 11 / 78%);
+  backdrop-filter: blur(4px);
+  box-shadow: inset 0 0 0 1px #000;
+}
+
+.countdownNumber {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 2.2rem;
+  color: var(--gold-100);
+  line-height: 1;
+  text-shadow: 0 2px 0 #000;
+}
+
+.countdownLabel {
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--jade-200);
+}
+
+/* --- Posts: three columns, one per kind --------------------------------- */
+
+.columns {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.columnHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--jade-700);
+}
+
+.columnTitle {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
+  font-size: 1.15rem;
+  color: var(--gold-200);
+}
+
+.columnHint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.post {
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--gold-700);
+  background: var(--bg-panel-raised);
+}
+
+.postPinned {
+  composes: post;
+  border-color: var(--gold-500);
+}
+
+.postTitle {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
+  font-size: 1rem;
+  color: var(--gold-100);
+}
+
+.postMeta {
+  margin: 0.15rem 0 0.5rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--jade-300);
+}
+
+.postBody {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  white-space: pre-line;
+}
+
+.postLink {
+  display: inline-block;
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  color: var(--jade-200);
+}
+
+.empty {
+  padding: 0.9rem;
+  border: 1px dashed var(--jade-700);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* --- Roster ----------------------------------------------------------------- */
+
+.factions {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
+}
+
+.faction {
+  border: 1px solid var(--gold-700);
+  background: var(--bg-panel);
+}
+
+.factionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.6rem 0.9rem;
+  border-bottom: 1px solid var(--jade-700);
+  font-family: var(--font-display), Georgia, serif;
+  color: var(--gold-200);
+}
+
+.factionAlliance {
+  composes: factionHead;
+  background: linear-gradient(90deg, rgb(58 110 168 / 22%), transparent);
+}
+
+.factionHorde {
+  composes: factionHead;
+  background: linear-gradient(90deg, rgb(168 58 58 / 22%), transparent);
+}
+
+.roles {
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.rosterList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rosterRow {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  gap: 0.7rem;
+  align-items: center;
+  padding: 0.5rem 0.9rem;
+  border-bottom: 1px solid rgb(255 255 255 / 4%);
+}
+
+.rosterRow:last-child {
+  border-bottom: 0;
+}
+
+.raceIcon {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--gold-500);
+  background: #000;
+  box-shadow: 0 0 0 1px #000;
+}
+
+.rosterName {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1rem;
+}
+
+.rosterMeta {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.rosterNote {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+}
+
+.rosterRole {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--jade-200);
+  white-space: nowrap;
+}
+
+/* --- Race/class table --------------------------------------------------------- */
+
+.combos {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.combos th,
+.combos td {
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid rgb(255 255 255 / 5%);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.combos th {
+  color: var(--gold-300);
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
+  font-size: 0.78rem;
+}
+
+.combos td:first-child,
+.combos th:first-child {
+  text-align: left;
+}
+
+.yes {
+  color: var(--text-primary);
+}
+
+.new {
+  color: var(--jade-200);
+  font-weight: 600;
+}
+
+.no {
+  color: rgb(255 255 255 / 12%);
+}
+
+/* --- Achievements era ------------------------------------------------------- */
+
+.era {
+  display: grid;
+  gap: 1rem 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(9rem, 100%), 1fr));
+  max-width: 34rem;
+}

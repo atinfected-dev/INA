@@ -107,6 +107,39 @@ model CustomTitle {
   createdAt   DateTime @default(now())
 }
 
+/// The character a member intends to play in World of Warcraft: Forever.
+/// One per account; a plan, not a record.
+model ForeverCharacter {
+  id        String   @id @default(cuid())
+  accountId String   @unique
+  name      String
+  race      String
+  className String
+  faction   String
+  role      String
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+}
+
+/// Officers' notes, guides and raid sheets for Forever. `kind` is one of
+/// info, guide, sheet; `url` links out to a sheet or document.
+model ForeverPost {
+  id        String   @id @default(cuid())
+  kind      String
+  title     String
+  body      String
+  url       String?
+  pinned    Boolean  @default(false)
+  authorId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([kind, pinned, createdAt])
+}
+
 /// A registered guild member.
 ///
 /// Separate from Person on purpose: Person is the analytical identity that an
@@ -132,6 +165,7 @@ model Account {
   person   Person?          @relation(fields: [personId], references: [id], onDelete: SetNull)
   claims   CharacterClaim[]
   sessions Session[]
+  forever  ForeverCharacter?
 }
 
 model Session {

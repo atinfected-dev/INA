@@ -87,3 +87,26 @@ export const PAGE_ART = {
   account: artUrl('icecrown-citadel'),
   auth: artUrl('ulduar'),
 } as const;
+
+/**
+ * The original raids, for the Forever page — Blizzard's paintings of the
+ * places Forever brings back. All present on the render CDN.
+ */
+export const FOREVER_ART = {
+  hero: artUrl('blackwing-lair'),
+  band: artUrl('molten-core'),
+  raids: [
+    { slug: 'onyxias-lair', name: "Onyxias Hort", url: artUrl('onyxias-lair', 'small') },
+    { slug: 'molten-core', name: 'Geschmolzener Kern', url: artUrl('molten-core', 'small') },
+    { slug: 'blackwing-lair', name: 'Pechschwingenhort', url: artUrl('blackwing-lair', 'small') },
+    { slug: 'zulgurub', name: "Zul'Gurub", url: artUrl('zulgurub', 'small') },
+    { slug: 'ruins-of-ahnqiraj', name: "Ruinen von Ahn'Qiraj", url: artUrl('ruins-of-ahnqiraj', 'small') },
+    { slug: 'ahnqiraj-temple', name: "Tempel von Ahn'Qiraj", url: artUrl('ahnqiraj-temple', 'small') },
+    { slug: 'naxxramas', name: 'Naxxramas', url: artUrl('naxxramas', 'small') },
+  ],
+} as const;
+
+/** Official race icons, the character-achievement set: present for every original race. */
+export function raceIconUrl(iconSlug: string, size: 56 | 36 = 56): string {
+  return `https://render.worldofwarcraft.com/eu/icons/${size}/achievement_character_${iconSlug}_male.jpg`;
+}
