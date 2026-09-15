@@ -126,8 +126,8 @@ export default async function ForeverPage({ searchParams }: { searchParams: Sear
             <a href={viewer ? '#mein-charakter' : '/anmelden'} className={styles.ctaGold}>
               {mine ? 'Mein Charakter' : viewer ? 'Charakter eintragen' : 'Anmelden & Charakter eintragen'}
             </a>
-            <a href="#guides" className={styles.cta}>
-              Guides
+            <a href="/forever/talente" className={styles.cta}>
+              Talentrechner
             </a>
             <a href="#wissen" className={styles.cta}>
               Alles über Forever

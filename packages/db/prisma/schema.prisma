@@ -172,6 +172,7 @@ model Account {
   claims   CharacterClaim[]
   sessions Session[]
   forever  ForeverCharacter?
+  builds   ForeverBuild[]
 }
 
 model Session {
@@ -709,4 +710,35 @@ model SyncRun {
   guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade)
 
   @@index([guildId, startedAt])
+}
+
+/// A shared Forever talent build. `code` is the whole build (one digit per
+/// talent, trees joined by "-"); private builds are never stored, only linked.
+model ForeverBuild {
+  id        String   @id @default(cuid())
+  className String
+  title     String
+  code      String
+  authorId  String?
+  views     Int      @default(0)
+  score     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  author Account?          @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  votes  ForeverBuildVote[]
+
+  @@index([className, score])
+  @@index([className, views])
+  @@index([className, createdAt])
+}
+
+/// One vote per browser and build; the hash never identifies a person.
+model ForeverBuildVote {
+  buildId   String
+  voterHash String
+  createdAt DateTime @default(now())
+
+  build ForeverBuild @relation(fields: [buildId], references: [id], onDelete: Cascade)
+
+  @@id([buildId, voterHash])
 }

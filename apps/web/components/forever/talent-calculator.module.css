@@ -1,0 +1,595 @@
+/* The talent calculator, in the Forever livery: gold frames on night blue,
+   the tree grid the way the game draws it — four across, seven down,
+   arrows between prerequisites, a rank badge on every icon. */
+
+.calc {
+  --node: 44px;
+  --gold: #ffd100;
+  --gold-2: #f2d98a;
+  --gold-3: #c6a75a;
+  --gold-4: #6b552e;
+  --parchment: #f3eee2;
+  --ember: #f7b90a;
+}
+
+@media (max-width: 900px) {
+  .calc {
+    --node: 40px;
+  }
+}
+
+/* --- Sticky bar ---------------------------------------------------------- */
+
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem 1.4rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--gold-4);
+  background: linear-gradient(180deg, rgb(11 26 41 / 96%), rgb(5 14 23 / 97%));
+  box-shadow:
+    inset 0 0 0 1px #000,
+    0 8px 24px rgb(0 0 0 / 55%);
+  backdrop-filter: blur(6px);
+}
+
+.barTitle {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.35rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 3px #000;
+}
+
+.barSub {
+  display: block;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  color: #9bd7ff;
+}
+
+.stats {
+  display: flex;
+  gap: 1.4rem;
+  flex-wrap: wrap;
+}
+
+.stat {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.statLabel {
+  font-size: 0.66rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #857a66;
+}
+
+.statValue {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.3rem;
+  color: var(--parchment);
+  font-variant-numeric: tabular-nums;
+}
+
+.slash {
+  color: #857a66;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.9rem;
+}
+
+.btn,
+.btnQuiet {
+  padding: 0.4rem 0.9rem;
+  font: inherit;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.btn {
+  color: #1c1204;
+  border: 1px solid #fff2b0;
+  background: linear-gradient(180deg, #ffec71, #f7b90a);
+}
+
+.btn:hover {
+  background: linear-gradient(180deg, #fff7c6, #ffd254);
+}
+
+.btnQuiet {
+  color: var(--parchment);
+  border: 1px solid var(--gold-4);
+  background: rgb(0 0 0 / 40%);
+}
+
+.btnQuiet:hover {
+  border-color: var(--gold-3);
+}
+
+.btn:disabled,
+.btnQuiet:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: #c3b69d;
+  cursor: pointer;
+}
+
+.switch input {
+  accent-color: #f7b90a;
+}
+
+/* --- Trees ---------------------------------------------------------------- */
+
+.trees {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
+@media (max-width: 900px) {
+  .trees {
+    grid-template-columns: 1fr;
+    max-width: 26rem;
+    margin-inline: auto;
+  }
+}
+
+.tree {
+  border: 1px solid var(--gold-4);
+  background: #050e17;
+  box-shadow:
+    0 0 0 1px #000,
+    0 10px 30px rgb(0 0 0 / 60%);
+  overflow: hidden;
+}
+
+.treeHead {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.7rem;
+  background: linear-gradient(180deg, #10233a, #071522);
+  border-bottom: 1px solid var(--gold-4);
+}
+
+.treeIcon {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #000;
+  box-shadow: 0 0 0 1px var(--gold-3);
+}
+
+.treeName {
+  flex: 1;
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  color: #fff7c6;
+}
+
+.treeNameEn {
+  display: block;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #857a66;
+}
+
+.treePoints {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.2rem;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+
+.treeReset {
+  padding: 0.25rem 0.5rem;
+  font: inherit;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #c3b69d;
+  background: none;
+  border: 1px solid var(--gold-4);
+  cursor: pointer;
+}
+
+.treeReset:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.treeBody {
+  position: relative;
+  aspect-ratio: 4 / 6.6;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgb(31 95 139 / 22%), transparent 70%),
+    linear-gradient(180deg, #0b1a29 0%, #050e17 100%);
+}
+
+.arrows {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.arrowHalo {
+  stroke: rgb(0 0 0 / 85%);
+  stroke-width: 7;
+}
+
+.arrowLine {
+  stroke: #6b552e;
+  stroke-width: 3;
+}
+
+.arrowActive .arrowLine {
+  stroke: var(--gold);
+  filter: drop-shadow(0 0 4px rgb(255 209 0 / 80%));
+}
+
+.grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(7, 1fr);
+}
+
+.node {
+  display: grid;
+  place-items: center;
+}
+
+.nodeInner {
+  position: relative;
+  width: var(--node);
+  height: var(--node);
+}
+
+.nodeBtn {
+  display: block;
+  width: var(--node);
+  height: var(--node);
+  padding: 0;
+  border: 2px solid #3a3025;
+  border-radius: 6px;
+  background: #000;
+  box-shadow:
+    0 0 0 1px #000,
+    0 2px 6px rgb(0 0 0 / 70%);
+  cursor: pointer;
+  transition:
+    box-shadow 120ms ease,
+    border-color 120ms ease;
+  touch-action: manipulation;
+}
+
+.nodeBtn img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.locked img {
+  filter: grayscale(1) brightness(0.45);
+}
+
+.available {
+  border-color: var(--gold-3);
+  box-shadow:
+    0 0 0 1px #000,
+    0 0 10px rgb(255 209 0 / 22%);
+}
+
+.partial {
+  border-color: var(--gold-2);
+  box-shadow:
+    0 0 0 1px #000,
+    0 0 12px rgb(255 209 0 / 35%);
+}
+
+.maxed {
+  border-color: var(--gold);
+  box-shadow:
+    0 0 0 1px #000,
+    0 0 14px rgb(255 209 0 / 55%);
+}
+
+.available:hover,
+.partial:hover,
+.maxed:hover {
+  border-color: var(--gold);
+  box-shadow:
+    0 0 0 1px #000,
+    0 0 16px rgb(255 209 0 / 75%);
+}
+
+.rank {
+  position: absolute;
+  right: -8px;
+  bottom: -8px;
+  min-width: 26px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  border: 1px solid #3a3025;
+  background: #000;
+  color: #857a66;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+.available + .rank {
+  color: var(--parchment);
+  border-color: var(--gold-4);
+}
+
+.partial + .rank {
+  color: var(--gold-2);
+  border-color: var(--gold-4);
+}
+
+.maxed + .rank {
+  color: var(--gold);
+  border-color: var(--gold-3);
+}
+
+.flag {
+  position: absolute;
+  left: -7px;
+  top: -7px;
+  display: inline-grid;
+  place-items: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border-radius: 8px;
+  border: 1px solid var(--gold-4);
+  background: #000;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--gold-2);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 70%);
+  pointer-events: none;
+}
+
+.flagNew {
+  color: var(--gold);
+  border-color: var(--gold-3);
+  text-shadow: 0 0 6px rgb(255 209 0 / 60%);
+}
+
+.flagChanged {
+  color: var(--parchment);
+}
+
+.flagMoved {
+  color: #9bd7ff;
+  border-color: #1f5f8b;
+}
+
+.flagRemoved {
+  color: #ff8a6a;
+  border-color: #6b3a2a;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.2rem;
+  margin-top: 0.9rem;
+  font-size: 0.82rem;
+  color: #c3b69d;
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.legend .flag {
+  position: static;
+}
+
+.legendHint {
+  margin-left: auto;
+  color: #857a66;
+}
+
+/* --- Tooltip -------------------------------------------------------------- */
+
+.tip {
+  position: fixed;
+  z-index: 50;
+  width: 320px;
+  max-width: calc(100vw - 16px);
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--gold-3);
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgb(11 26 41 / 98%), rgb(5 14 23 / 98%));
+  box-shadow:
+    0 0 0 1px #000,
+    0 12px 30px rgb(0 0 0 / 75%);
+  color: var(--parchment);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+.tipPinned {
+  pointer-events: auto;
+}
+
+.tipTitle {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.05rem;
+  color: var(--gold);
+}
+
+.tipRank {
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.85rem;
+  color: #c3b69d;
+  white-space: nowrap;
+}
+
+.tipMeta {
+  margin-top: 0.2rem;
+  font-size: 0.85rem;
+  color: #c3b69d;
+}
+
+.tipReq {
+  margin-top: 0.2rem;
+  font-size: 0.85rem;
+  color: #ff8a6a;
+}
+
+.tipDesc {
+  margin: 0.4rem 0 0;
+  color: #f2d98a;
+}
+
+.tipNext {
+  margin-top: 0.5rem;
+}
+
+.tipLabel {
+  display: block;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9bd7ff;
+}
+
+.tipClassic {
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  border-left: 2px solid var(--gold-4);
+  background: rgb(255 209 0 / 5%);
+  font-size: 0.84rem;
+  color: #c3b69d;
+}
+
+.tipStatus {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid var(--gold-4);
+  font-size: 0.78rem;
+  color: #c3b69d;
+}
+
+.tipStatus .flag {
+  position: static;
+}
+
+.tipCaveat {
+  margin-top: 0.4rem;
+  font-size: 0.76rem;
+  font-style: italic;
+  color: #857a66;
+}
+
+.tipHint {
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  font-style: italic;
+  color: #c3b69d;
+}
+
+.tipButtons {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+
+/* --- Saving --------------------------------------------------------------- */
+
+.save {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 1.4rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--gold-4);
+  background: rgb(11 26 41 / 70%);
+  max-width: 44rem;
+}
+
+.saveField {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.saveInput {
+  padding: 0.45rem 0.6rem;
+  font: inherit;
+  color: var(--parchment);
+  background: rgb(0 0 0 / 45%);
+  border: 1px solid var(--gold-4);
+  border-radius: 2px;
+}
+
+.saveInput:focus {
+  outline: none;
+  border-color: var(--gold-3);
+}
+
+.save .btn {
+  justify-self: start;
+}
+
+.saveHint {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #857a66;
+  overflow-wrap: anywhere;
+}
+
+.code {
+  font-size: 0.78rem;
+  color: #9bd7ff;
+}
