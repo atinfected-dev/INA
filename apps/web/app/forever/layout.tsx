@@ -29,6 +29,8 @@ export const metadata: Metadata = {
 const NAV = [
   { href: '/forever', label: 'Start' },
   { href: '/forever/talente', label: 'Talente' },
+  { href: '/forever/voelker', label: 'Völker' },
+  { href: '/forever/legacy', label: 'Legacy' },
   { href: '/forever/hall-of-fame', label: 'Hall of Fame' },
   { href: '/forever#guides', label: 'Guides' },
   { href: '/forever#aufstellung', label: 'Aufstellung' },

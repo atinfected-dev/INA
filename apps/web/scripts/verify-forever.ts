@@ -119,7 +119,7 @@ async function main(): Promise<void> {
     // --- Progress and knowledge ---------------------------------------------------
     const progress = await loadForeverProgress();
     check('Forever-Erfolge starten bei null', progress.nights === 0 && progress.pulls === 0 && progress.kills === 0);
-    check('Fünf Wissensthemen mit eindeutigen Slugs', new Set(WISSEN_TOPICS.map((t) => t.slug)).size === 5);
+    check('Sechs Wissensthemen mit eindeutigen Slugs', new Set(WISSEN_TOPICS.map((t) => t.slug)).size === 6);
     check(
       'Jede Tabelle hat gleich viele Spalten und Zellen',
       WISSEN_TOPICS.every((t) =>

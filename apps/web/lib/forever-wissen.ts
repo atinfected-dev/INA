@@ -17,12 +17,23 @@ export interface Table {
   rows: string[][];
 }
 
+export interface Shot {
+  /** File under public/forever/ (Blizzard press-kit screenshot, see SOURCES.md there). */
+  file: string;
+  title: string;
+  caption?: string;
+}
+
 export interface Section {
   title: string;
   /** Paragraphs, plain text; a leading "!" marks a note about what is unknown. */
   paragraphs?: string[];
   bullets?: string[];
   table?: Table;
+  /** Screenshots shown above the text. */
+  images?: Shot[];
+  /** Where to read on, e.g. the racials page. */
+  link?: { href: string; label: string };
 }
 
 export interface Topic {
@@ -38,7 +49,7 @@ export interface Topic {
   sections: Section[];
 }
 
-export const WISSEN_STAND = '15. September 2026';
+export const WISSEN_STAND = '16. September 2026';
 
 export const WISSEN_TOPICS: Topic[] = [
   // --- Völker ----------------------------------------------------------------
@@ -85,6 +96,11 @@ export const WISSEN_TOPICS: Topic[] = [
           'Elfen, die von verbannten Hochgeborenen abstammen und vor Generationen einen Pakt mit den Windgeistern des Himmelswalls schlossen. Ihre Heimat ist die Zephras-Insel, das Startgebiet für Stufe 1 bis 12.',
           'Skyborne gehören keiner Fraktion an, bis du einen erstellst: dann wählst du Allianz oder Horde. Die Wahl entscheidet über eine Klasse — auf Allianzseite kommt der Magier dazu, auf Hordeseite der Schamane.',
           'Startgebiet und Volk sind an das Skyborne Heroic Pack oder eine höhere Edition gebunden (siehe Roadmap & Editionen).',
+          'Die Skyborne nennen sich selbst Shandori, das verborgene Volk. Sie stammen von Hochgeborenen ab, die nach dem Krieg der Ahnen in Eldre\'Thalas blieben und sich gegen Prinz Tortheldrins Pakt mit dämonischer Macht erhoben. Die Rebellen verloren, flohen über das Meer und wurden von Windgeistern gerettet, die ein Stück ihrer Insel in den Himmelswall hoben. Zehntausend Jahre in der Ebene der Luft haben Körperbau, Haut, Haar und Augen verändert.',
+          'Zurück nach Azeroth treibt sie eine Krise: Die freundlichen Windgeister sind verschwunden, die Pylonen, die die Insel tragen, versagen, Teile brechen weg. Drei Bewegungen streiten um den Weg: die Windformer mit ihren schamanistischen Traditionen (Horde), die Hohe Ordnung als arkane Erben der Magister (Allianz) und ein Al\'Akir-Kult, der die Angst ausnutzt. Eigene Druidengestalten, Stimmen, Tänze und Anpassungen sind angekündigt.',
+        ],
+        images: [
+          { file: 'zone-zephras.webp', title: 'Zephras-Insel', caption: 'Startgebiet der Skyborne, Stufe 1 bis 12' },
         ],
         table: {
           columns: ['Für beide Seiten', 'Nur Allianz', 'Nur Horde'],
@@ -94,14 +110,16 @@ export const WISSEN_TOPICS: Topic[] = [
       {
         title: 'Volksfähigkeiten',
         paragraphs: [
-          'Jedes Volk erhält zwei aktive und zwei passive Fähigkeiten. Für die Orcs hat Blizzard „überarbeitete Volksfähigkeiten" für Stärke und Nutzen angekündigt.',
-          '!Welche Fähigkeiten das im Einzelnen sind, hat Blizzard für kein Volk veröffentlicht — auch nicht für die Skyborne. Was in Foren kursiert, ist Spekulation und steht hier nicht.',
+          'Jedes Volk erhält zwei aktive und zwei passive Fähigkeiten, ähnlich stark, aber anders auf Angriff, Verteidigung und Nutzen verteilt. Die Widerstands-Boni sind gestrichen, Waffen-Spezialisierungen geben kritische Trefferchance statt Waffenfertigkeit.',
+          'Ein paar Beispiele: Steingestalt senkt jetzt direkt den körperlichen Schaden statt Rüstung zu geben, Wille der Verlassenen bricht den Effekt, schützt aber nicht mehr danach, Kannibalismus stellt auch Mana wieder her, Zwerge treffen Wildtiere 5 % härter und bekommen 1 % kritische Chance mit Streitkolben.',
+          'Alle 37 Fähigkeiten der neun Völker stehen mit Classic-Vergleich auf der Völkerseite.',
         ],
+        link: { href: '/forever/voelker', label: 'Alle Volksfähigkeiten im Vergleich →' },
       },
       {
         title: 'Was noch offen ist',
         bullets: [
-          'Die genauen Volksfähigkeiten aller neun Völker.',
+          'Die endgültigen Zahlen der Volksfähigkeiten — gezeigt wurden Werte eines Messe-Builds.',
           'Die zwei weiteren Volk-Klasse-Paarungen, die für Frühjahr 2027 angekündigt sind.',
           'Ob die acht alten Völker geänderte Startgebiete bekommen.',
           'Ob es neben den Skyborne ein zweites neues Volk gibt — Berichte widersprechen sich, Blizzard hat nur eines gezeigt.',
@@ -170,6 +188,17 @@ export const WISSEN_TOPICS: Topic[] = [
         },
       },
       {
+        title: 'Was die Panels gezeigt haben',
+        bullets: [
+          'Die neue 16-Punkte-Reihe trägt in acht von neun Klassen neue Talente — etwa Zermalmen für Wildheit-Druiden, Heiße Serie für Feuermagier und Wütende Schläge für Furor-Krieger.',
+          'Erklärtes Ziel: alle 27 Spezialisierungen in Dungeons und Schlachtzügen brauchbar — brauchbar, nicht gleich. Stärken und Schwächen bleiben, manche Spezialisierung glänzt je nach Gegnertyp oder Nutzen.',
+          'Paladin als Vorzeigebeispiel: Heiliger Schlag kehrt aus der ursprünglichen Beta zurück als Waffenangriff ab Stufe 6, auf dem alle drei Bäume aufbauen; Richturteil verbraucht das Siegel nicht mehr. Siegel des Zorns ist das Tank-Siegel — Schaden pro Schlag, besser mit schnellen Waffen, kleiner Schild, Richturteil spottet aus 10 Metern.',
+          'Heiliger Schock rückt vom 31- auf den 21-Punkte-Platz mit 10 Sekunden Abklingzeit. Schutz bekommt Templar\'s Bulwark, ein Schild in Höhe der vollen Gesundheit, der Nachsicht auslöst und damit mit Gottesschild konkurriert. Vergeltung bekommt Twist of Light (ein Echo des ersetzten Siegels) und Champion of the Light (Intelligenz wird zu Zauberschaden und Heilung). Kein Unterbrechen, keine Verlangsamung, wenig Reichweite — die Schwächen bleiben absichtlich.',
+          'Jäger legen Fallen im Kampf, Gezielter Schuss und Mehrfachschuss teilen sich eine Abklingzeit, die Begleiterleiste hat neue Befehle. Schamanen rufen Totems zurück und bekommen überarbeitete Totems. Priester lernen Zauber, die es in Vanilla nie gab: Sühne, Gebet der Besserung, Bindende Heilung, Schattenwort: Tod.',
+          'Alle Klassen: einheitliche Treffer- und Kritchance über Nah-, Fern- und Zauberkampf, Waffenfertigkeit dünner verteilt, Heilausrüstung trägt Zauberschaden, Zauberstäbe geben ab etwa Stufe 10 Zauberschaden. Abhärtung kommt nicht.',
+        ],
+      },
+      {
         title: 'Was noch offen ist',
         bullets: [
           'Die vollständigen Talentbäume aller Klassen außer dem Paladin.',
@@ -193,7 +222,22 @@ export const WISSEN_TOPICS: Topic[] = [
     heroArt: 'felwood',
     sections: [
       {
+        title: 'Regelwerke statt Realms',
+        paragraphs: [
+          'Es gibt keine Realm-Liste mehr. Man wählt ein Regelwerk und landet in einer sehr großen gemeinsamen Welt dafür: Normal (Welt-PvP nur freiwillig), PvP (umkämpfte Gebiete bleiben gefährlich), Rollenspiel, und nach dem Start Hardcore mit endgültigem Tod. Das soll zwei alte Probleme lösen: den langsam sterbenden Server und die Warteschlange auf dem beliebten.',
+          'Die Welt soll sich trotzdem wie ein Realm anfühlen: dieselben Namen beim Questen und Sammeln, Gildenmitglieder landen in derselben Kopie der Außenwelt, bevor man überhaupt eine Gruppe bildet. Man stellt eine Sprache ein und wird mit Spielern derselben Sprache zusammengelegt.',
+          'Fraktionen bleiben getrennt, Dungeon- und Schlachtzugsgruppen kommen aus demselben Regelwerk. PvP-Regelwerke nutzen die Fraktionsausgleichs-Werkzeuge aus Season of Discovery. Hardcore ist ein abgeschlossenes System: nichts wird hineingetragen, Belohnungen von dort können aber auf anderen Charakteren erscheinen. Ein gestorbener Hardcore-Charakter darf in ein anderes Regelwerk wechseln — erstmals auch nach PvP.',
+          'Charaktere tragen Vor- und Nachnamen, einmalig in der ganzen Region. Deshalb braucht auch unsere Log-Zuordnung ab November eine neue Abfrage.',
+        ],
+      },
+      {
         title: 'Neue Gebiete',
+        images: [
+          { file: 'zone-riverglades.webp', title: 'Riverglades', caption: 'Das neue Gebiet für die Mitte 30 bis Mitte 40' },
+          { file: 'zone-hyjal.webp', title: 'Hyjal', caption: 'Endgame-Gebiet, nach Archimondes Fall neu bewachsen' },
+          { file: 'zone-dalaran.webp', title: 'Dalaran', caption: 'Wiederaufgebaut, noch im Alteracgebirge, die Barriere gerade gefallen' },
+          { file: 'zone-mulgore.webp', title: 'Mulgore', caption: 'Alte Gebiete mit neuen Quests, Händlern und Rezepten' },
+        ],
         table: {
           columns: ['Gebiet', 'Stufen', 'Was bekannt ist'],
           rows: [
@@ -204,11 +248,21 @@ export const WISSEN_TOPICS: Topic[] = [
           ],
         },
         paragraphs: [
-          'Ausgebaut werden unter anderem das Sumpfland (neue Quests) und Desolace (neue Zentaurenquests mit Belohnungen). Blizzard spricht von drei neuen Gebieten; Berichte nennen vier — ob Hyjal oder Shen\'dralas als Erweiterung eines alten Gebiets zählt, ist offen.',
+          'Über 1.000 neue Quests verteilen sich auf den ganzen Weg von 1 bis 60, nicht nur ans Ende. Die Riverglades liegen an der Ostküste zwischen Rotkamm, Brennender Steppe, Ödland und Sümpfen des Elends und sind über eine neue Abzweigung der Rotkamm-Straße erreichbar; Horde startet bei Ragmar, Allianz in Farhold Keep. Die Geschichte dreht sich um Handelswege, alte Rechnungen und Nachbarn — niemand rettet die Welt.',
+          'Ausgebaut werden unter anderem das Sumpfland (über 25 Quests und eine neue Route), Desolace (Zentaurenfraktionen) und Azshara (deutlich erweitert). Drei neue Schiffsrouten verbinden die Levelgebiete ohne Fliegen: Sturmwind–Auberdine, Menethil–Southshore–Auberdine und eine von Dampfdruckhafen in Tanaris an ein neues Ziel. Blizzard spricht von drei neuen Gebieten, Berichte nennen vier — ob Hyjal oder Shen\'dralas als Erweiterung eines alten Gebiets zählt, ist offen.',
         ],
       },
       {
         title: 'Dungeons zum Start',
+        images: [
+          { file: 'dungeon-hall-of-thanes.webp', title: 'Halle der Thane', caption: 'Stufe 13–18, unter Eisenschmiede' },
+          { file: 'dungeon-lordaeron.webp', title: 'Ruinen von Lordaeron', caption: 'Stufe 15–20' },
+          { file: 'dungeon-excavation-site.webp', title: 'Titanen-Ausgrabung', caption: 'Stufe 24–29, Sumpfland' },
+          { file: 'dungeon-dalaran.webp', title: 'Dalaran', caption: 'Stufe 28–33, mehr Stadt als Dungeon' },
+          { file: 'dungeon-drowned-city.webp', title: 'Die Ertrunkene Stadt', caption: 'Stufe 35–40, auf der BlizzCon spielbar' },
+          { file: 'dungeon-timbermaw-hold.webp', title: 'Schwarzschlund-Feste', caption: 'Stufe 55–60, hinter dem Tor in Azshara' },
+          { file: 'dungeon-shaper-terrace.webp', title: 'Terrasse der Gestalter', caption: 'Stufe 58–60, Un\'Goro' },
+        ],
         table: {
           columns: ['Dungeon', 'Stufen', 'Wo', 'Was bekannt ist'],
           rows: [
@@ -224,12 +278,28 @@ export const WISSEN_TOPICS: Topic[] = [
           ],
         },
         paragraphs: [
+          'Was die Panels zu den einzelnen Instanzen erzählt haben: In der Halle der Thane, einer Grabstätte der Zwergenkönige, ist jemand eingebrochen — vermutlich Dunkeleisen; die Allianz soll aufräumen, die Horde muss sich hinein schleichen oder kämpfen. In Lordaeron bergen die Verlassenen Erbstücke aus ihrer zerstörten Hauptstadt, während die Geißel sie noch hält und ein Nekromant die nächste Stadt ins Visier nimmt. Die Titanen-Ausgrabung über Whelgars Grabung liegt in seltsamem Nebel mit aktiven Konstrukten und einem in der Zeit festgefrorenen Bereich, angebunden an die Forscherliga.',
+          'In Dalaran versagen mit der Barriere die Verzauberungen und dämonische Energie sickert ein; man erkundet ausdrücklich die Stadt. Die Ertrunkene Stadt sind Trollruinen vor Schlingendorntal, gerade aus dem Meer gestiegen, mit Naga, Trollen und einem Piratenwrack. Krol\'dor ist eine große Außen-Instanz in den Riverglades, in der Oger Siedlungen überfallen und nachts etwas skandieren, das nach dem Schattenhammer klingt — gedacht als lange fehlende Alternative zum Scharlachroten Kloster. Das Defias-Gefängnis diente einst Lösegelderpressung an Adligen und soll Varian Wrynn beherbergt haben; Defias und Naga bekämpfen sich darin, das ist der Weg hinein. Die Schwarzschlund-Feste ist eine Furbolg-Stadt hinter dem nie geöffneten Tor in Azshara, deren Tunnel bis zu den Barrow Deeps reichen. Die Terrasse der Gestalter ist eine unberührte Titanenanlage in den Hügeln von Un\'Goro mit Dinosauriern, Kristallen und einer unerklärten Energiequelle.',
           'Vier weitere Dungeons folgen: zwei im Frühjahr, zwei im Sommer 2027. Aus bestimmten Dungeonbossen fallen Baupläne für die besseren Lagerobjekte der Berufe.',
           '!Gruppengröße, Bossreihen, Beute, Sperren und Schwierigkeitsgrade hat Blizzard nicht veröffentlicht. Ob die Dungeons des Originals daneben bestehen bleiben, ist nicht gesagt.',
         ],
       },
       {
+        title: 'Wie Dungeons gespielt werden',
+        bullets: [
+          'Langsam und taktisch: Ein gewöhnlicher Gegner soll rund 15 Sekunden brauchen. Trash ist keine Formsache.',
+          'Kontrolle gehört wieder zur Arbeit — Verwandlung, Verbannen, Wurzeln und Fallen zählen.',
+          'Tanks sind darauf gebaut, drei oder vier Gegner sicher zu halten, nicht einen ganzen Raum. Die losen vom Heiler wegzuhalten ist Sache aller.',
+          'Die Weihe des Paladins zeigt die Grenze: leichter Schaden an allem, was hineinläuft, schwerer nur an den ersten vier. Sichere Bedrohung bei einer kontrollierten Gruppe, keine gratis bei Massenpulls.',
+          'Jede Beutetabelle der Dungeonbosse wurde durchgesehen: Bossbeute auf selten angehoben, schwache Gegenstände neu gebaut, neue ergänzt, die ikonischen unangetastet. Hybriden bekommen endlich Dungeon- und Questausrüstung, die für sie gemacht ist.',
+        ],
+      },
+      {
         title: 'Schlachtzüge',
+        images: [
+          { file: 'raid-barrow-deeps.webp', title: 'Barrow Deeps', caption: '10 Spieler, ab 9. Dezember 2026' },
+          { file: 'raid-hyjal.webp', title: 'Hyjalgipfel', caption: '20 Spieler, ab 9. Dezember 2026' },
+        ],
         table: {
           columns: ['Schlachtzug', 'Spieler', 'Wann', 'Was bekannt ist'],
           rows: [
@@ -242,12 +312,17 @@ export const WISSEN_TOPICS: Topic[] = [
           ],
         },
         paragraphs: [
+          'Barrow Deeps ist ein weit verzweigtes, heiliges Netz nachtelfischer Grabhügel mit drei Eingängen, einer davon auf dem Hyjal; die Schwarzschlund-Feste gräbt offenbar darauf zu. Die Nachtelfen halten dort ihre gefährlichsten Gefangenen — ein berühmter Dämonenjäger saß einmal darin — und nun breitet sich Verderbnis aus. Der Hyjalgipfel ist der größere Startraid: verschneite Gipfel, alte Elfenruinen, Geister aus dem Dritten Krieg. Es geht um das, was Malfurion aufgab, um Archimonde zu stoppen, und um etwas, das dem Land Kraft entzieht — vermutlich der Weg zu Forevers erstem legendären Gegenstand.',
+          'Die klassischen Vanilla-Schlachtzüge existieren, sind an diesem Punkt der Zeitlinie aber noch nicht geöffnet.',
           '!Bossnamen, Reihenfolge, Sperren, Zugangsvoraussetzungen und Beuteregeln sind nicht veröffentlicht.',
         ],
       },
       {
         title: 'Schlachtfeld',
-        paragraphs: ['Ein neues Schlachtfeld auf den Dunkelspeerinseln. Mehr hat Blizzard dazu nicht gesagt.'],
+        images: [{ file: 'bg-darkspear-islands.webp', title: 'Dunkelspeerinseln', caption: 'Neues Schlachtfeld, 15 gegen 15' }],
+        paragraphs: [
+          'Das neue Schlachtfeld auf den Dunkelspeerinseln spielt 15 gegen 15 und ähnelt am ehesten dem Auge des Sturms: strategische Punkte halten, mit einer Flaggeninteraktion wie im Arathibecken einnehmen und verteidigen, bis die Stellung sicher ist. Die Horde kämpft an der Seite der Dunkelspeertrolle, die Allianz mit der Expeditionsstreitmacht von Theramore. Die alten Schlachtfelder bleiben. Ein größeres neues PvP-System wurde angedeutet, ohne Details; PvP-Saisons erneuern sich mit beiden Update-Wellen 2027.',
+        ],
       },
     ],
   },
@@ -269,6 +344,7 @@ export const WISSEN_TOPICS: Topic[] = [
           'Acht Berufe sind bestätigt: Schmiedekunst, Schneiderei, Kräuterkunde, Alchemie, Lederverarbeitung, Kochkunst, Bergbau und Kürschnerei. Über 600 neue Rezepte kommen über alle Berufe und Stufen hinzu.',
           'Die Kochkunst ist grundlegend neu: gekochtes Essen gibt neben Werten auch Erfahrung — im Original gab es nur Sattheit und Regeneration.',
           'Jeder Beruf stellt drei Lagerobjekte her, freigeschaltet an Fertigkeitsschwellen, das erste ab Fertigkeit 20 beim Lehrer oder bei Lager-NPCs. Die besseren Objekte kommen als Baupläne aus Dungeonbossen.',
+          'Sammelberufe bekommen Spezialisierungen: Kräuterkundige neigen zu seltenem Lotus oder zu Menge, Bergleute zu mehr Erz oder seltenen Materialien. Verzauberer lernen Ringe und Stäbe, Alchemisten längere oder stärkere Elixiere und ein aufwertbares Schmuckstück, Schneider besticken Ausrüstung für Boni. Startgebiete bekommen zusätzliche Lehrer, Rezepte und Berufsquests, damit sich ein Beruf früh lohnt.',
           '!Ob es Ingenieurskunst, Verzauberkunst, Erste Hilfe oder Angeln gibt, hat Blizzard nicht gesagt. Auch Berufslimits je Charakter und Höchstfertigkeit sind offen.',
         ],
         table: {
@@ -285,7 +361,12 @@ export const WISSEN_TOPICS: Topic[] = [
       },
       {
         title: 'Das Lager',
+        images: [
+          { file: 'camping-horde.webp', title: 'Ein Horde-Lager', caption: 'Lagerfeuer mit Berufsobjekten' },
+          { file: 'camping-alliance.webp', title: 'Ein Lager in der Dämmerung', caption: 'Rast, Händler, Reparatur, Werkbänke, Stärkungen' },
+        ],
         paragraphs: [
+          'Das Kochfeuer wird zum Lagerplatz mit Rast, Händlern, Reparatur, Berufs-Arbeitsplätzen und einstündigen Stärkungen. Man muss einen Moment am Feuer sitzen, bevor die Stärkungen wirken — die Pause ist gewollt, damit Leute miteinander reden. Lagerstärkungen teilen sich die Kategorie mit dem passenden Klassensegen: Die Räucherkerze konkurriert mit Arkane Intelligenz statt sich zu stapeln.',
           'Ein einfaches Lagerfeuer kann jeder aufschlagen. Was Berufe beisteuern, macht daraus ein Lager: die Objekte geben Stärkungen, die eine Stunde halten und für alle gelten, die am Feuer sitzen. Im Erbe-Baum der Berufe gibt es „Reiche Ernte", das die Ausbeute der Sammelberufe erhöht.',
         ],
       },
@@ -306,8 +387,44 @@ export const WISSEN_TOPICS: Topic[] = [
         ],
       },
       {
+        title: 'Ausrüstung und Werte',
+        bullets: [
+          'Trefferchance ist ein Wert über Nah-, Fern- und Zauberkampf; kritische Trefferchance ebenso.',
+          'Waffenfertigkeit bleibt, aber dünner über die Gegenstände verteilt.',
+          'Heilausrüstung trägt Zauberschaden, damit Heiler ohne zweites Set questen. Zauberstäbe und Stäbe geben Zauberschaden und Heilung ab etwa Stufe 10.',
+          'Ein neuer Wert senkt die Chance, dass eigene Angriffe pariert oder ausgewichen werden — vor allem für Tanks. Abhärtung kommt nicht.',
+          'Welt-Epics wurden überarbeitet und ergänzt; Schmuckstücke werden Situationswerkzeuge statt Allzweck-Statstöcke, manche Ausrüstung wirkt je nach Gelände oder Gegnerfamilie anders. Gedacht ist eine Sammlung, keine einzige Bestenliste.',
+          'Questbelohnungen wurden verbreitert — Mor\'Ladim bietet nun auch einen Zaubermacht-Ring, Nesingwarys Reihe einen Zauberstab und ein Stärke-plus-Zauberschaden-Schwert für Vergeltung.',
+          'Reitkosten wandern zur Aufteilung aus Burning Crusade: mehr Preis auf die Ausbildung, weniger auf das Reittier. Das erste Reittier bleibt ein Meilenstein.',
+        ],
+      },
+      {
+        title: 'Legacy-System',
+        paragraphs: [
+          'Kontoweite Fortschrittsleiste, die belohnt, den Weg von 1 bis 60 mehr als einmal zu gehen. Punkte kommen aus gewöhnlichen Leistungen — Stufe 25, 45 und 60 mit einer Klasse, Berufsmeilensteine wie Ingenieurskunst-Fachmann, Herausforderungen beim Leveln und Erkunden. Drei Kategorien: Abenteuer (Leveln und Reisen), Berufe (Sammeln und Handwerk), Findigkeit (Reibung entfernen, etwa Reagenzien für Klassenzauber).',
+          'Zum Start lassen sich 16 von rund 65 verdienbaren Punkten ausgeben; alles darüber füllt eine Belohnungsleiste mit Kosmetik und Prestige. Jeder gezeigte Knoten steht im Planer.',
+        ],
+        link: { href: '/forever/legacy', label: 'Legacy-Baum öffnen →' },
+      },
+      {
+        title: 'Transmog, Modelle, Licht',
+        images: [
+          { file: 'light-ashenvale.webp', title: 'Eschental', caption: 'Mondlicht durch die Bäume' },
+          { file: 'light-orgrimmar.webp', title: 'Orgrimmar', caption: 'Neue Beleuchtung' },
+          { file: 'light-darnassus.webp', title: 'Darnassus', caption: 'Neue Beleuchtung' },
+          { file: 'light-tirisfal.webp', title: 'Tirisfal', caption: 'Neue Beleuchtung' },
+          { file: 'zone-new-water.webp', title: 'Neues Wasser', caption: 'Der neue Wasser-Renderer' },
+        ],
+        bullets: [
+          'Transmog gibt es, aber abschaltbar für alle anderen — per NPC oder Startvorgabe. Dann tragen andere sichtbar, was sie wirklich anhaben, das eigene Aussehen steuert man weiter selbst.',
+          'Beim-Aufheben-gebundene blaue Dungeon-Ausrüstung schaltet ihr Aussehen für alle Berechtigten frei, sobald sie fällt — niemand würfelt gegen einen Transmog-Sammler. Epische Raid-Aussehen bleiben bei dem, der bindet.',
+          'Nur innerhalb derselben Rüstungsklasse; ein gespeichertes Outfit hält je Platz mehrere Optionen und passt sich beim Wechsel der Rüstungsklasse an. Stufengrenzen fallen auf 60, PvP-Aussehen brauchen weiter den Rang.',
+          'Ein Schalter wechselt das ganze Spiel zwischen Original- und HD-Modellen, für alle einheitlich; die klassischen Animationen wurden für die HD-Modelle wiederhergestellt. Offizielle Gamepad-Unterstützung kommt.',
+        ],
+      },
+      {
         title: 'Hardcore',
-        paragraphs: ['Forever Hardcore ist für den Winter 2026 angekündigt, ohne genaues Datum.'],
+        paragraphs: ['Forever Hardcore ist für den Winter 2026 angekündigt, ohne genaues Datum. Es ist ein abgeschlossenes Regelwerk: Fortschritt und Sammlungen lassen sich nicht hineintragen, dort verdiente Belohnungen erscheinen aber auf anderen Charakteren. Wer stirbt, darf in ein anderes Regelwerk wechseln.'],
       },
     ],
   },
@@ -357,6 +474,18 @@ export const WISSEN_TOPICS: Topic[] = [
         },
       },
       {
+        title: 'Angedeutet, nicht angekündigt',
+        paragraphs: ['Auf der Bühne erwähnt, ohne Einzelheiten — Richtung, keine Versprechen.'],
+        bullets: [
+          'Grim Batol und eine wachsende Präsenz roter Drachen.',
+          'Mehr Azshara, samt dem großen ungenutzten Krater.',
+          'Ein überarbeiteter Vanilla-Schlachtzug und Forevers erster legendärer Gegenstand.',
+          'Ein größeres, neu gestaltetes PvP-System; weitere Legacy-Bäume und Knoten.',
+          'Weitere Volk-Klasse-Paarungen und vielleicht eine ganz neue Klasse — nicht ausgeschlossen, nichts angekündigt.',
+          'Smaragdgrüner Traum, Höhlen der Zeit, Uldum, Gilneas und andere unfertige Vanilla-Gebiete kamen als kreative Möglichkeiten zur Sprache, nicht als Plan.',
+        ],
+      },
+      {
         title: 'Was noch offen ist',
         bullets: [
           'Europäische Preise der Editionen.',
@@ -367,6 +496,60 @@ export const WISSEN_TOPICS: Topic[] = [
     ],
   },
 ];
+
+WISSEN_TOPICS.push({
+  slug: 'grundsaetze',
+  kicker: 'Grundsätze',
+  title: 'Was Forever eigentlich ist',
+  teaser: 'Kein Neustart, keine Erweiterung: ein Azeroth, das in seinem ersten Jahr bleibt und seitwärts wächst.',
+  intro:
+    'Forever beginnt im selben Moment wie das Spiel von 2004 und behält jede ursprüngliche Quest. Neues wird in die Welt hineingewoben statt sie zu ersetzen. Die Zeit ist im ersten Jahr versiegelt: nach dem Dritten Krieg, vor dem Dunklen Portal, vor Nordend — eine eigene Kontinuität neben Retail und Classic Era.',
+  art: 'stories',
+  heroArt: 'mulgore',
+  sections: [
+    {
+      title: 'Die Leitlinien',
+      bullets: [
+        'Stufe 60 ist die Decke, und sie soll nicht steigen. Fortschritt kommt aus neuen Orten, Gegenständen, Rufen, Berufen und Builds statt aus neuen Stufen.',
+        'Kein Fliegen, keine Stufenanpassung. Jedes Gebiet behält seine Schwierigkeit — wohin man geht, ist eine echte Entscheidung.',
+        'Nichts, was man verdient, wird vom nächsten Patch entwertet. Es gibt keinen Erweiterungszyklus, der Ausrüstung leise wertlos macht.',
+        'Leveln ist die Hauptsache, nicht die Warteschlange vor dem Endgame. Der Aufholplan für einen neuen Charakter heißt: spielen.',
+        'Klassen werden nicht aneinander angeglichen. Spezialisierungen behalten Kanten, statt dass jede Klasse von allem etwas bekommt.',
+        'Patches sollen mehrere Spielertypen zugleich bedienen: Solo-Geschichten, Levelinhalte, Dungeons, Schlachtzüge, PvP, Berufe, Weltinhalte.',
+        'Die Warcraft-Geschichte gilt weiter: Arthas auf dem Frostthron und Archimondes Fall am Hyjal sind Kulisse, nichts wird rückgängig gemacht.',
+      ],
+    },
+    {
+      title: 'Wie die Geschichten geschrieben werden',
+      paragraphs: [
+        'Das Bild, das Blizzard dafür benutzt: gefundene Fotografien — Dinge, die in Vanilla glaubhaft hätten passieren können, aber nie gezeigt wurden. Unterbeleuchtete Figuren werden ausgebaut, berühmte Leute bei dem gezeigt, was sie abseits der Bühne taten, verschlossene Orte geöffnet, verlaufene Lokalgeschichten zu Ende erzählt.',
+        'Neue Rätsel sind wichtiger als saubere Antworten auf alte, und große Ereignisse werden vom Boden aus erzählt statt als eine lange Kampagne mit dem Starensemble. Inhalte fallen in drei Töpfe: erwartete Orte wie Hyjal, neue Geschichten aus vertrautem Warcraft-Material, und echte Überraschungen wie die Skyborne — sparsam eingesetzt, damit das klassische Azeroth es selbst bleibt.',
+      ],
+    },
+    {
+      title: 'Die Zahlen der Ankündigung',
+      table: {
+        columns: ['Was', 'Wie viel'],
+        rows: [
+          ['Neue Regionen', 'vier, dazu der wiederbelebte Hyjal'],
+          ['Neue Quests', 'über 1.000, von 1 bis 60 verteilt'],
+          ['Neue Dungeons', 'neun zum Start, vier weitere 2027'],
+          ['Schlachtzüge zum Start', 'zwei neue plus Onyxias Hort, ab 9. Dezember'],
+          ['Talente', '470 in 27 Bäumen, davon 131 neu'],
+          ['Volksfähigkeiten', '37 über neun Völker, je zwei aktiv und zwei passiv'],
+          ['Neue Rezepte', 'über 600'],
+          ['Regelwerke', 'Normal, PvP, Rollenspiel, später Hardcore'],
+        ],
+      },
+    },
+    {
+      title: 'Zu den Zahlen',
+      paragraphs: [
+        '!Forever wurde gezeigt, nicht ausgeliefert. Tooltips stammen von Messe-Charakteren um Stufe 38; Schadens- und Manazahlen sind nicht die einer Stufe 60, und Formulierungen ändern sich zwischen Messe und Beta. Ab dem 17. September liefert der Beta-Client die verlässlicheren Daten.',
+      ],
+    },
+  ],
+});
 
 export function topicBySlug(slug: string): Topic | undefined {
   return WISSEN_TOPICS.find((topic) => topic.slug === slug);

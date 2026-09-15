@@ -212,6 +212,37 @@ export default async function ForeverPage({ searchParams }: { searchParams: Sear
         </div>
       </section>
 
+      {/* --- Tools ---------------------------------------------------------------- */}
+      <section className={styles.section} id="werkzeuge" aria-labelledby="tools">
+        <Head id="tools" title="Planen" aside="Talente, Völker, Legacy" />
+        <div className={styles.features}>
+          <a href="/forever/talente" className={styles.feature} style={{ backgroundImage: `url(${FOREVER_FEATURES.power})` }}>
+            <div className={styles.featureWash} />
+            <div className={styles.featureBody}>
+              <div className={styles.featureKicker}>Talentrechner</div>
+              <h3 className={styles.featureName}>Alle neun Klassen</h3>
+              <div className={styles.featureTeaser}>51 Punkte, Build-Links, Vergleich mit Classic, Bestenliste.</div>
+            </div>
+          </a>
+          <a href="/forever/voelker" className={styles.feature} style={{ backgroundImage: 'url(/forever/zone-zephras.webp)' }}>
+            <div className={styles.featureWash} />
+            <div className={styles.featureBody}>
+              <div className={styles.featureKicker}>Völker</div>
+              <h3 className={styles.featureName}>37 Volksfähigkeiten</h3>
+              <div className={styles.featureTeaser}>Zwei aktive, zwei passive je Volk — mit Classic-Vergleich.</div>
+            </div>
+          </a>
+          <a href="/forever/legacy" className={styles.feature} style={{ backgroundImage: `url(${FOREVER_FEATURES.journey})` }}>
+            <div className={styles.featureWash} />
+            <div className={styles.featureBody}>
+              <div className={styles.featureKicker}>Legacy-Baum</div>
+              <h3 className={styles.featureName}>16 Punkte zum Start</h3>
+              <div className={styles.featureTeaser}>Kontoweite Fortschritte planen, drei Kategorien.</div>
+            </div>
+          </a>
+        </div>
+      </section>
+
       {/* --- Knowledge, on parchment ------------------------------------------- */}
       <section
         className={styles.paper}
@@ -240,7 +271,15 @@ export default async function ForeverPage({ searchParams }: { searchParams: Sear
           </div>
 
           <div style={{ marginTop: '2.4rem' }}>
-            <Head id="combos" title="Wer kann was" aside="kann sich bis zum Start noch ändern" />
+            <Head
+              id="combos"
+              title="Wer kann was"
+              aside={
+                <a href="/forever/voelker" className={styles.sectionLink}>
+                  Volksfähigkeiten im Vergleich →
+                </a>
+              }
+            />
             <div style={{ overflowX: 'auto' }}>
               <table className={styles.combos}>
                 <thead>

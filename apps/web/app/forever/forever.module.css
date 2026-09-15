@@ -920,3 +920,227 @@
   max-width: 72ch;
   line-height: 1.5;
 }
+
+/* --- Races: one card per people ---------------------------------------------- */
+
+.races {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+}
+
+.race {
+  border: 1px solid var(--gold-600);
+  background: linear-gradient(180deg, rgb(11 26 41 / 95%), rgb(5 14 23 / 97%));
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 60%);
+}
+
+.raceHead {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 0.8rem;
+  align-items: center;
+  padding: 0.8rem 0.9rem;
+  border-bottom: 1px solid var(--jade-700);
+}
+
+.raceHeadAlliance {
+  composes: raceHead;
+  background: linear-gradient(90deg, rgb(58 110 168 / 28%), transparent);
+}
+
+.raceHeadHorde {
+  composes: raceHead;
+  background: linear-gradient(90deg, rgb(168 58 58 / 28%), transparent);
+}
+
+.raceHeadNeutral {
+  composes: raceHead;
+  background: linear-gradient(90deg, rgb(155 215 255 / 20%), transparent);
+}
+
+.raceName {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
+  font-size: 1.2rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff7c6;
+}
+
+.raceBlurb {
+  margin: 0.15rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.raceClasses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  padding: 0.6rem 0.9rem 0;
+}
+
+.raceClass {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.45rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--gold-700);
+  background: rgb(0 0 0 / 35%);
+}
+
+.raceClass img {
+  width: 16px;
+  height: 16px;
+}
+
+.raceClassNew {
+  composes: raceClass;
+  border-color: var(--ember);
+  color: var(--yellow);
+}
+
+.traits {
+  margin: 0;
+  padding: 0.6rem 0.9rem 0.9rem;
+  list-style: none;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.trait {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 0.7rem;
+  align-items: start;
+}
+
+.traitIcon {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--gold-400);
+  background: #000;
+  box-shadow: 0 0 0 1px #000;
+}
+
+.traitRemoved .traitIcon {
+  filter: grayscale(1) brightness(0.5);
+}
+
+.traitName {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 0.98rem;
+  color: var(--gold-100);
+}
+
+.traitKind {
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.traitEffect {
+  margin: 0.15rem 0 0;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.traitClassic {
+  margin: 0.2rem 0 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.traitClassic strong {
+  color: var(--jade-300);
+  font-weight: 600;
+}
+
+.traitFlag {
+  display: inline-grid;
+  place-items: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border-radius: 8px;
+  border: 1px solid var(--gold-600);
+  background: #000;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.flagNew {
+  color: var(--yellow);
+  border-color: var(--ember);
+}
+
+.flagChanged {
+  color: var(--text-primary);
+}
+
+.flagSame {
+  color: var(--jade-300);
+}
+
+.flagRemoved {
+  color: #ff8a6a;
+  border-color: #6b3a2a;
+}
+
+/* --- Galleries inside the knowledge pages ------------------------------------ */
+
+.gallery {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(14rem, 100%), 1fr));
+  margin: 0.4rem 0 1rem;
+}
+
+.galleryWide {
+  composes: gallery;
+  grid-template-columns: repeat(auto-fill, minmax(min(22rem, 100%), 1fr));
+}
+
+.shot {
+  display: block;
+  border: 1px solid var(--gold-600);
+  background: #050e17;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 60%);
+}
+
+.shotImg {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.shotCaption {
+  margin: 0;
+  padding: 0.4rem 0.6rem 0.5rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.shotCaption strong {
+  display: block;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
+  font-size: 0.92rem;
+  letter-spacing: 0.02em;
+  color: var(--gold-100);
+}

@@ -56,6 +56,19 @@ function SectionBlock({ section, editions }: { section: Section; editions: boole
           ))}
         </div>
       )}
+      {section.images && (
+        <div className={section.images.length <= 2 ? styles.galleryWide : styles.gallery}>
+          {section.images.map((shot) => (
+            <figure key={shot.file} className={styles.shot} style={{ margin: 0 }}>
+              <img className={styles.shotImg} src={`/forever/${shot.file}`} alt={shot.title} loading="lazy" />
+              <figcaption className={styles.shotCaption}>
+                <strong>{shot.title}</strong>
+                {shot.caption}
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      )}
       {section.paragraphs?.map((text, index) =>
         text.startsWith('!') ? (
           <p key={index} className={styles.open}>
@@ -74,6 +87,13 @@ function SectionBlock({ section, editions }: { section: Section; editions: boole
             <li key={index}>{item}</li>
           ))}
         </ul>
+      )}
+      {section.link && (
+        <p className={styles.prose}>
+          <a href={section.link.href} className={styles.back} style={{ margin: 0 }}>
+            {section.link.label}
+          </a>
+        </p>
       )}
       {section.table && (
         <div style={{ overflowX: 'auto' }}>
