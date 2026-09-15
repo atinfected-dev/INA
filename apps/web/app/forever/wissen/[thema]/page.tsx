@@ -1,20 +1,26 @@
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
-import { OrnateFrame, Panel } from '../../../../components/ui/frame';
+import { Panel } from '../../../../components/ui/frame';
 import { Divider } from '../../../../components/ui/bits';
 import { getViewer } from '../../../../lib/auth';
 import { WISSEN_STAND, WISSEN_TOPICS, topicBySlug, type Section } from '../../../../lib/forever-wissen';
-import { artUrl } from '../../../../lib/zone-art';
+import {
+  FOREVER_BG,
+  FOREVER_EDITIONS,
+  FOREVER_FEATURES,
+  FOREVER_LOGO,
+  FOREVER_MARK,
+  FOREVER_ZONES,
+} from '../../../../lib/forever-art';
 import styles from '../../forever.module.css';
-import landing from '../../../landing.module.css';
 
 /**
  * One knowledge topic, rendered from data.
  *
- * Every topic goes through this template: an ornate frame with the topic's
- * painting, then a panel per section. Paragraphs that begin with "!" are
- * the honest gaps — what Blizzard has not said — and are set apart so a
- * reader can tell a fact from an open question at a glance.
+ * Every topic goes through this template: a painted band with the topic's
+ * Blizzard artwork and the Forever logo, then a panel per section. Paragraphs
+ * that begin with "!" are the honest gaps — what Blizzard has not said — and
+ * are set apart so a reader can tell a fact from an open question at a glance.
  */
 
 type Params = Promise<{ thema: string }>;
@@ -24,37 +30,47 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   return { title: topicBySlug(thema)?.title ?? 'Forever' };
 }
 
-function SectionBlock({ section }: { section: Section }) {
+const EDITION_CARDS = [
+  { key: 'heroic', name: 'Skyborne Heroic Pack', price: '29,99 USD' },
+  { key: 'epic', name: 'Skyborne Epic Pack', price: '59,99 USD' },
+  { key: 'collection', name: 'Warcraft Forever Collection', price: '79,99 USD · bis 11. Januar 2027' },
+] as const;
+
+function SectionBlock({ section, editions }: { section: Section; editions: boolean }) {
   return (
-    <Panel title={section.title}>
+    <Panel
+      title={
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+          <img src={FOREVER_MARK} alt="" width={18} height={20} style={{ width: 18, height: 20 }} />
+          {section.title}
+        </span>
+      }
+    >
+      {editions && (
+        <div className={styles.editions}>
+          {EDITION_CARDS.map((edition) => (
+            <div key={edition.key} className={styles.edition}>
+              <img className={styles.editionArt} src={FOREVER_EDITIONS[edition.key]} alt="" loading="lazy" />
+              <h4 className={styles.editionName}>{edition.name}</h4>
+              <p className={styles.editionPrice}>{edition.price}</p>
+            </div>
+          ))}
+        </div>
+      )}
       {section.paragraphs?.map((text, index) =>
         text.startsWith('!') ? (
-          <p
-            key={index}
-            style={{
-              margin: '0 0 0.8rem',
-              padding: '0.6rem 0.8rem',
-              borderLeft: '2px solid var(--jade-500)',
-              color: 'var(--text-secondary)',
-              background: 'rgb(58 168 130 / 6%)',
-              maxWidth: '72ch',
-              lineHeight: 1.6,
-            }}
-          >
-            <strong style={{ color: 'var(--jade-200)' }}>Offen: </strong>
+          <p key={index} className={styles.open}>
+            <strong className={styles.openLabel}>Offen: </strong>
             {text.slice(1)}
           </p>
         ) : (
-          <p
-            key={index}
-            style={{ margin: '0 0 0.8rem', color: 'var(--text-secondary)', maxWidth: '72ch', lineHeight: 1.6 }}
-          >
+          <p key={index} className={styles.prose}>
             {text}
           </p>
         ),
       )}
       {section.bullets && (
-        <ul style={{ margin: '0 0 0.8rem', paddingLeft: '1.2rem', color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: '72ch' }}>
+        <ul className={styles.list}>
           {section.bullets.map((item, index) => (
             <li key={index}>{item}</li>
           ))}
@@ -81,7 +97,7 @@ function SectionBlock({ section }: { section: Section }) {
                       style={{
                         textAlign: 'left',
                         whiteSpace: 'normal',
-                        color: cellIndex === 0 ? 'var(--gold-200)' : 'var(--text-secondary)',
+                        color: cellIndex === 0 ? 'var(--gold-100)' : 'var(--text-secondary)',
                         verticalAlign: 'top',
                       }}
                     >
@@ -109,45 +125,68 @@ export default async function WissenPage({ params }: { params: Params }) {
   const others = WISSEN_TOPICS.filter((entry) => entry.slug !== topic.slug);
 
   return (
-    <>
-      <OrnateFrame
-        art={artUrl(topic.art)}
-        title={topic.title}
-        subtitle={`${topic.kicker} · Stand ${WISSEN_STAND}`}
-      >
-        <p style={{ margin: 0, color: 'var(--text-secondary)', maxWidth: '70ch', lineHeight: 1.6 }}>
-          {topic.intro}
-        </p>
-      </OrnateFrame>
+    <div className={styles.forever}>
+      <section className={styles.topicHero} aria-labelledby="topic-title">
+        <div className={styles.heroArt} style={{ backgroundImage: `url(${FOREVER_ZONES[topic.heroArt]})` }} />
+        <div className={styles.heroWash} />
+        <div className={styles.cloudFront} style={{ backgroundImage: `url(${FOREVER_BG.cloud})` }} />
+        <div className={styles.topicInner}>
+          <a href="/forever">
+            <img
+              className={styles.topicLogo}
+              src={FOREVER_LOGO}
+              alt="World of Warcraft: Forever"
+              width={700}
+              height={570}
+            />
+          </a>
+          <p className={styles.topicKicker}>
+            {topic.kicker} · Stand {WISSEN_STAND}
+          </p>
+          <h1 id="topic-title" className={styles.topicTitle}>
+            {topic.title}
+          </h1>
+          <p className={styles.topicIntro}>{topic.intro}</p>
+        </div>
+      </section>
 
-      <p style={{ margin: '0.8rem 0 0', fontSize: '0.85rem' }}>
-        <a href="/forever#wissen">← Forever</a>
-      </p>
+      <a href="/forever#wissen" className={styles.back}>
+        ← Zurück zur Forever-Seite
+      </a>
 
       {topic.sections.map((section) => (
-        <SectionBlock key={section.title} section={section} />
+        <SectionBlock
+          key={section.title}
+          section={section}
+          editions={topic.slug === 'roadmap' && section.title === 'Editionen'}
+        />
       ))}
 
       <Divider label="Weiter" />
 
-      <div className={landing.tiles}>
+      <div className={styles.features}>
         {others.map((entry) => (
-          <a key={entry.slug} href={`/forever/wissen/${entry.slug}`} className={landing.tile}>
-            <div className={landing.tileArt} style={{ backgroundImage: `url(${artUrl(entry.art, 'small')})` }} />
-            <div className={landing.tileWash} />
-            <div className={landing.tileBody}>
-              <div className={landing.tileKicker}>{entry.kicker}</div>
-              <h3 className={landing.tileName}>{entry.title}</h3>
+          <a
+            key={entry.slug}
+            href={`/forever/wissen/${entry.slug}`}
+            className={styles.feature}
+            style={{ backgroundImage: `url(${FOREVER_FEATURES[entry.art]})` }}
+          >
+            <div className={styles.featureWash} />
+            <div className={styles.featureBody}>
+              <div className={styles.featureKicker}>{entry.kicker}</div>
+              <h3 className={styles.featureName}>{entry.title}</h3>
             </div>
           </a>
         ))}
       </div>
 
-      <p style={{ margin: '1.5rem 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', maxWidth: '72ch' }}>
+      <p className={styles.footnote}>
         Zusammengestellt aus Blizzards Ankündigung und der Berichterstattung zur BlizzCon 2026, in
         eigenen Worten. Bis zum Start kann sich alles noch ändern; was Blizzard nicht gesagt hat,
-        steht hier als offen.
+        steht hier als offen. Grafiken und Logo gehören Blizzard Entertainment und erscheinen im
+        Rahmen der Fan-Content-Richtlinie.
       </p>
-    </>
+    </div>
   );
 }

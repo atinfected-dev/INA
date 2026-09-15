@@ -10,6 +10,8 @@
  * page, and so every topic renders through the same template.
  */
 
+import type { FeatureKey, ZoneKey } from './forever-art';
+
 export interface Table {
   columns: string[];
   rows: string[][];
@@ -29,8 +31,10 @@ export interface Topic {
   title: string;
   teaser: string;
   intro: string;
-  /** Blizzard zone slug on the render CDN. */
-  art: string;
+  /** Blizzard's framed Forever still for the tile. */
+  art: FeatureKey;
+  /** Blizzard's reworked-zone still behind the topic's own hero. */
+  heroArt: ZoneKey;
   sections: Section[];
 }
 
@@ -45,7 +49,8 @@ export const WISSEN_TOPICS: Topic[] = [
     teaser: 'Acht Bekannte, ein neues — und sechs Paarungen, die es nie gab.',
     intro:
       'Forever bringt die acht Völker von 2004 zurück und stellt ihnen die Skyborne zur Seite, ein Elfenvolk, das sich beim Erstellen für eine Seite entscheidet. Sechs Volk-Klasse-Paarungen sind neu; zwei weitere hat Blizzard für das Frühjahr angekündigt, ohne zu sagen, welche.',
-    art: 'zulgurub',
+    art: 'skyborne',
+    heroArt: 'ashenvale',
     sections: [
       {
         title: 'Allianz',
@@ -113,7 +118,8 @@ export const WISSEN_TOPICS: Topic[] = [
     teaser: 'Vertraute Klassen, umgebaute Bäume, 131 neue Talente.',
     intro:
       'Die neun Klassen des Originals bleiben. Was sich ändert, sind die Talentbäume: sieben Reihen wie gehabt, aber mit einem zusätzlichen Meilenstein, vielen neuen Schlusstalenten und einer Reihe von Regeln, die für alle gelten.',
-    art: 'molten-core',
+    art: 'power',
+    heroArt: 'darkshore',
     sections: [
       {
         title: 'Was für alle Klassen gilt',
@@ -183,7 +189,8 @@ export const WISSEN_TOPICS: Topic[] = [
     teaser: 'Drei neue Gebiete, neun Dungeons, drei Raids zum Start — und ein Schlachtfeld.',
     intro:
       'Forever ist Azeroth nach Archimondes Fall. Zu den bekannten Gebieten kommen neue, mehrere alte werden ausgebaut, und die Dungeons decken den ganzen Weg bis Stufe 60 ab. Die ersten Schlachtzüge öffnen fünf Wochen nach dem Start.',
-    art: 'onyxias-lair',
+    art: 'expanses',
+    heroArt: 'felwood',
     sections: [
       {
         title: 'Neue Gebiete',
@@ -253,7 +260,8 @@ export const WISSEN_TOPICS: Topic[] = [
     teaser: 'Über 600 neue Rezepte, ein Lagerfeuer für die Gruppe, Aussehen zum Umschalten.',
     intro:
       'Unter den Neuerungen sind einige, die den Alltag verändern: Berufe bauen Lagerobjekte, Essen bringt Erfahrung, ein Ping-System ersetzt das Rufen im Chat, und wer Transmog nicht sehen will, schaltet es ab.',
-    art: 'naxxramas',
+    art: 'revamps',
+    heroArt: 'dustwallow',
     sections: [
       {
         title: 'Berufe',
@@ -312,7 +320,8 @@ export const WISSEN_TOPICS: Topic[] = [
     teaser: 'Beta ab 17. September, Namen ab 27. Oktober, Start am 4. November.',
     intro:
       'Der Zeitplan steht bis zum Sommer 2027. Zum Spielen reicht ein laufendes WoW-Abo; die Editionen bringen die Skyborne, Betazugang und Kosmetik dazu.',
-    art: 'blackwing-lair',
+    art: 'collection',
+    heroArt: 'barrens',
     sections: [
       {
         title: 'Zeitplan',

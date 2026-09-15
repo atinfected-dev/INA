@@ -22,11 +22,11 @@ import {
   loadMyForeverCharacter,
   type PostKind,
 } from '../../lib/forever';
-import { FOREVER_ART, artUrl, raceIconUrl } from '../../lib/zone-art';
+import { FOREVER_BG, FOREVER_FEATURES, FOREVER_LOGO, FOREVER_MARK, FOREVER_ZONES } from '../../lib/forever-art';
 import { WISSEN_TOPICS } from '../../lib/forever-wissen';
+import { FOREVER_ART, raceIconUrl } from '../../lib/zone-art';
 import { classVar, formatNumber } from '../../lib/wow';
 import { deleteForeverCharacterAction, saveForeverCharacterAction } from './actions';
-import landing from '../landing.module.css';
 import styles from './forever.module.css';
 import forms from '../../components/auth/form.module.css';
 
@@ -41,13 +41,26 @@ const KINDS: PostKind[] = ['info', 'guide', 'sheet'];
 function SkyborneIcon() {
   return (
     <svg className={styles.raceIcon} viewBox="0 0 40 40" aria-hidden="true">
-      <rect width="40" height="40" fill="#0a1512" />
-      <g fill="none" stroke="#8fe0bd" strokeWidth="2" strokeLinecap="round">
+      <rect width="40" height="40" fill="#061622" />
+      <g fill="none" stroke="#9bd7ff" strokeWidth="2" strokeLinecap="round">
         <path d="M6 22c6-8 14-8 18-2 3 4-1 8-5 6" />
         <path d="M10 30c6-5 12-4 16 0" />
         <path d="M14 12c5-3 10-2 13 2" />
       </g>
     </svg>
+  );
+}
+
+/** Section heading with the Forever compass mark. */
+function Head({ id, title, aside }: { id: string; title: string; aside?: React.ReactNode }) {
+  return (
+    <div className={styles.sectionHead}>
+      <h2 id={id} className={styles.sectionTitle}>
+        <img className={styles.mark} src={FOREVER_MARK} alt="" width={26} height={29} />
+        {title}
+      </h2>
+      {aside && <span className={styles.sectionLink}>{aside}</span>}
+    </div>
   );
 }
 
@@ -81,62 +94,88 @@ export default async function ForeverPage({ searchParams }: { searchParams: Sear
   };
 
   return (
-    <>
-      <section className={landing.hero} aria-labelledby="forever-title">
-        <div className={landing.heroArt} style={{ backgroundImage: `url(${FOREVER_ART.hero})` }} />
-        <div className={landing.heroWash} />
-        <div className={landing.mistBack} />
-        <div className={landing.mistFront} />
-        <div className={landing.heroInner}>
-          <p className={landing.kicker}>World of Warcraft: Forever · {release}</p>
-          <h1 id="forever-title" className={landing.title}>
-            Is Not Alone kehrt zurück
+    <div className={styles.forever}>
+      {/* --- Hero ----------------------------------------------------------- */}
+      <section className={styles.hero} aria-labelledby="forever-title">
+        <div className={styles.heroArt} style={{ backgroundImage: `url(${FOREVER_BG.masthead})` }} />
+        <div className={styles.heroWash} />
+        <div className={styles.cloudBack} style={{ backgroundImage: `url(${FOREVER_BG.cloud})` }} />
+        <div className={styles.cloudFront} style={{ backgroundImage: `url(${FOREVER_BG.cloud})` }} />
+        <div className={styles.heroInner}>
+          <img
+            className={styles.logo}
+            src={FOREVER_LOGO}
+            alt="World of Warcraft: Forever"
+            width={700}
+            height={570}
+            fetchPriority="high"
+          />
+          <p className={styles.kicker}>Is Not Alone · Everlook EU</p>
+          <h1 id="forever-title" className={styles.title}>
+            Wir kehren zurück
           </h1>
-          <p className={landing.tagline}>
-            Azeroth, wie es 2004 war — und weiter, als es je war. Level 60, neue Gebiete, neue
+          <p className={styles.tagline}>
+            Azeroth, wie es 2004 war — und weiter, als es je war. Stufe 60, neue Gebiete, neue
             Schlachtzüge, ein neues Volk. Hier planen wir, wer was spielt, sammeln Guides und
-            Raidsheets, und ab dem ersten Abend zählen neue Erfolge — die alte Geschichte bleibt,
+            Raidsheets, und ab dem ersten Abend zählen neue Erfolge. Die alte Geschichte bleibt,
             wie sie ist.
           </p>
-          {days > 0 ? (
-            <div className={styles.countdown}>
-              <span className={styles.countdownNumber}>{de(days)}</span>
-              <span className={styles.countdownLabel}>{days === 1 ? 'Tag' : 'Tage'} bis zum Start</span>
-            </div>
-          ) : (
-            <div className={styles.countdown}>
-              <span className={styles.countdownLabel}>Forever ist live</span>
-            </div>
-          )}
-          <div className={landing.ctaRow}>
-            <a href="#mein-charakter" className={landing.ctaJade}>
+          <div className={styles.ctaRow}>
+            <a href="#mein-charakter" className={styles.ctaGold}>
               {mine ? 'Mein Charakter' : 'Charakter eintragen'}
             </a>
-            <a href="#guides" className={landing.cta}>
+            <a href="#guides" className={styles.cta}>
               Guides
             </a>
-            <a href="#aufstellung" className={landing.cta}>
-              Aufstellung
+            <a href="#wissen" className={styles.cta}>
+              Alles über Forever
             </a>
           </div>
+          <p className={styles.disclaimer}>
+            Fanseite der Gilde Is Not Alone. World of Warcraft, Forever, Logo und Grafiken gehören
+            Blizzard Entertainment und erscheinen hier im Rahmen der Fan-Content-Richtlinie. Keine
+            offizielle Seite.
+          </p>
         </div>
       </section>
 
-      {ok && <p className={forms.notice}>{ok}</p>}
-      {error && <p className={forms.error}>{error}</p>}
+      {/* --- Countdown -------------------------------------------------------- */}
+      <div className={styles.countdown} style={{ backgroundImage: `url(${FOREVER_BG.countdown})` }}>
+        {days > 0 ? (
+          <>
+            <span className={styles.countdownNumber}>{de(days)}</span>
+            <span className={styles.countdownLabel}>{days === 1 ? 'Tag' : 'Tage'} bis zum Start</span>
+          </>
+        ) : (
+          <span className={styles.countdownLabel}>Forever ist live</span>
+        )}
+        <span className={styles.countdownDate}>Weltweiter Start am {release}</span>
+      </div>
+
+      {ok && (
+        <p className={forms.notice} style={{ marginTop: '1.5rem' }}>
+          {ok}
+        </p>
+      )}
+      {error && (
+        <p className={forms.error} style={{ marginTop: '1.5rem' }}>
+          {error}
+        </p>
+      )}
 
       {/* --- Posts ------------------------------------------------------------- */}
-      <section className={landing.section} id="guides" aria-labelledby="posts">
-        <div className={landing.sectionHead}>
-          <h2 id="posts" className={landing.sectionTitle}>
-            Infos, Guides, Raidsheets
-          </h2>
-          {viewer.isAdmin && (
-            <a href="/admin/inhalte#forever" className={landing.sectionLink}>
-              Beitrag anlegen →
-            </a>
-          )}
-        </div>
+      <section className={styles.section} id="guides" aria-labelledby="posts">
+        <Head
+          id="posts"
+          title="Infos, Guides, Raidsheets"
+          aside={
+            viewer.isAdmin ? (
+              <a href="/admin/inhalte#forever" className={styles.sectionLink}>
+                Beitrag anlegen →
+              </a>
+            ) : undefined
+          }
+        />
         <div className={styles.columns}>
           {KINDS.map((kind) => {
             const entries = posts.filter((post) => post.kind === kind);
@@ -171,37 +210,93 @@ export default async function ForeverPage({ searchParams }: { searchParams: Sear
         </div>
       </section>
 
-      {/* --- Knowledge -------------------------------------------------------- */}
-      <section className={landing.section} id="wissen" aria-labelledby="wissen-title">
-        <div className={landing.sectionHead}>
-          <h2 id="wissen-title" className={landing.sectionTitle}>
-            Alles über Forever
-          </h2>
-          <span className={landing.sectionLink}>Stand der Ankündigung · auf Deutsch</span>
-        </div>
-        <div className={landing.tiles}>
-          {WISSEN_TOPICS.map((topic) => (
-            <a key={topic.slug} href={`/forever/wissen/${topic.slug}`} className={landing.tile}>
-              <div className={landing.tileArt} style={{ backgroundImage: `url(${artUrl(topic.art, 'small')})` }} />
-              <div className={landing.tileWash} />
-              <div className={landing.tileBody}>
-                <div className={landing.tileKicker}>{topic.kicker}</div>
-                <h3 className={landing.tileName}>{topic.title}</h3>
-                <div className={landing.tileFacts}>{topic.teaser}</div>
-              </div>
-            </a>
-          ))}
+      {/* --- Knowledge, on parchment ------------------------------------------- */}
+      <section
+        className={styles.paper}
+        id="wissen"
+        aria-labelledby="wissen-title"
+        style={{ backgroundImage: `url(${FOREVER_BG.paper})` }}
+      >
+        <div className={styles.paperInner}>
+          <Head id="wissen-title" title="Alles über Forever" aside="Stand der Ankündigung · auf Deutsch" />
+          <div className={styles.features}>
+            {WISSEN_TOPICS.map((topic) => (
+              <a
+                key={topic.slug}
+                href={`/forever/wissen/${topic.slug}`}
+                className={styles.feature}
+                style={{ backgroundImage: `url(${FOREVER_FEATURES[topic.art]})` }}
+              >
+                <div className={styles.featureWash} />
+                <div className={styles.featureBody}>
+                  <div className={styles.featureKicker}>{topic.kicker}</div>
+                  <h3 className={styles.featureName}>{topic.title}</h3>
+                  <div className={styles.featureTeaser}>{topic.teaser}</div>
+                </div>
+              </a>
+            ))}
+          </div>
+
+          <div style={{ marginTop: '2.4rem' }}>
+            <Head id="combos" title="Wer kann was" aside="kann sich bis zum Start noch ändern" />
+            <div style={{ overflowX: 'auto' }}>
+              <table className={styles.combos}>
+                <thead>
+                  <tr>
+                    <th>Volk</th>
+                    {FOREVER_CLASSES.map((cls) => (
+                      <th key={cls}>{CLASS_LABELS[cls]}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {FOREVER_RACES.map((race) => {
+                    const all = [
+                      ...race.classes,
+                      ...(race.byFaction?.alliance ?? []),
+                      ...(race.byFaction?.horde ?? []),
+                    ];
+                    return (
+                      <tr key={race.id}>
+                        <td>
+                          {race.name}
+                          <span style={{ color: 'var(--text-muted)' }}>
+                            {' '}
+                            · {race.faction === 'neutral' ? 'beide' : FACTION_LABELS[race.faction]}
+                            {race.isNewRace ? ' · neu' : ''}
+                          </span>
+                        </td>
+                        {FOREVER_CLASSES.map((cls) => {
+                          const can = all.includes(cls);
+                          const isNew = race.newClasses.includes(cls);
+                          const factionOnly = race.byFaction?.alliance?.includes(cls)
+                            ? ' (A)'
+                            : race.byFaction?.horde?.includes(cls)
+                              ? ' (H)'
+                              : '';
+                          return (
+                            <td key={cls} className={can ? (isNew ? styles.new : styles.yes) : styles.no}>
+                              {can ? `✓${factionOnly}` : '·'}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <p style={{ margin: '0.6rem 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              <span className={styles.new}>Blau</span> sind Paarungen, die es im Original nicht gab.
+              (A)/(H): nur auf dieser Seite der Skyborne.
+            </p>
+          </div>
         </div>
       </section>
 
       {/* --- Roster ----------------------------------------------------------- */}
-      <section className={landing.section} id="aufstellung" aria-labelledby="roster">
-        <div className={landing.sectionHead}>
-          <h2 id="roster" className={landing.sectionTitle}>
-            Wer spielt was
-          </h2>
-          <span className={landing.sectionLink}>{de(roster.length)} eingetragen</span>
-        </div>
+      <section className={styles.section} id="aufstellung" aria-labelledby="roster">
+        <Head id="roster" title="Wer spielt was" aside={`${de(roster.length)} eingetragen`} />
         <div className={styles.factions}>
           {(['alliance', 'horde'] as const).map((faction) => {
             const rows = byFaction(faction);
@@ -288,84 +383,16 @@ export default async function ForeverPage({ searchParams }: { searchParams: Sear
         )}
       </Panel>
 
-      {/* --- Race/class table ------------------------------------------------- */}
-      <Divider label="Völker und Klassen" />
-
-      <Panel
-        title="Wer kann was"
-        subtitle="Stand der Ankündigung — kann sich bis zum Start noch ändern"
-        flush
-      >
-        <div style={{ overflowX: 'auto' }}>
-          <table className={styles.combos}>
-            <thead>
-              <tr>
-                <th>Volk</th>
-                {FOREVER_CLASSES.map((cls) => (
-                  <th key={cls}>{CLASS_LABELS[cls]}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {FOREVER_RACES.map((race) => {
-                const all = [
-                  ...race.classes,
-                  ...(race.byFaction?.alliance ?? []),
-                  ...(race.byFaction?.horde ?? []),
-                ];
-                return (
-                  <tr key={race.id}>
-                    <td>
-                      {race.name}
-                      <span style={{ color: 'var(--text-muted)' }}>
-                        {' '}
-                        · {race.faction === 'neutral' ? 'beide' : FACTION_LABELS[race.faction]}
-                        {race.isNewRace ? ' · neu' : ''}
-                      </span>
-                    </td>
-                    {FOREVER_CLASSES.map((cls) => {
-                      const can = all.includes(cls);
-                      const isNew = race.newClasses.includes(cls);
-                      const factionOnly =
-                        race.byFaction?.alliance?.includes(cls)
-                          ? ' (A)'
-                          : race.byFaction?.horde?.includes(cls)
-                            ? ' (H)'
-                            : '';
-                      return (
-                        <td key={cls} className={can ? (isNew ? styles.new : styles.yes) : styles.no}>
-                          {can ? `✓${factionOnly}` : '·'}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-        <p style={{ margin: 0, padding: '0.6rem 0.9rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-          <span className={styles.new}>Grün</span> sind Paarungen, die es im Original nicht gab. (A)/(H):
-          nur auf dieser Seite der Skyborne.
-        </p>
-      </Panel>
-
       {/* --- Raids ---------------------------------------------------------------- */}
-      <section className={landing.section} aria-labelledby="raids">
-        <div className={landing.sectionHead}>
-          <h2 id="raids" className={landing.sectionTitle}>
-            Die Schlachtzüge
-          </h2>
-          <span className={landing.sectionLink}>dazu zwei neue, die Blizzard noch nicht benannt hat</span>
-        </div>
-        <div className={landing.tiles}>
+      <section className={styles.section} aria-labelledby="raids">
+        <Head id="raids" title="Die Schlachtzüge" aside="dazu zwei neue, die Blizzard noch nicht benannt hat" />
+        <div className={styles.tiles}>
           {FOREVER_ART.raids.map((raid) => (
-            <div key={raid.slug} className={landing.tile}>
-              <div className={landing.tileArt} style={{ backgroundImage: `url(${raid.url})` }} />
-              <div className={landing.tileWash} />
-              <div className={landing.tileBody}>
-                <div className={landing.tileKicker}>Forever</div>
-                <h3 className={landing.tileName}>{raid.name}</h3>
+            <div key={raid.slug} className={styles.tile} style={{ backgroundImage: `url(${raid.url})` }}>
+              <div className={styles.tileWash} />
+              <div className={styles.tileBody}>
+                <div className={styles.tileKicker}>Forever</div>
+                <h3 className={styles.tileName}>{raid.name}</h3>
               </div>
             </div>
           ))}
@@ -373,28 +400,26 @@ export default async function ForeverPage({ searchParams }: { searchParams: Sear
       </section>
 
       {/* --- Achievements era ----------------------------------------------------- */}
-      <section className={landing.honoursBand} aria-labelledby="era">
-        <div className={landing.honoursArt} style={{ backgroundImage: `url(${FOREVER_ART.band})` }} />
-        <div className={landing.honoursWash} />
-        <div className={landing.bandInner}>
-          <div className={landing.sectionHead}>
-            <h2 id="era" className={landing.sectionTitle}>
-              Forever-Erfolge
-            </h2>
-            <span className={landing.sectionLink}>beginnen bei null</span>
-          </div>
+      <section
+        className={styles.band}
+        aria-labelledby="era"
+        style={{ backgroundImage: `url(${FOREVER_ZONES.darkshore})` }}
+      >
+        <div className={styles.bandWash} />
+        <div className={styles.bandInner}>
+          <Head id="era" title="Forever-Erfolge" aside="beginnen bei null" />
           <div className={styles.era}>
             <div>
-              <div className={landing.counterValue}>{de(progress.nights)}</div>
-              <div className={landing.counterLabel}>Raidabende</div>
+              <div className={styles.eraValue}>{de(progress.nights)}</div>
+              <div className={styles.eraLabel}>Raidabende</div>
             </div>
             <div>
-              <div className={landing.counterValue}>{de(progress.pulls)}</div>
-              <div className={landing.counterLabel}>Pulls</div>
+              <div className={styles.eraValue}>{de(progress.pulls)}</div>
+              <div className={styles.eraLabel}>Pulls</div>
             </div>
             <div>
-              <div className={landing.counterValue}>{de(progress.kills)}</div>
-              <div className={landing.counterLabel}>Bosskills</div>
+              <div className={styles.eraValue}>{de(progress.kills)}</div>
+              <div className={styles.eraLabel}>Bosskills</div>
             </div>
           </div>
           <p style={{ maxWidth: '68ch', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
@@ -407,6 +432,6 @@ export default async function ForeverPage({ searchParams }: { searchParams: Sear
           </p>
         </div>
       </section>
-    </>
+    </div>
   );
 }
