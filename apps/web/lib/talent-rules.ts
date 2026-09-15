@@ -153,7 +153,8 @@ export function encodeBuild(trees: Tree[], ranks: Ranks): string {
         .join('')
         .replace(/0+$/, ''),
     )
-    .join('-');
+    .join('-')
+    .replace(/-+$/, '');
 }
 
 /**

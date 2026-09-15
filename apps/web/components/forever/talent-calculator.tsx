@@ -83,7 +83,7 @@ export function TalentCalculator({ slug, data, initialCode, buildId, saveAction 
   // history entries for every click.
   useEffect(() => {
     const url = new URL(window.location.href);
-    if (code === '--' || code === '') url.searchParams.delete('t');
+    if (code === '') url.searchParams.delete('t');
     else url.searchParams.set('t', code);
     if (buildId && url.searchParams.get('b') && encodeBuild(data.trees, decodeBuild(data.trees, rules, initialCode)) !== code) {
       // The visitor changed a saved build: the link now describes their own.

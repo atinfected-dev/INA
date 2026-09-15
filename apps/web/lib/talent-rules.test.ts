@@ -71,7 +71,7 @@ describe('talent rules (warrior, arms)', () => {
       ['improved-rend', 3],
     ]);
     const code = encodeBuild(trees, ranks);
-    expect(code.startsWith('323')).toBe(true);
+    expect(code).toBe('323');
     expect(decodeBuild(trees, rules, code)).toEqual(ranks);
     // A digit deep in the tree with nothing above it is not a build.
     const bogus = `${'0'.repeat(10)}5--`;
