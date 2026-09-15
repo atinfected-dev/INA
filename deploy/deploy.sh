@@ -43,7 +43,23 @@ export COREPACK_HOME=$INA_ROOT/corepack COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 mkdir -p "$APP_DIR"
 # Replace the tree, keep what the server owns: node_modules (cache), .env,
 # the previous build until the new one is in.
+#
+# tar only adds and overwrites. The archive owns the source tree: a file
+# under these directories that the archive no longer carries — a page that
+# moved into a route group, say — is a leftover from an earlier release and
+# would collide with its new self, so it goes before extraction. Generated
+# code (Prisma client, GraphQL client) is built on the server and stays.
+tar -tzf "$INA_ROOT/incoming/ina.tar.gz" | grep -v '/$' | sort >"$INA_ROOT/incoming/manifest.txt"
+for owned in apps/web/app apps/web/lib apps/web/components apps/web/scripts apps/worker/src packages/*/src packages/db/prisma deploy; do
+  [ -d "$APP_DIR/$owned" ] || continue
+  (cd "$APP_DIR" && find "$owned" -type f -not -path '*/node_modules/*' -not -path '*/generated/*' | sort)     | comm -23 - "$INA_ROOT/incoming/manifest.txt"     | while read -r stale; do
+        echo "stale: $stale"
+        rm -f "$APP_DIR/$stale"
+      done
+done
+find "$APP_DIR/apps" "$APP_DIR/packages" -type d -empty -not -path '*/node_modules/*' -delete 2>/dev/null || true
 tar -xzf "$INA_ROOT/incoming/ina.tar.gz" -C "$APP_DIR"
+rm -f "$INA_ROOT/incoming/manifest.txt"
 
 if [ -s "$INA_ROOT/db-password" ]; then
   DB_PASSWORD=$(cat "$INA_ROOT/db-password")
