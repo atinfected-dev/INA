@@ -16,6 +16,9 @@ import {
   loadCustomAchievements,
   loadCustomRecords,
   titleId,
+  createCustomTitle,
+  deleteCustomTitle,
+  listCustomTitles,
 } from '../lib/custom-content';
 import { loadAchievementOverview } from '../lib/achievements';
 import { loadRecords } from '../lib/records';
@@ -111,7 +114,30 @@ async function main(): Promise<void> {
   check('Titel angelegt und vergeben', !!holder?.name && !holder.unavailable);
   console.log(`  Titel: ${holder?.title.title} → ${holder?.name} (${holder?.value})`);
 
+  // --- Manual titles -----------------------------------------------------------
+  await createCustomTitle({
+    title: 'Verifikations-Ehrentitel',
+    subtitle: 'Nur für den Rundlauf.',
+    holder: 'Harry',
+    holderClass: 'Warrior',
+    note: 'verliehen im Test',
+  });
+  const manual = (await loadHallOfFame((await loadSettings()).hallOfFameTitles)).find(
+    (h) => h.title.title === 'Verifikations-Ehrentitel',
+  );
+  check(
+    'Manueller Titel erscheint in der Hall of Fame',
+    manual?.name === 'Harry' && manual.note === 'verliehen im Test',
+  );
+  check(
+    'Manueller Titel hat keinen Wert und keinen Gleichstand',
+    manual?.value === null && manual.tiedWith.length === 1,
+  );
+
   // --- Clean up --------------------------------------------------------------
+  for (const row of await listCustomTitles()) {
+    if (row.title === 'Verifikations-Ehrentitel') await deleteCustomTitle(row.id);
+  }
   if (mine) await deleteCustomAchievement(mine.id.replace(/^custom:/, ''));
   for (const record of await prisma.customRecord.findMany({ where: { label: { startsWith: 'Verifikation' } } })) {
     await deleteCustomRecord(record.id);
@@ -121,6 +147,10 @@ async function main(): Promise<void> {
   check('Aufgeräumt: Erfolge', (await prisma.customAchievement.count()) === before);
   check('Aufgeräumt: Rekorde', (await prisma.customRecord.count({ where: { label: { startsWith: 'Verifikation' } } })) === 0);
   check('Aufgeräumt: Titel', !(await loadSettings()).hallOfFameTitles.some((t) => t.id === id));
+  check(
+    'Aufgeräumt: manuelle Titel',
+    !(await listCustomTitles()).some((t) => t.title === 'Verifikations-Ehrentitel'),
+  );
 }
 
 main()

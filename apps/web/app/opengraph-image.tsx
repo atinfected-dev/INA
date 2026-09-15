@@ -6,12 +6,14 @@ import { HERO_ART } from '../lib/zone-art';
  * The card a link to the site unfolds into — Discord, WhatsApp, Twitter.
  *
  * The Terrace of Endless Spring under a dark wash, the guild name in gold,
- * and the headline numbers, live. Rendered on request and cached for the
- * revalidation window, so it is never a stale screenshot.
+ * and the headline numbers, live. Rendered on request, so it is never a stale
+ * screenshot; crawlers ask rarely enough that no cache is needed.
  */
 
 export const runtime = 'nodejs';
-export const revalidate = 3600;
+// Rendered on request, never at build time: the card reads live numbers, and
+// a build must not depend on a reachable database.
+export const dynamic = 'force-dynamic';
 export const alt = 'Is Not Alone — Raidgeschichte seit Wrath of the Lich King';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
