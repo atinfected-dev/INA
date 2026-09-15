@@ -122,16 +122,16 @@ async function main(): Promise<void> {
     holderClass: 'Warrior',
     note: 'verliehen im Test',
   });
-  const manual = (await loadHallOfFame((await loadSettings()).hallOfFameTitles)).find(
+  const honour = (await loadHallOfFame((await loadSettings()).hallOfFameTitles)).find(
     (h) => h.title.title === 'Verifikations-Ehrentitel',
   );
   check(
     'Manueller Titel erscheint in der Hall of Fame',
-    manual?.name === 'Harry' && manual.note === 'verliehen im Test',
+    honour?.name === 'Harry' && honour.note === 'verliehen im Test',
   );
   check(
     'Manueller Titel hat keinen Wert und keinen Gleichstand',
-    manual?.value === null && manual.tiedWith.length === 1,
+    honour?.value === null && honour.tiedWith.length === 1,
   );
 
   // --- Clean up --------------------------------------------------------------
