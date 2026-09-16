@@ -8,7 +8,7 @@
 process.loadEnvFile('../../.env');
 
 import { prisma } from '@ina/db';
-import { PollError, addOption, castVote, loadPoll, removeOption } from '../lib/guild-name-poll';
+import { PollError, addOption, castVote, loadPoll, loadPollDetails, removeOption } from '../lib/guild-name-poll';
 
 function check(label: string, ok: boolean): void {
   console.log(`${ok ? '✓' : '✗'} ${label}`);
@@ -48,6 +48,15 @@ async function main(): Promise<void> {
     let tally = (await loadPoll(a.id)).options.find((o) => o.id === option.id)!;
     check('Zählung 1 hoch, 1 runter, Saldo 0', tally.up === 1 && tally.down === 1 && tally.score === 0);
     check('Eigene Stimme wird angezeigt', tally.mine === 1);
+
+    const details = await loadPollDetails();
+    const row = details.byOption.find((o) => o.id === option.id);
+    check(
+      'Offiziersansicht: wer hoch, wer runter',
+      row?.up.some((v) => v.accountId === a.id) === true && row.down.some((v) => v.accountId === b.id) === true,
+    );
+    const memberA = details.byMember.find((m) => m.accountId === a.id);
+    check('Offiziersansicht nach Mitglied', memberA?.up.includes(option.name) === true && memberA.down.length === 0);
 
     check('Meinung ändern überschreibt statt zu addieren', (await castVote(a.id, option.id, -1)) === 'down');
     tally = (await loadPoll(a.id)).options.find((o) => o.id === option.id)!;

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getViewer } from '../../../lib/auth';
 import { FOREVER_BG, FOREVER_LOGO, FOREVER_MARK } from '../../../lib/forever-art';
-import { loadPoll } from '../../../lib/guild-name-poll';
+import { loadPoll, loadPollDetails } from '../../../lib/guild-name-poll';
 import { addNameAction, removeNameAction, voteNameAction } from './actions';
 import styles from '../forever.module.css';
 import local from './poll.module.css';
@@ -24,6 +24,7 @@ type Search = Promise<Record<string, string | string[] | undefined>>;
 export default async function GildennamePage({ searchParams }: { searchParams: Search }) {
   const [viewer, search] = await Promise.all([getViewer(), searchParams]);
   const poll = await loadPoll(viewer?.id ?? null);
+  const details = viewer?.isAdmin ? await loadPollDetails() : null;
   const ok = typeof search.ok === 'string' ? search.ok : null;
   const error = typeof search.fehler === 'string' ? search.fehler : null;
   const maxAbs = Math.max(1, ...poll.options.map((o) => Math.max(o.up, o.down)));
@@ -164,6 +165,83 @@ export default async function GildennamePage({ searchParams }: { searchParams: S
               Zur Wahl stellen
             </button>
           </form>
+        </section>
+      )}
+
+      {details && (
+        <section className={styles.section} aria-labelledby="who-voted">
+          <div className={styles.sectionHead}>
+            <h2 id="who-voted" className={styles.sectionTitle}>
+              <img className={styles.mark} src={FOREVER_MARK} alt="" width={26} height={29} />
+              Wer hat wie gestimmt
+            </h2>
+            <span className={styles.sectionLink}>
+              nur für Offiziere sichtbar · {details.byMember.length}{' '}
+              {details.byMember.length === 1 ? 'Mitglied hat' : 'Mitglieder haben'} abgestimmt
+            </span>
+          </div>
+
+          {details.byOption.length === 0 ? (
+            <div className={styles.empty}>Noch keine Stimmen.</div>
+          ) : (
+            <>
+              <div style={{ overflowX: 'auto' }}>
+                <table className={local.detail}>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th className={local.up}>▲ Hoch</th>
+                      <th className={local.down}>▼ Runter</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {details.byOption.map((option) => (
+                      <tr key={option.id}>
+                        <td className={local.detailName}>
+                          {option.name}
+                          <span className={local.detailScore}>
+                            {option.up.length - option.down.length > 0 ? '+' : ''}
+                            {option.up.length - option.down.length}
+                          </span>
+                        </td>
+                        <td>{option.up.map((v) => (v.realName ? `${v.displayName} (${v.realName})` : v.displayName)).join(', ') || '—'}</td>
+                        <td>{option.down.map((v) => (v.realName ? `${v.displayName} (${v.realName})` : v.displayName)).join(', ') || '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <h3 className={local.detailSub}>Nach Mitglied</h3>
+              <div style={{ overflowX: 'auto' }}>
+                <table className={local.detail}>
+                  <thead>
+                    <tr>
+                      <th>Mitglied</th>
+                      <th className={local.up}>▲ Hoch</th>
+                      <th className={local.down}>▼ Runter</th>
+                      <th>Zuletzt</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {details.byMember.map((member) => (
+                      <tr key={member.accountId}>
+                        <td className={local.detailName}>
+                          {member.displayName}
+                          {member.realName && <span className={local.detailReal}> {member.realName}</span>}
+                        </td>
+                        <td>{member.up.join(', ') || '—'}</td>
+                        <td>{member.down.join(', ') || '—'}</td>
+                        <td className={local.detailWhen}>
+                          {member.lastVote.toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </section>
       )}
 

@@ -193,3 +193,62 @@
     font-size: 1.15rem;
   }
 }
+
+/* --- Officers' breakdown ----------------------------------------------------- */
+
+.detail {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+.detail th,
+.detail td {
+  padding: 0.45rem 0.6rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid rgb(255 255 255 / 6%);
+  color: #c3b69d;
+}
+
+.detail th {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #f2d98a;
+}
+
+.detailName {
+  color: #fff7c6;
+  white-space: nowrap;
+}
+
+.detailScore {
+  margin-left: 0.5rem;
+  font-size: 0.78rem;
+  color: #857a66;
+  font-variant-numeric: tabular-nums;
+}
+
+.detailReal {
+  color: #857a66;
+  font-size: 0.8rem;
+}
+
+.detailWhen {
+  white-space: nowrap;
+  color: #857a66;
+  font-variant-numeric: tabular-nums;
+}
+
+.detailSub {
+  margin: 1.4rem 0 0.5rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff7c6;
+}

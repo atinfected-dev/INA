@@ -88,3 +88,83 @@ export async function addOption(name: string): Promise<void> {
 export async function removeOption(id: string): Promise<void> {
   await prisma.guildNameOption.deleteMany({ where: { id } });
 }
+
+// --- Who voted how: for officers only ---------------------------------------------
+
+export interface VoterEntry {
+  accountId: string;
+  displayName: string;
+  realName: string | null;
+  value: number;
+  updatedAt: Date;
+}
+
+export interface OptionVoters {
+  id: string;
+  name: string;
+  up: VoterEntry[];
+  down: VoterEntry[];
+}
+
+export interface MemberVotes {
+  accountId: string;
+  displayName: string;
+  realName: string | null;
+  up: string[];
+  down: string[];
+  lastVote: Date;
+}
+
+export interface PollDetails {
+  byOption: OptionVoters[];
+  byMember: MemberVotes[];
+}
+
+/** Every vote with its voter — the page shows this to admins only. */
+export async function loadPollDetails(): Promise<PollDetails> {
+  const votes = await prisma.guildNameVote.findMany({
+    orderBy: { updatedAt: 'desc' },
+    include: {
+      option: { select: { id: true, name: true } },
+      account: { select: { id: true, displayName: true, realName: true } },
+    },
+  });
+
+  const options = new Map<string, OptionVoters>();
+  const members = new Map<string, MemberVotes>();
+  for (const vote of votes) {
+    const entry: VoterEntry = {
+      accountId: vote.account.id,
+      displayName: vote.account.displayName,
+      realName: vote.account.realName,
+      value: vote.value,
+      updatedAt: vote.updatedAt,
+    };
+    const option = options.get(vote.option.id) ?? { id: vote.option.id, name: vote.option.name, up: [], down: [] };
+    (vote.value > 0 ? option.up : option.down).push(entry);
+    options.set(option.id, option);
+
+    const member = members.get(vote.account.id) ?? {
+      accountId: vote.account.id,
+      displayName: vote.account.displayName,
+      realName: vote.account.realName,
+      up: [],
+      down: [],
+      lastVote: vote.updatedAt,
+    };
+    (vote.value > 0 ? member.up : member.down).push(vote.option.name);
+    if (vote.updatedAt > member.lastVote) member.lastVote = vote.updatedAt;
+    members.set(member.accountId, member);
+  }
+
+  const byName = (a: VoterEntry, b: VoterEntry) => a.displayName.localeCompare(b.displayName, 'de');
+  const alpha = (a: string, b: string) => a.localeCompare(b, 'de');
+  return {
+    byOption: [...options.values()]
+      .map((o) => ({ ...o, up: o.up.sort(byName), down: o.down.sort(byName) }))
+      .sort((a, b) => b.up.length - b.down.length - (a.up.length - a.down.length) || alpha(a.name, b.name)),
+    byMember: [...members.values()]
+      .map((m) => ({ ...m, up: m.up.sort(alpha), down: m.down.sort(alpha) }))
+      .sort((a, b) => alpha(a.displayName, b.displayName)),
+  };
+}
