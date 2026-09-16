@@ -28,14 +28,19 @@ export const metadata: Metadata = {
  */
 const NAV = [
   { href: '/forever', label: 'Start' },
-  { href: '/forever/talente', label: 'Talente' },
-  { href: '/forever/voelker', label: 'Völker' },
-  { href: '/forever/legacy', label: 'Legacy' },
+  {
+    label: 'Nachschlagen',
+    items: [
+      { href: '/forever/talente', label: 'Talentrechner' },
+      { href: '/forever/voelker', label: 'Völker & Volksfähigkeiten' },
+      { href: '/forever/legacy', label: 'Legacy-Baum' },
+      { href: '/forever#wissen', label: 'Wissen: Alles über Forever' },
+    ],
+  },
   { href: '/forever/gildenname', label: 'Gildenname' },
   { href: '/forever/hall-of-fame', label: 'Hall of Fame' },
   { href: '/forever#guides', label: 'Guides' },
   { href: '/forever#aufstellung', label: 'Aufstellung' },
-  { href: '/forever#wissen', label: 'Wissen' },
 ] as const;
 
 export default async function ForeverLayout({ children }: { children: React.ReactNode }) {
@@ -53,11 +58,24 @@ export default async function ForeverLayout({ children }: { children: React.Reac
             </span>
           </a>
           <nav className={styles.nav} aria-label="Forever-Navigation">
-            {NAV.map((item) => (
-              <a key={item.href} href={item.href} className={styles.navLink}>
-                {item.label}
-              </a>
-            ))}
+            {NAV.map((item) =>
+              'items' in item ? (
+                <details key={item.label} className={styles.navGroup}>
+                  <summary>{item.label}</summary>
+                  <div className={styles.navMenu}>
+                    {item.items.map((entry) => (
+                      <a key={entry.href} href={entry.href}>
+                        {entry.label}
+                      </a>
+                    ))}
+                  </div>
+                </details>
+              ) : (
+                <a key={item.href} href={item.href} className={styles.navLink}>
+                  {item.label}
+                </a>
+              ),
+            )}
             {viewer?.isAdmin && (
               <a href="/admin/inhalte#forever" className={styles.navLink}>
                 Inhalte
@@ -66,7 +84,7 @@ export default async function ForeverLayout({ children }: { children: React.Reac
             <a href="/" className={styles.navBack}>
               Gilden-Historie
             </a>
-            <a href={viewer ? '/konto' : '/anmelden?weiter=/forever'} className={styles.navAccount}>
+            <a href={viewer ? '/konto' : '/anmelden'} className={styles.navAccount}>
               {viewer ? viewer.displayName : 'Anmelden'}
             </a>
           </nav>

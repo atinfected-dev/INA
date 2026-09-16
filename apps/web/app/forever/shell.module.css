@@ -131,3 +131,73 @@
     margin-left: 0;
   }
 }
+
+/* Grouped navigation: a <details> element, so it opens on click and on
+   keyboard alike, works before any JavaScript has run, and needs no state. */
+.navGroup {
+  position: relative;
+}
+
+.navGroup > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c3b69d;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+}
+
+.navGroup > summary::-webkit-details-marker {
+  display: none;
+}
+
+.navGroup > summary::after {
+  content: ' ▾';
+  color: #f7b90a;
+}
+
+.navGroup > summary:hover,
+.navGroup[open] > summary {
+  color: #fff7c6;
+  border-color: #4d3d22;
+  background: rgb(247 185 10 / 8%);
+}
+
+.navMenu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.3rem);
+  left: 0;
+  min-width: 15rem;
+  display: flex;
+  flex-direction: column;
+  padding: 0.3rem;
+  background: #0b1a29;
+  border: 1px solid #6b552e;
+  box-shadow:
+    inset 0 0 0 1px #000,
+    0 10px 30px rgb(0 0 0 / 60%);
+}
+
+.navMenu a {
+  padding: 0.45rem 0.6rem;
+  font-size: 0.85rem;
+  color: #c3b69d;
+  white-space: nowrap;
+}
+
+.navMenu a:hover {
+  color: #fff7c6;
+  background: rgb(247 185 10 / 10%);
+  text-decoration: none;
+}
+
+@media (max-width: 640px) {
+  .navMenu {
+    position: static;
+    box-shadow: none;
+  }
+}
