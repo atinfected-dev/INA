@@ -214,8 +214,16 @@ export default async function ForeverPage({ searchParams }: { searchParams: Sear
 
       {/* --- Tools ---------------------------------------------------------------- */}
       <section className={styles.section} id="werkzeuge" aria-labelledby="tools">
-        <Head id="tools" title="Planen" aside="Talente, Völker, Legacy" />
+        <Head id="tools" title="Planen & Abstimmen" aside="Gildenname, Talente, Völker, Legacy" />
         <div className={styles.features}>
+          <a href="/forever/gildenname" className={styles.feature} style={{ backgroundImage: `url(${FOREVER_FEATURES.stories})` }}>
+            <div className={styles.featureWash} />
+            <div className={styles.featureBody}>
+              <div className={styles.featureKicker}>Abstimmung</div>
+              <h3 className={styles.featureName}>Wie heißen wir in Forever?</h3>
+              <div className={styles.featureTeaser}>16 Vorschläge, hoch- und runterstimmen — eine Stimme pro Name.</div>
+            </div>
+          </a>
           <a href="/forever/talente" className={styles.feature} style={{ backgroundImage: `url(${FOREVER_FEATURES.power})` }}>
             <div className={styles.featureWash} />
             <div className={styles.featureBody}>

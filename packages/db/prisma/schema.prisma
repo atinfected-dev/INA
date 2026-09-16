@@ -173,6 +173,7 @@ model Account {
   sessions Session[]
   forever  ForeverCharacter?
   builds   ForeverBuild[]
+  nameVotes GuildNameVote[]
 }
 
 model Session {
@@ -741,4 +742,30 @@ model ForeverBuildVote {
   build ForeverBuild @relation(fields: [buildId], references: [id], onDelete: Cascade)
 
   @@id([buildId, voterHash])
+}
+
+/// A candidate for the guild's name in Forever. Seeded by migration; officers
+/// may add more from the poll page.
+model GuildNameOption {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  votes GuildNameVote[]
+}
+
+/// One member, one vote per name: +1 or -1. Changing your mind overwrites.
+model GuildNameVote {
+  optionId  String
+  accountId String
+  value     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  option  GuildNameOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  account Account         @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@id([optionId, accountId])
+  @@index([accountId])
 }

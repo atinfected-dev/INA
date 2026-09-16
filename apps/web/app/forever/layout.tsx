@@ -31,6 +31,7 @@ const NAV = [
   { href: '/forever/talente', label: 'Talente' },
   { href: '/forever/voelker', label: 'Völker' },
   { href: '/forever/legacy', label: 'Legacy' },
+  { href: '/forever/gildenname', label: 'Gildenname' },
   { href: '/forever/hall-of-fame', label: 'Hall of Fame' },
   { href: '/forever#guides', label: 'Guides' },
   { href: '/forever#aufstellung', label: 'Aufstellung' },
