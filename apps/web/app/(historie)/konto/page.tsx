@@ -15,7 +15,7 @@ import { ClassName, Divider } from '../../../components/ui/bits';
 import { ClaimForm } from '../../../components/auth/forms';
 import { getViewer } from '../../../lib/auth';
 import { loadClaimableCharacters, loadMyClaims } from '../../../lib/claims';
-import { claimAction, logoutAction } from './actions';
+import { changePasswordAction, claimAction, logoutAction, updateProfileAction } from './actions';
 import styles from '../../../components/auth/form.module.css';
 
 export const metadata: Metadata = { title: 'Mein Konto' };
@@ -41,6 +41,8 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const search = await searchParams;
   const raw = search.suche;
   const query = (Array.isArray(raw) ? raw[0] : raw) ?? '';
+  const settingsOk = typeof search.ok === 'string' ? search.ok : null;
+  const settingsError = typeof search.fehler === 'string' ? search.fehler : null;
 
   const [claims, candidates] = await Promise.all([
     loadMyClaims(viewer.id),
@@ -87,9 +89,17 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         </p>
 
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <a href="#einstellungen" className={styles.small}>
+            Kontodaten ändern
+          </a>
           {viewer.isAdmin && (
             <a href="/admin/claims" className={styles.small}>
               Anträge prüfen
+            </a>
+          )}
+          {viewer.isAdmin && (
+            <a href="/admin/konten" className={styles.small}>
+              Konten verwalten
             </a>
           )}
           <form action={logoutAction}>
@@ -99,6 +109,56 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
           </form>
         </div>
       </OrnateFrame>
+
+      <Divider label="Kontodaten" />
+
+      <div id="einstellungen" />
+      {settingsOk && <p className={styles.notice}>{settingsOk}</p>}
+      {settingsError && <p className={styles.error}>{settingsError}</p>}
+
+      <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(min(22rem, 100%), 1fr))' }}>
+        <Panel title="Profil" subtitle="Anzeigename ist öffentlich, Klarname nur für angemeldete Mitglieder">
+          <form action={updateProfileAction} className={styles.form}>
+            <label className={styles.field}>
+              <span className={styles.label}>Anzeigename</span>
+              <input className={styles.input} name="displayName" required minLength={2} maxLength={40} defaultValue={viewer.displayName} />
+            </label>
+            <label className={styles.field}>
+              <span className={styles.label}>Klarname</span>
+              <input className={styles.input} name="realName" maxLength={80} defaultValue={viewer.realName ?? ''} placeholder="optional" />
+              <span className={styles.hint}>Sehen nur angemeldete Mitglieder — nie die öffentlichen Seiten.</span>
+            </label>
+            <label className={styles.field}>
+              <span className={styles.label}>E-Mail-Adresse</span>
+              <input className={styles.input} name="email" type="email" required defaultValue={viewer.email} />
+              <span className={styles.hint}>Damit meldest du dich an. Eine Bestätigungsmail gibt es nicht — prüf die Schreibweise.</span>
+            </label>
+            <button type="submit" className={styles.submit}>
+              Speichern
+            </button>
+          </form>
+        </Panel>
+
+        <Panel title="Passwort" subtitle="Mindestens 12 Zeichen">
+          <form action={changePasswordAction} className={styles.form}>
+            <label className={styles.field}>
+              <span className={styles.label}>Aktuelles Passwort</span>
+              <input className={styles.input} name="current" type="password" required autoComplete="current-password" />
+            </label>
+            <label className={styles.field}>
+              <span className={styles.label}>Neues Passwort</span>
+              <input className={styles.input} name="next" type="password" required minLength={12} autoComplete="new-password" />
+            </label>
+            <label className={styles.field}>
+              <span className={styles.label}>Neues Passwort wiederholen</span>
+              <input className={styles.input} name="repeat" type="password" required minLength={12} autoComplete="new-password" />
+            </label>
+            <button type="submit" className={styles.submit}>
+              Passwort ändern
+            </button>
+          </form>
+        </Panel>
+      </div>
 
       <Divider label="Meine Charaktere" />
 

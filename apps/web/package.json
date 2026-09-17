@@ -11,7 +11,8 @@
     "test": "vitest run",
     "verify:content": "tsx scripts/verify-custom-content.ts",
     "verify:forever": "tsx scripts/verify-forever.ts",
-    "verify:poll": "tsx scripts/verify-poll.ts"
+    "verify:poll": "tsx scripts/verify-poll.ts",
+    "verify:accounts": "tsx scripts/verify-accounts.ts"
   },
   "dependencies": {
     "@ina/core": "workspace:*",

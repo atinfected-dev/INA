@@ -9,6 +9,7 @@ import { invalidateAll } from '../../../lib/cache';
 import { revalidatePath } from 'next/cache';
 import { AuthError, createSession, destroySession, getViewer, login, register, requireAdmin } from '../../../lib/auth';
 import { ClaimError, approveClaim, rejectClaim, requestClaim, revokeClaim } from '../../../lib/claims';
+import { AccountError, changePassword, updateProfile } from '../../../lib/accounts';
 
 /**
  * Server actions for registration, login and claims.
@@ -56,6 +57,51 @@ export async function loginAction(_prev: FormState, formData: FormData): Promise
   // Members land on the Forever page: the plan for what comes next, not the
   // account settings.
   redirect('/forever' as Route);
+}
+
+// --- Own account data ----------------------------------------------------------
+//
+// Plain forms that report through the address bar, like the officer forms:
+// the outcome survives the redirect and needs no client state.
+
+function settingsBack(outcome: { ok?: string; error?: string }): never {
+  const params = new URLSearchParams();
+  if (outcome.ok) params.set('ok', outcome.ok);
+  if (outcome.error) params.set('fehler', outcome.error);
+  redirect(`/konto?${params.toString()}#einstellungen` as Route);
+}
+
+export async function updateProfileAction(formData: FormData): Promise<void> {
+  const viewer = await getViewer();
+  if (!viewer) redirect('/anmelden');
+  let emailChanged = false;
+  try {
+    ({ emailChanged } = await updateProfile(viewer.id, {
+      displayName: String(formData.get('displayName') ?? ''),
+      realName: String(formData.get('realName') ?? ''),
+      email: String(formData.get('email') ?? ''),
+    }));
+  } catch (error) {
+    settingsBack({ error: error instanceof AccountError ? error.message : 'Das hat nicht geklappt.' });
+  }
+  revalidatePath('/konto');
+  settingsBack({ ok: emailChanged ? 'Gespeichert — du meldest dich ab jetzt mit der neuen E-Mail-Adresse an.' : 'Gespeichert.' });
+}
+
+export async function changePasswordAction(formData: FormData): Promise<void> {
+  const viewer = await getViewer();
+  if (!viewer) redirect('/anmelden');
+  try {
+    await changePassword(
+      viewer.id,
+      String(formData.get('current') ?? ''),
+      String(formData.get('next') ?? ''),
+      String(formData.get('repeat') ?? ''),
+    );
+  } catch (error) {
+    settingsBack({ error: error instanceof AccountError ? error.message : 'Das hat nicht geklappt.' });
+  }
+  settingsBack({ ok: 'Passwort geändert.' });
 }
 
 export async function logoutAction(): Promise<void> {

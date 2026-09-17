@@ -41,6 +41,7 @@ const ADMIN_NAV = [
   { href: '/erfolge', label: 'Erfolge' },
   { href: '/admin/inhalte', label: 'Inhalte' },
   { href: '/admin/claims', label: 'Anträge' },
+  { href: '/admin/konten', label: 'Konten' },
 ] as const;
 
 export default async function HistorieLayout({ children }: { children: React.ReactNode }) {
