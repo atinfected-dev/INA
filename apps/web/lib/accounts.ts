@@ -1,5 +1,6 @@
 import { prisma } from '@ina/db';
 import { hashPassword, verifyPassword } from '@ina/core/password';
+import { invalidateAll } from './cache';
 
 /**
  * Account management.
@@ -30,7 +31,7 @@ export async function updateProfile(accountId: string, input: ProfileInput): Pro
   if (realName.length > 80) throw new AccountError('Der Klarname ist zu lang.');
   if (!EMAIL.test(email)) throw new AccountError('Keine gültige E-Mail-Adresse.');
 
-  const current = await prisma.account.findUnique({ where: { id: accountId }, select: { email: true } });
+  const current = await prisma.account.findUnique({ where: { id: accountId }, select: { email: true, personId: true } });
   if (!current) throw new AccountError('Konto nicht gefunden.');
 
   if (email !== current.email) {
@@ -42,6 +43,12 @@ export async function updateProfile(accountId: string, input: ProfileInput): Pro
     where: { id: accountId },
     data: { displayName, realName: realName === '' ? null : realName, email },
   });
+  // The person is what the public lists and profiles show; it follows the
+  // handle, and the cached pages that carry the old name are dropped.
+  if (current.personId) {
+    await prisma.person.update({ where: { id: current.personId }, data: { displayName } });
+  }
+  invalidateAll();
   return { emailChanged: email !== current.email };
 }
 

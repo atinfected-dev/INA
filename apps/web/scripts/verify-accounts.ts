@@ -53,6 +53,13 @@ async function main(): Promise<void> {
     await updateProfile(member.id, { displayName: 'Neuer Name', realName: '   ', email: saved!.email });
     check('Leerer Klarname wird als leer gespeichert', (await prisma.account.findUnique({ where: { id: member.id } }))?.realName === null);
 
+    // A linked person follows the handle — that is what the public lists show.
+    const person = await prisma.person.create({ data: { displayName: 'Alter Name', slug: `rundlauf-person-${stamp}`, account: { connect: { id: member.id } } } });
+    await updateProfile(member.id, { displayName: 'Noch Neuer', realName: 'Max Muster', email: saved!.email });
+    check('Verknüpfte Person übernimmt den neuen Anzeigenamen', (await prisma.person.findUnique({ where: { id: person.id } }))?.displayName === 'Noch Neuer');
+    check('Klarname landet nicht in der Person', (await prisma.person.findUnique({ where: { id: person.id } }))?.displayName !== 'Max Muster');
+    await prisma.person.delete({ where: { id: person.id } });
+
     // --- Member: password ----------------------------------------------------------
     await rejects('Falsches aktuelles Passwort wird abgelehnt', () => changePassword(member.id, 'falsch', 'Neues-Passwort-123', 'Neues-Passwort-123'));
     await rejects('Wiederholung muss stimmen', () => changePassword(member.id, 'Rundlauf-Passwort-1', 'Neues-Passwort-123', 'Neues-Passwort-124'));

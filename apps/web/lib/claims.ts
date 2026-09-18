@@ -73,7 +73,7 @@ export async function approveClaim(claimId: string, decidedBy: string): Promise<
     select: {
       id: true,
       characterId: true,
-      account: { select: { id: true, displayName: true, realName: true, personId: true } },
+      account: { select: { id: true, displayName: true, personId: true } },
     },
   });
   if (!claim) throw new ClaimError('Antrag nicht gefunden.');
@@ -81,7 +81,9 @@ export async function approveClaim(claimId: string, decidedBy: string): Promise<
   let personId = claim.account.personId;
 
   if (!personId) {
-    const displayName = claim.account.realName?.trim() || claim.account.displayName;
+    // The person carries the public handle, never the real name: the profile
+    // and every list show it to visitors who are not signed in.
+    const displayName = claim.account.displayName;
     const base = slugify(displayName) || `spieler-${claim.account.id.slice(0, 6)}`;
 
     // Slugs are unique; two members with the same name must not collide.
